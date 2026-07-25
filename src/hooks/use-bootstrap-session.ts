@@ -1,0 +1,87 @@
+import { useEffect } from "react";
+import { api } from "../lib/api";
+import { authClient } from "../lib/auth-client";
+import type { AppDispatch } from "../store/store";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { setActiveCompany } from "../store/slices/active-company-slice";
+import { clearAuth, setLoading, setUser } from "../store/slices/auth-slice";
+
+interface Company {
+  id: string;
+  name: string;
+}
+
+interface Member {
+  id: string;
+  userId: string;
+  role: "GERENTE" | "SUPERVISOR" | "ATENDENTE";
+}
+
+/// Núcleo de sincronização store↔sessão real do Better Auth (cookie) — extraído
+/// como função standalone (não só efeito de hook) para poder ser chamado tanto
+/// no boot do app quanto logo após um signIn/signUp bem-sucedido, sem esperar
+/// um remount/re-render que nunca viria (o efeito de useBootstrapSession só
+/// roda uma vez, perto da raiz — sozinho ele nunca saberia que uma nova sessão
+/// acabou de ser criada por uma página completamente diferente).
+export async function refreshSessionState(dispatch: AppDispatch): Promise<void> {
+  dispatch(setLoading());
+
+  const session = await authClient.getSession().catch(() => null);
+  const sessionUser = session?.data?.user;
+  const sessionData = session?.data?.session;
+
+  if (!sessionUser) {
+    dispatch(clearAuth());
+    dispatch(setActiveCompany(null));
+    return;
+  }
+
+  dispatch(
+    setUser({
+      id: sessionUser.id,
+      name: sessionUser.name,
+      email: sessionUser.email,
+      isPlatformAdmin: sessionUser.role === "admin",
+    }),
+  );
+
+  const activeOrganizationId = sessionData?.activeOrganizationId;
+  if (!activeOrganizationId) {
+    dispatch(setActiveCompany(null));
+    return;
+  }
+
+  try {
+    const [company, members] = await Promise.all([
+      api.get<Company>(`/api/companies/${activeOrganizationId}`),
+      api.get<Member[]>(`/api/companies/${activeOrganizationId}/members`),
+    ]);
+
+    const membership = members.find((m) => m.userId === sessionUser.id);
+
+    dispatch(
+      setActiveCompany({
+        id: company.id,
+        name: company.name,
+        memberRole: membership?.role ?? null,
+      }),
+    );
+  } catch {
+    dispatch(setActiveCompany(null));
+  }
+}
+
+/// Sincroniza a store com a sessão real ao carregar o app — a store persistida
+/// é só cache/otimista, isto é a fonte de verdade. Deve ser chamado uma vez,
+/// perto da raiz do app.
+export function useBootstrapSession() {
+  const dispatch = useAppDispatch();
+  const status = useAppSelector((state) => state.auth.status);
+
+  useEffect(() => {
+    refreshSessionState(dispatch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return { ready: status === "ready" };
+}

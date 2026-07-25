@@ -1,0 +1,71 @@
+import { Navigate, Route, Routes } from "react-router-dom";
+import { Toaster } from "sonner";
+import { AppShell } from "@/layout/app-shell";
+import { BusinessDetailPage } from "@/pages/business/business-detail-page";
+import { BusinessListPage } from "@/pages/business/business-list-page";
+import { SignInPage } from "@/pages/auth/signin-page";
+import { SignUpPage } from "@/pages/auth/signup-page";
+import { AgentDetailPage } from "@/pages/agents/agent-detail-page";
+import { AgentsListPage } from "@/pages/agents/agents-list-page";
+import { ServiceIslandDetailPage } from "@/pages/service-islands/service-island-detail-page";
+import { ServiceIslandsListPage } from "@/pages/service-islands/service-islands-list-page";
+import { TargetDetailPage } from "@/pages/targets/target-detail-page";
+import { TargetsListPage } from "@/pages/targets/targets-list-page";
+import { WhatsappChannelDetailPage } from "@/pages/whatsapp-channels/whatsapp-channel-detail-page";
+import { WhatsappChannelsListPage } from "@/pages/whatsapp-channels/whatsapp-channels-list-page";
+import { RedirectIfBootstrapped, RequireActiveCompany, RequireAuth } from "@/routes/require-auth";
+import { useBootstrapSession } from "@/hooks/use-bootstrap-session";
+
+export function App() {
+  const { ready } = useBootstrapSession();
+
+  if (!ready) {
+    return <div className="bg-dot-grid min-h-screen" />;
+  }
+
+  return (
+    <>
+      <Toaster richColors position="top-right" />
+      <Routes>
+        <Route
+          path="/signin"
+          element={
+            <RedirectIfBootstrapped>
+              <SignInPage />
+            </RedirectIfBootstrapped>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <RedirectIfBootstrapped>
+              <SignUpPage />
+            </RedirectIfBootstrapped>
+          }
+        />
+
+        <Route element={<RequireAuth />}>
+          <Route path="/business" element={<BusinessListPage />} />
+          <Route path="/business/:id" element={<BusinessDetailPage />} />
+
+          <Route element={<RequireActiveCompany />}>
+            <Route element={<AppShell />}>
+              <Route path="/" element={<Navigate to="/targets" replace />} />
+              <Route path="/targets" element={<TargetsListPage />} />
+              <Route path="/targets/:id" element={<TargetDetailPage />} />
+              <Route path="/agents" element={<AgentsListPage />} />
+              <Route path="/agents/new" element={<AgentDetailPage />} />
+              <Route path="/agents/:id" element={<AgentDetailPage />} />
+              <Route path="/wc" element={<WhatsappChannelsListPage />} />
+              <Route path="/wc/:id" element={<WhatsappChannelDetailPage />} />
+              <Route path="/service-island" element={<ServiceIslandsListPage />} />
+              <Route path="/service-island/:id" element={<ServiceIslandDetailPage />} />
+            </Route>
+          </Route>
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
+  );
+}

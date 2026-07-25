@@ -1,0 +1,92 @@
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import useSWR from "swr";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
+import { useCan } from "@/hooks/use-can";
+import { PermissionAction, ROLE_LABELS, type MemberRole } from "@/domain/permission-action";
+import { useAppSelector } from "@/store/hooks";
+import type { Company, Member } from "@/types/domain";
+
+const ROLE_OPTIONS: MemberRole[] = ["GERENTE", "SUPERVISOR", "ATENDENTE"];
+
+export function BusinessDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const can = useCan();
+  const currentUserId = useAppSelector((s) => s.auth.user?.id);
+  const { data: company } = useSWR<Company>(id ? `/api/companies/${id}` : null);
+  const { data: members, mutate } = useSWR<Member[]>(id ? `/api/companies/${id}/members` : null);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const canWrite = can(PermissionAction.ACCESS_WRITE);
+
+  async function handleRoleChange(memberId: string, role: MemberRole) {
+    setError(null);
+    setSavingId(memberId);
+    try {
+      await api.put(`/api/companies/${id}/members/${memberId}`, { role });
+      await mutate();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível alterar o tipo de acesso.");
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  return (
+    <div className="bg-dot-grid min-h-screen p-6">
+      <div className="mx-auto flex max-w-3xl flex-col gap-6">
+        <div>
+          <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
+            {company?.name ?? "Empresa"}
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">CNPJ {company?.cnpj}</p>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Acessos</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            {error && <p className="text-destructive text-sm">{error}</p>}
+            {members?.map((member) => (
+              <div
+                key={member.id}
+                className="border-border flex items-center justify-between rounded-lg border px-3 py-2"
+              >
+                <div>
+                  <p className="text-sm font-medium">
+                    {member.user.name} {member.userId === currentUserId && <Badge variant="secondary">Você</Badge>}
+                  </p>
+                  <p className="text-muted-foreground text-xs">{member.user.email}</p>
+                </div>
+
+                {canWrite ? (
+                  <select
+                    className={cn(
+                      "border-input bg-background rounded-md border px-2 py-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    )}
+                    value={member.role}
+                    disabled={savingId === member.id}
+                    onChange={(e) => handleRoleChange(member.id, e.target.value as MemberRole)}
+                  >
+                    {ROLE_OPTIONS.map((role) => (
+                      <option key={role} value={role}>
+                        {ROLE_LABELS[role]}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <Badge variant="outline">{ROLE_LABELS[member.role]}</Badge>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
