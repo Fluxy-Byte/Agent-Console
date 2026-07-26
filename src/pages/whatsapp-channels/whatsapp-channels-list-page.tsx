@@ -1,7 +1,9 @@
 import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { MessageSquare, Plus } from "lucide-react";
+import { MessageSquare, Plus, Search, X } from "lucide-react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -19,6 +21,13 @@ import { PermissionAction } from "@/domain/permission-action";
 import { api, ApiError } from "@/lib/api";
 import type { Agent, WhatsappChannel } from "@/types/domain";
 
+interface WabaPhoneNumberResult {
+  phoneNumberId: string;
+  displayNumber: string;
+  verifiedName: string;
+  alreadyRegistered: boolean;
+}
+
 export function WhatsappChannelsListPage() {
   const navigate = useNavigate();
   const can = useCan();
@@ -33,6 +42,68 @@ export function WhatsappChannelsListPage() {
   const [wabaId, setWabaId] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [lookupOpen, setLookupOpen] = useState(false);
+  const [lookupAgentId, setLookupAgentId] = useState("");
+  const [lookupWabaId, setLookupWabaId] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [results, setResults] = useState<WabaPhoneNumberResult[] | null>(null);
+  const [registering, setRegistering] = useState(false);
+
+  function resetLookup() {
+    setLookupAgentId("");
+    setLookupWabaId("");
+    setSearchError(null);
+    setResults(null);
+  }
+
+  async function handleSearch(event: FormEvent) {
+    event.preventDefault();
+    setSearchError(null);
+    setSearching(true);
+    try {
+      const found = await api.post<WabaPhoneNumberResult[]>("/api/wc/waba-lookup", { wabaId: lookupWabaId });
+      setResults(found);
+      if (found.length === 0) setSearchError("Nenhum número encontrado para este WABA.");
+    } catch (err) {
+      setResults(null);
+      setSearchError(err instanceof ApiError ? err.message : "Não foi possível buscar os números.");
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function handleRemoveResult(phoneNumberId: string) {
+    setResults((prev) => prev?.filter((r) => r.phoneNumberId !== phoneNumberId) ?? null);
+  }
+
+  async function handleRegisterAll() {
+    const toRegister = results?.filter((r) => !r.alreadyRegistered) ?? [];
+    if (toRegister.length === 0) return;
+
+    setSearchError(null);
+    setRegistering(true);
+    try {
+      const result = await api.post<{ created: unknown[]; skipped: unknown[] }>("/api/wc/bulk", {
+        agentId: lookupAgentId,
+        wabaId: lookupWabaId,
+        phoneNumbers: toRegister.map((r) => ({ phoneNumberId: r.phoneNumberId, displayNumber: r.displayNumber })),
+      });
+      await mutate();
+      toast.success(
+        result.skipped.length > 0
+          ? `${result.created.length} número(s) cadastrado(s), ${result.skipped.length} já existia(m).`
+          : `${result.created.length} número(s) cadastrado(s).`,
+      );
+      setLookupOpen(false);
+      resetLookup();
+    } catch (err) {
+      setSearchError(err instanceof ApiError ? err.message : "Não foi possível cadastrar os números.");
+    } finally {
+      setRegistering(false);
+    }
+  }
 
   async function handleCreate(event: FormEvent) {
     event.preventDefault();
@@ -63,68 +134,167 @@ export function WhatsappChannelsListPage() {
           </p>
         </div>
         {canWrite && (
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="size-4" /> Novo canal
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Novo WhatsApp Channel</DialogTitle>
-                <DialogDescription>
-                  Uma ilha de atendimento é criada automaticamente para este canal.
-                </DialogDescription>
-              </DialogHeader>
-              <form className="flex flex-col gap-4" onSubmit={handleCreate}>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="wc-agent">Agente</Label>
-                  <select
-                    id="wc-agent"
-                    required
-                    className="border-input bg-background h-9 rounded-md border px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    value={agentId}
-                    onChange={(e) => setAgentId(e.target.value)}
-                  >
-                    <option value="" disabled>
-                      Selecione um agente
-                    </option>
-                    {agents?.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="wc-phone-number-id">Phone Number ID</Label>
-                  <Input
-                    id="wc-phone-number-id"
-                    required
-                    value={phoneNumberId}
-                    onChange={(e) => setPhoneNumberId(e.target.value)}
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="wc-display-number">Número de exibição</Label>
-                  <Input
-                    id="wc-display-number"
-                    required
-                    value={displayNumber}
-                    onChange={(e) => setDisplayNumber(e.target.value)}
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="wc-waba-id">WhatsApp Business Account ID</Label>
-                  <Input id="wc-waba-id" required value={wabaId} onChange={(e) => setWabaId(e.target.value)} />
-                </div>
-                {error && <p className="text-destructive text-sm">{error}</p>}
-                <Button type="submit" disabled={saving}>
-                  {saving ? "Criando…" : "Criar canal"}
+          <div className="flex gap-2">
+            <Dialog
+              open={lookupOpen}
+              onOpenChange={(v) => {
+                setLookupOpen(v);
+                if (!v) resetLookup();
+              }}
+            >
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Search className="size-4" /> Procurar números por WABA
                 </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Procurar números por WABA</DialogTitle>
+                  <DialogDescription>
+                    Busca na Meta todos os números cadastrados no WhatsApp Business Account informado. Remova da
+                    lista os que não quiser cadastrar antes de confirmar.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <form className="flex flex-col gap-4" onSubmit={handleSearch}>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="lookup-agent">Agente</Label>
+                    <select
+                      id="lookup-agent"
+                      required
+                      className="border-input bg-background h-9 rounded-md border px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      value={lookupAgentId}
+                      onChange={(e) => setLookupAgentId(e.target.value)}
+                    >
+                      <option value="" disabled>
+                        Selecione um agente
+                      </option>
+                      {agents?.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="lookup-waba-id">WhatsApp Business Account ID</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="lookup-waba-id"
+                        required
+                        value={lookupWabaId}
+                        onChange={(e) => setLookupWabaId(e.target.value)}
+                      />
+                      <Button type="submit" disabled={searching || !lookupAgentId}>
+                        {searching ? "Buscando…" : "Procurar"}
+                      </Button>
+                    </div>
+                  </div>
+                </form>
+
+                {searchError && <p className="text-destructive text-sm">{searchError}</p>}
+
+                {results && results.length > 0 && (
+                  <div className="flex flex-col gap-4">
+                    <div className="flex max-h-64 flex-col gap-2 overflow-y-auto">
+                      {results.map((r) => (
+                        <div
+                          key={r.phoneNumberId}
+                          className="border-border flex items-center justify-between gap-3 rounded-md border px-3 py-2"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium">{r.displayNumber}</p>
+                            <p className="text-muted-foreground truncate text-xs">{r.verifiedName}</p>
+                          </div>
+                          {r.alreadyRegistered ? (
+                            <Badge variant="outline">Já cadastrado</Badge>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveResult(r.phoneNumberId)}
+                              className="text-muted-foreground hover:text-destructive shrink-0"
+                              aria-label={`Remover ${r.displayNumber}`}
+                            >
+                              <X className="size-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      onClick={handleRegisterAll}
+                      disabled={registering || results.every((r) => r.alreadyRegistered)}
+                    >
+                      {registering ? "Cadastrando…" : "Cadastrar"}
+                    </Button>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="size-4" /> Novo canal
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Novo WhatsApp Channel</DialogTitle>
+                  <DialogDescription>
+                    Uma ilha de atendimento é criada automaticamente para este canal.
+                  </DialogDescription>
+                </DialogHeader>
+                <form className="flex flex-col gap-4" onSubmit={handleCreate}>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="wc-agent">Agente</Label>
+                    <select
+                      id="wc-agent"
+                      required
+                      className="border-input bg-background h-9 rounded-md border px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      value={agentId}
+                      onChange={(e) => setAgentId(e.target.value)}
+                    >
+                      <option value="" disabled>
+                        Selecione um agente
+                      </option>
+                      {agents?.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="wc-phone-number-id">Phone Number ID</Label>
+                    <Input
+                      id="wc-phone-number-id"
+                      required
+                      value={phoneNumberId}
+                      onChange={(e) => setPhoneNumberId(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="wc-display-number">Número de exibição</Label>
+                    <Input
+                      id="wc-display-number"
+                      required
+                      value={displayNumber}
+                      onChange={(e) => setDisplayNumber(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="wc-waba-id">WhatsApp Business Account ID</Label>
+                    <Input id="wc-waba-id" required value={wabaId} onChange={(e) => setWabaId(e.target.value)} />
+                  </div>
+                  {error && <p className="text-destructive text-sm">{error}</p>}
+                  <Button type="submit" disabled={saving}>
+                    {saving ? "Criando…" : "Criar canal"}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         )}
       </div>
 
