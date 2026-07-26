@@ -30,18 +30,25 @@ interface FormState {
 }
 
 const EMPTY_FORM: FormState = {
-  name: "",
+  name: "Assistente Virtual",
   isActive: true,
-  welcomeMessage: "",
+  welcomeMessage:
+    "Olá! 😊 Seja muito bem-vindo(a) ao nosso atendimento. Eu sou o assistente virtual e estou aqui para te ajudar com informações, dúvidas ou o que você precisar. Caso seja necessário, também posso te encaminhar para um de nossos atendentes. Como posso te ajudar hoje?",
   welcomeEnabled: true,
-  processingMessage: "",
-  transferMessage: "",
-  unsupportedFormatMessage: "",
-  outOfHoursMessage: "",
+  processingMessage:
+    "Só um momento, por favor. Estou analisando cuidadosamente sua mensagem para te dar a resposta mais completa e precisa possível. Já retorno com as informações!",
+  transferMessage:
+    "Entendido! Para garantir que você receba o melhor atendimento, vou transferir esta conversa para um de nossos atendentes, que dará continuidade a partir daqui. Por favor, aguarde só mais um instante — em breve alguém da nossa equipe vai falar com você.",
+  unsupportedFormatMessage:
+    "Desculpe, ainda não consigo processar esse tipo de arquivo ou mídia que você enviou. Para que eu possa te ajudar da melhor forma, poderia, por gentileza, reenviar sua solicitação em texto?",
+  outOfHoursMessage:
+    "Agradecemos o seu contato! No momento estamos fora do nosso horário de atendimento humano, mas já registramos sua mensagem. Assim que nossa equipe retornar, um de nossos atendentes vai falar com você o quanto antes.",
   outOfHoursEnabled: true,
-  closingMessage: "",
+  closingMessage:
+    "Foi um prazer poder te ajudar hoje! Se surgir alguma nova dúvida ou precisar de suporte novamente, é só me chamar por aqui a qualquer momento. Agradecemos o contato e desejamos um ótimo dia! 👋",
   closingEnabled: true,
-  errorMessage: "",
+  errorMessage:
+    "Peço desculpas, mas encontrei um problema inesperado ao tentar processar sua solicitação. Poderia tentar novamente, por favor? Caso o problema persista, um de nossos atendentes poderá te ajudar diretamente.",
   errorEnabled: true,
 };
 

@@ -26,7 +26,7 @@ export function AppShell() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       <aside
         className={cn(
           "bg-sidebar-gradient border-border flex flex-col border-r transition-[width] duration-200",
