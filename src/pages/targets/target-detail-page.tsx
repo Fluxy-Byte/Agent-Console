@@ -82,12 +82,15 @@ function buildTimeline(history: MessageDocument[], tickets: TicketSummary[], tar
 }
 
 function TicketDivider({ ticketNumber, label }: { ticketNumber: number; label: "Abertura" | "Encerramento" }) {
+  const isOpen = label === "Abertura";
   return (
-    <div className="flex items-center justify-center py-1">
-      <Badge variant="outline" className="bg-background text-muted-foreground gap-1.5 font-normal">
-        {label === "Abertura" ? <LogIn className="size-3" /> : <LogOut className="size-3" />}
-        #{ticketNumber} - {label}
+    <div className="my-2 flex items-center gap-3">
+      <div className="border-border h-px flex-1 border-t" />
+      <Badge variant={isOpen ? "success" : "destructive"} className="shrink-0 gap-1.5 px-3 py-1 text-xs font-semibold">
+        {isOpen ? <LogIn className="size-3.5" /> : <LogOut className="size-3.5" />}
+        Ticket #{ticketNumber} · {label}
       </Badge>
+      <div className="border-border h-px flex-1 border-t" />
     </div>
   );
 }
