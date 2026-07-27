@@ -51,19 +51,19 @@ export function CampaignDetailPage() {
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card className="gap-1">
-          <CardContent>
+          <CardContent className="flex items-center justify-start gap-2">
             <p className="text-2xl font-semibold">{campaign.expectedContacts}</p>
             <p className="text-muted-foreground text-xs">Contatos</p>
           </CardContent>
         </Card>
         <Card className="gap-1">
-          <CardContent>
+          <CardContent className="flex items-center justify-start gap-2">
             <p className="text-2xl font-semibold">{campaign.totalSent}</p>
             <p className="text-muted-foreground text-xs">Enviados</p>
           </CardContent>
         </Card>
         <Card className="gap-1">
-          <CardContent>
+          <CardContent className="flex items-center justify-start gap-2">
             <p className="text-destructive text-2xl font-semibold">{campaign.totalFailures}</p>
             <p className="text-muted-foreground text-xs">Falhas</p>
           </CardContent>
@@ -85,30 +85,30 @@ export function CampaignDetailPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Contato</TableHead>
-              <TableHead>Variáveis usadas</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Data/Hora</TableHead>
+              <TableHead className="text-center">Contato</TableHead>
+              <TableHead className="text-center">Variáveis usadas</TableHead>
+              <TableHead className="text-center">Status</TableHead>
+              <TableHead className="text-center">Data/Hora</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {campaign.targets.map((t) => (
               <TableRow key={t.id}>
-                <TableCell>
-                  <div className="flex flex-col">
+                <TableCell className="text-center align-middle">
+                  <div className="flex flex-col items-center justify-center">
                     <span className="font-medium">{t.targetName || "Desconhecido"}</span>
                     <span className="text-muted-foreground text-xs">{t.targetPhone}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground max-w-xs truncate text-sm">
+                <TableCell className="text-muted-foreground max-w-xs truncate text-center align-middle text-sm">
                   {formatVariables(t.variables)}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center align-middle">
                   <Badge variant={STATUS_BADGE[t.status]?.variant ?? "outline"}>
                     {STATUS_BADGE[t.status]?.label ?? t.status}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
+                <TableCell className="text-muted-foreground text-center align-middle text-sm whitespace-nowrap">
                   {new Date(t.createdAt).toLocaleString("pt-BR")}
                 </TableCell>
               </TableRow>
