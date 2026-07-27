@@ -144,7 +144,7 @@ export function TargetDetailPage() {
 
   return (
     <div className="p-6">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6">
+      <div className="mx-auto flex max-w-3xl flex-col gap-6">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
