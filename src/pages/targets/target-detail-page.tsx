@@ -144,103 +144,101 @@ export function TargetDetailPage() {
   if (!target) return <div className="p-6 text-sm text-muted-foreground">Carregando…</div>;
 
   return (
-    <div className="p-6">
-      <div className="mx-auto flex max-w-3xl flex-col gap-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
-              {target.name || target.waId}
-            </h1>
-            <Badge variant="outline">{STATUS_LABELS[target.status]}</Badge>
-          </div>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {target.waId} {target.email && `· ${target.email}`} · Agente: {target.whatsappChannel?.agent?.name}
-          </p>
+    <div className="flex flex-col gap-6 p-6">
+      <div>
+        <div className="flex items-center gap-2">
+          <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
+            {target.name || target.waId}
+          </h1>
+          <Badge variant="outline">{STATUS_LABELS[target.status]}</Badge>
         </div>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {target.waId} {target.email && `· ${target.email}`} · Agente: {target.whatsappChannel?.agent?.name}
+        </p>
+      </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:items-start">
-          <div ref={leftColumnRef} className="flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Metadados</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <MetadataView metadata={target.metadata} />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Tickets de atendimento humano</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {!target.tickets || target.tickets.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">Nenhum ticket para este contato ainda.</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Ticket</TableHead>
-                        <TableHead>Fila</TableHead>
-                        <TableHead>Ilha</TableHead>
-                        <TableHead>Atendente</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {target.tickets.map((ticket) => (
-                        <TableRow key={ticket.id}>
-                          <TableCell>#{ticket.ticketNumber}</TableCell>
-                          <TableCell>{ticket.queue.name}</TableCell>
-                          <TableCell>{ticket.queue.serviceIsland.name}</TableCell>
-                          <TableCell>{ticket.assignedUser?.email ?? "—"}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{TICKET_STATUS_LABELS[ticket.status]}</Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card
-            className="flex min-h-0 flex-col lg:max-h-[var(--history-max-h)]"
-            style={{ "--history-max-h": leftHeight ? `${leftHeight}px` : "none" } as CSSProperties}
-          >
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:items-start">
+        <div ref={leftColumnRef} className="flex flex-col gap-6">
+          <Card>
             <CardHeader>
-              <CardTitle>Histórico de conversas</CardTitle>
+              <CardTitle>Metadados</CardTitle>
             </CardHeader>
-            <CardContent className="flex min-h-0 flex-1 flex-col gap-4">
-              <div className="flex flex-wrap gap-1.5">
-                {TYPE_FILTERS.map((filter) => (
-                  <button
-                    key={filter.value}
-                    onClick={() => setMessageType(filter.value)}
-                    className={cn(
-                      "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                      messageType === filter.value
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-input bg-background",
-                    )}
-                  >
-                    {filter.label}
-                  </button>
-                ))}
-              </div>
+            <CardContent>
+              <MetadataView metadata={target.metadata} />
+            </CardContent>
+          </Card>
 
-              {!history || history.length === 0 ? (
-                <p className="text-muted-foreground text-sm">Nenhuma mensagem ainda.</p>
+          <Card>
+            <CardHeader>
+              <CardTitle>Tickets de atendimento humano</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!target.tickets || target.tickets.length === 0 ? (
+                <p className="text-muted-foreground text-sm">Nenhum ticket para este contato ainda.</p>
               ) : (
-                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-                  {buildTimeline(history, target.tickets ?? [], target).map((entry) => entry.node)}
-                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Ticket</TableHead>
+                      <TableHead>Fila</TableHead>
+                      <TableHead>Ilha</TableHead>
+                      <TableHead>Atendente</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {target.tickets.map((ticket) => (
+                      <TableRow key={ticket.id}>
+                        <TableCell>#{ticket.ticketNumber}</TableCell>
+                        <TableCell>{ticket.queue.name}</TableCell>
+                        <TableCell>{ticket.queue.serviceIsland.name}</TableCell>
+                        <TableCell>{ticket.assignedUser?.email ?? "—"}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{TICKET_STATUS_LABELS[ticket.status]}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
             </CardContent>
           </Card>
         </div>
+
+        <Card
+          className="flex min-h-0 flex-col lg:max-h-[var(--history-max-h)]"
+          style={{ "--history-max-h": leftHeight ? `${leftHeight}px` : "none" } as CSSProperties}
+        >
+          <CardHeader>
+            <CardTitle>Histórico de conversas</CardTitle>
+          </CardHeader>
+          <CardContent className="flex min-h-0 flex-1 flex-col gap-4">
+            <div className="flex flex-wrap gap-1.5">
+              {TYPE_FILTERS.map((filter) => (
+                <button
+                  key={filter.value}
+                  onClick={() => setMessageType(filter.value)}
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                    messageType === filter.value
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-input bg-background",
+                  )}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+
+            {!history || history.length === 0 ? (
+              <p className="text-muted-foreground text-sm">Nenhuma mensagem ainda.</p>
+            ) : (
+              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+                {buildTimeline(history, target.tickets ?? [], target).map((entry) => entry.node)}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
