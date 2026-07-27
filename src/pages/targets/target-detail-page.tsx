@@ -102,7 +102,11 @@ function MessageBubble({ message, senderLabel }: { message: MessageDocument; sen
       <p className="text-muted-foreground mb-1 text-xs">
         {senderLabel} · {new Date(message.createdAt).toLocaleString("pt-BR")}
       </p>
-      {message.text || message.mediaUrl || "(sem conteúdo)"}
+      {message.messageType === "IMAGE" && message.mediaUrl ? (
+        <img src={message.mediaUrl} alt={message.text || "Imagem"} className="max-w-full rounded-md" />
+      ) : (
+        message.text || message.mediaUrl || "(sem conteúdo)"
+      )}
     </div>
   );
 }
