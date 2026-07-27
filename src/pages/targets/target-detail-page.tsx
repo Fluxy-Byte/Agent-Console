@@ -126,7 +126,7 @@ export function TargetDetailPage() {
 
   return (
     <div className="p-6">
-      <div className="mx-auto flex max-w-3xl flex-col gap-6">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
@@ -139,71 +139,81 @@ export function TargetDetailPage() {
           </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Metadados</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <MetadataView metadata={target.metadata} />
-          </CardContent>
-        </Card>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:items-stretch">
+          <div className="flex flex-col gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Metadados</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <MetadataView metadata={target.metadata} />
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Tickets de atendimento humano</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {!target.tickets || target.tickets.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Nenhum ticket para este contato ainda.</p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {target.tickets.map((ticket) => (
-                  <div key={ticket.id} className="flex items-center justify-between border-b py-1.5 text-sm last:border-0">
-                    <span>
-                      #{ticket.ticketNumber} · {ticket.queue.name}
-                      {ticket.assignedUser && (
-                        <span className="text-muted-foreground"> · {ticket.assignedUser.email}</span>
-                      )}
-                    </span>
-                    <Badge variant="outline">{TICKET_STATUS_LABELS[ticket.status]}</Badge>
+            <Card>
+              <CardHeader>
+                <CardTitle>Tickets de atendimento humano</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!target.tickets || target.tickets.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">Nenhum ticket para este contato ainda.</p>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {target.tickets.map((ticket) => (
+                      <div
+                        key={ticket.id}
+                        className="flex items-center justify-between border-b py-1.5 text-sm last:border-0"
+                      >
+                        <span>
+                          #{ticket.ticketNumber} · {ticket.queue.name}
+                          {ticket.assignedUser && (
+                            <span className="text-muted-foreground"> · {ticket.assignedUser.email}</span>
+                          )}
+                        </span>
+                        <Badge variant="outline">{TICKET_STATUS_LABELS[ticket.status]}</Badge>
+                      </div>
+                    ))}
                   </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* min-h-0 no Card e no CardContent é o que permite o histórico rolar
+              por dentro em vez de esticar a coluna além da altura da esquerda —
+              o grid (items-stretch, padrão) já iguala as duas colunas. */}
+          <Card className="flex min-h-0 flex-col lg:h-full">
+            <CardHeader>
+              <CardTitle>Histórico de conversas</CardTitle>
+            </CardHeader>
+            <CardContent className="flex min-h-0 flex-1 flex-col gap-4">
+              <div className="flex flex-wrap gap-1.5">
+                {TYPE_FILTERS.map((filter) => (
+                  <button
+                    key={filter.value}
+                    onClick={() => setMessageType(filter.value)}
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                      messageType === filter.value
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-input bg-background",
+                    )}
+                  >
+                    {filter.label}
+                  </button>
                 ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Histórico de conversas</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex flex-wrap gap-1.5">
-              {TYPE_FILTERS.map((filter) => (
-                <button
-                  key={filter.value}
-                  onClick={() => setMessageType(filter.value)}
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                    messageType === filter.value
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-input bg-background",
-                  )}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
-
-            {!history || history.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Nenhuma mensagem ainda.</p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {buildTimeline(history, target.tickets ?? [], target).map((entry) => entry.node)}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              {!history || history.length === 0 ? (
+                <p className="text-muted-foreground text-sm">Nenhuma mensagem ainda.</p>
+              ) : (
+                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+                  {buildTimeline(history, target.tickets ?? [], target).map((entry) => entry.node)}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
