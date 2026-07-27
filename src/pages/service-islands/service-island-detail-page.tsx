@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { Pencil, Plus, Users } from "lucide-react";
@@ -8,17 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
 import { api, ApiError } from "@/lib/api";
 import { useAppSelector } from "@/store/hooks";
-import type { Member, ServiceIsland } from "@/types/domain";
+import type { IslandTicket, Member, ServiceIsland } from "@/types/domain";
 import { QueueFormDialog } from "./queue-form-dialog";
 
 const DAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const TICKET_STATUS_LABELS: Record<string, string> = { WAITING: "Aguardando", IN_PROGRESS: "Em andamento", CLOSED: "Encerrado" };
 
 export function ServiceIslandDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const can = useCan();
   const activeCompanyId = useAppSelector((s) => s.activeCompany?.id);
 
@@ -26,6 +29,7 @@ export function ServiceIslandDetailPage() {
   const { data: members } = useSWR<Member[]>(
     activeCompanyId ? `/api/companies/${activeCompanyId}/members` : null,
   );
+  const { data: tickets } = useSWR<IslandTicket[]>(id ? `/api/service-islands/${id}/tickets` : null);
 
   const canRenameIsland = can(PermissionAction.SERVICE_ISLANDS_WRITE);
   const canManageQueues = can(PermissionAction.QUEUES_WRITE);
@@ -147,6 +151,46 @@ export function ServiceIslandDetailPage() {
             <p className="text-muted-foreground text-sm">Nenhuma fila cadastrada nesta ilha ainda.</p>
           )}
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Tickets de atendimento humano</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!tickets || tickets.length === 0 ? (
+              <p className="text-muted-foreground text-sm">Nenhum ticket nas filas desta ilha ainda.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Ticket</TableHead>
+                    <TableHead>Contato</TableHead>
+                    <TableHead>Fila</TableHead>
+                    <TableHead>Atendente</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tickets.map((ticket) => (
+                    <TableRow
+                      key={ticket.id}
+                      className="hover:bg-accent cursor-pointer"
+                      onClick={() => navigate(`/targets/${ticket.target.id}`)}
+                    >
+                      <TableCell>#{ticket.ticketNumber}</TableCell>
+                      <TableCell>{ticket.target.name || ticket.target.waId}</TableCell>
+                      <TableCell>{ticket.queue.name}</TableCell>
+                      <TableCell>{ticket.assignedUser?.email ?? "—"}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{TICKET_STATUS_LABELS[ticket.status]}</Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

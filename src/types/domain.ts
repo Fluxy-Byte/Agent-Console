@@ -108,6 +108,17 @@ export interface Target {
   tickets?: TicketSummary[];
 }
 
+export interface IslandTicket {
+  id: string;
+  ticketNumber: number;
+  status: "WAITING" | "IN_PROGRESS" | "CLOSED";
+  target: { id: string; name: string | null; waId: string };
+  queue: { id: string; name: string };
+  assignedUser: { id: string; name: string; email: string } | null;
+  createdAt: string;
+  closedAt: string | null;
+}
+
 export interface TargetListResult {
   items: Target[];
   total: number;
