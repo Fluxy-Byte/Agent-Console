@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
 import { LogIn, LogOut } from "lucide-react";
@@ -117,24 +117,6 @@ export function TargetDetailPage() {
   const { data: target } = useSWR<Target>(id ? `/api/targets/${id}` : null);
   const [messageType, setMessageType] = useState<MessageType | "">("");
 
-  // CSS grid stretch não dá conta disso: um item com height:100% dentro de
-  // uma trilha auto-sized entra num ciclo de medição que o navegador resolve
-  // usando a altura NATURAL (não cortada) do conteúdo pra dimensionar a
-  // trilha — ou seja, o histórico crescia junto em vez de cortar com scroll.
-  // Medindo a coluna esquerda de verdade e aplicando como max-height fixo no
-  // card da direita elimina esse ciclo.
-  const leftColumnRef = useRef<HTMLDivElement>(null);
-  const [leftHeight, setLeftHeight] = useState<number | null>(null);
-
-  useEffect(() => {
-    const el = leftColumnRef.current;
-    if (!el) return;
-
-    const observer = new ResizeObserver(([entry]) => setLeftHeight(entry.contentRect.height));
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
   const historyParams = new URLSearchParams({ limit: "200" });
   if (messageType) historyParams.set("messageType", messageType);
   const { data: history } = useSWR<MessageDocument[]>(
@@ -158,7 +140,7 @@ export function TargetDetailPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:items-start">
-        <div ref={leftColumnRef} className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6">
           <Card>
             <CardHeader>
               <CardTitle>Metadados</CardTitle>
@@ -205,40 +187,43 @@ export function TargetDetailPage() {
           </Card>
         </div>
 
-        <Card
-          className="flex min-h-0 flex-col lg:max-h-[var(--history-max-h)]"
-          style={{ "--history-max-h": leftHeight ? `${leftHeight}px` : "none" } as CSSProperties}
-        >
-          <CardHeader>
-            <CardTitle>Histórico de conversas</CardTitle>
-          </CardHeader>
-          <CardContent className="flex min-h-0 flex-1 flex-col gap-4">
-            <div className="flex flex-wrap gap-1.5">
-              {TYPE_FILTERS.map((filter) => (
-                <button
-                  key={filter.value}
-                  onClick={() => setMessageType(filter.value)}
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                    messageType === filter.value
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-input bg-background",
-                  )}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
-
-            {!history || history.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Nenhuma mensagem ainda.</p>
-            ) : (
-              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-                {buildTimeline(history, target.tickets ?? [], target).map((entry) => entry.node)}
+        {/* aside: gruda no topo da viewport ao rolar a página (sticky) e nunca
+            passa da altura da tela (max-h em cima de 100vh) — antes só era
+            limitado pela altura da coluna esquerda, que podia ela mesma
+            estourar a tela com muitos tickets/metadados. */}
+        <aside className="flex min-h-0 flex-col lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)]">
+          <Card className="flex min-h-0 flex-1 flex-col">
+            <CardHeader>
+              <CardTitle>Histórico de conversas</CardTitle>
+            </CardHeader>
+            <CardContent className="flex min-h-0 flex-1 flex-col gap-4">
+              <div className="flex flex-wrap gap-1.5">
+                {TYPE_FILTERS.map((filter) => (
+                  <button
+                    key={filter.value}
+                    onClick={() => setMessageType(filter.value)}
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                      messageType === filter.value
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-input bg-background",
+                    )}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
+
+              {!history || history.length === 0 ? (
+                <p className="text-muted-foreground text-sm">Nenhuma mensagem ainda.</p>
+              ) : (
+                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+                  {buildTimeline(history, target.tickets ?? [], target).map((entry) => entry.node)}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </aside>
       </div>
     </div>
   );
