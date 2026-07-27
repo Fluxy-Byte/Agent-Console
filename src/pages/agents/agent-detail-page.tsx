@@ -177,118 +177,116 @@ export function AgentDetailPage() {
   }
 
   return (
-    <div className="p-6">
-      <form onSubmit={handleSubmit} className="mx-auto flex max-w-2xl flex-col gap-6">
-        <div>
-          <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
-            {isNew ? "Novo agente" : form.name || "Agente"}
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Configure a identidade e as mensagens automáticas deste agente.
-          </p>
-        </div>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6 p-6">
+      <div>
+        <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
+          {isNew ? "Novo agente" : form.name || "Agente"}
+        </h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Configure a identidade e as mensagens automáticas deste agente.
+        </p>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Identidade</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="agent-name">Nome</Label>
-              <Input
-                id="agent-name"
-                required
-                disabled={disabled}
-                value={form.name}
-                onChange={(e) => set("name", e.target.value)}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label>Agente ativo</Label>
-              <Switch checked={form.isActive} onCheckedChange={(v) => set("isActive", v)} disabled={disabled} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Mensagens obrigatórias</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-5">
-            <RequiredMessageField
-              label="Mensagem de processando"
-              helper="Enviada enquanto o agente está pensando na resposta."
-              value={form.processingMessage}
-              onChange={(v) => set("processingMessage", v)}
+      <Card>
+        <CardHeader>
+          <CardTitle>Identidade</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="agent-name">Nome</Label>
+            <Input
+              id="agent-name"
+              required
               disabled={disabled}
+              value={form.name}
+              onChange={(e) => set("name", e.target.value)}
             />
-            <RequiredMessageField
-              label="Mensagem de transbordo ao atendimento humano"
-              helper="Enviada uma única vez, quando o ticket é criado para um atendente."
-              value={form.transferMessage}
-              onChange={(v) => set("transferMessage", v)}
-              disabled={disabled}
-            />
-            <RequiredMessageField
-              label="Mensagem de formato não suportado"
-              helper="Enviada quando o cliente manda um tipo de mensagem que o agente não processa."
-              value={form.unsupportedFormatMessage}
-              onChange={(v) => set("unsupportedFormatMessage", v)}
-              disabled={disabled}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Mensagens opcionais</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-5">
-            <ToggleableMessageField
-              label="Mensagem de boas-vindas"
-              value={form.welcomeMessage}
-              enabled={form.welcomeEnabled}
-              onChangeValue={(v) => set("welcomeMessage", v)}
-              onChangeEnabled={(v) => set("welcomeEnabled", v)}
-              disabled={disabled}
-            />
-            <ToggleableMessageField
-              label="Mensagem de fora de horário de atendimento humano"
-              value={form.outOfHoursMessage}
-              enabled={form.outOfHoursEnabled}
-              onChangeValue={(v) => set("outOfHoursMessage", v)}
-              onChangeEnabled={(v) => set("outOfHoursEnabled", v)}
-              disabled={disabled}
-            />
-            <ToggleableMessageField
-              label="Mensagem de finalização"
-              value={form.closingMessage}
-              enabled={form.closingEnabled}
-              onChangeValue={(v) => set("closingMessage", v)}
-              onChangeEnabled={(v) => set("closingEnabled", v)}
-              disabled={disabled}
-            />
-            <ToggleableMessageField
-              label="Mensagem de erro"
-              value={form.errorMessage}
-              enabled={form.errorEnabled}
-              onChangeValue={(v) => set("errorMessage", v)}
-              onChangeEnabled={(v) => set("errorEnabled", v)}
-              disabled={disabled}
-            />
-          </CardContent>
-        </Card>
-
-        {error && <p className="text-destructive text-sm">{error}</p>}
-
-        {canWrite && (
-          <div className="flex justify-end gap-2">
-            <Button type="submit" disabled={saving}>
-              {saving ? "Salvando…" : isNew ? "Criar agente" : "Salvar alterações"}
-            </Button>
           </div>
-        )}
-      </form>
-    </div>
+          <div className="flex items-center justify-between">
+            <Label>Agente ativo</Label>
+            <Switch checked={form.isActive} onCheckedChange={(v) => set("isActive", v)} disabled={disabled} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Mensagens obrigatórias</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-5">
+          <RequiredMessageField
+            label="Mensagem de processando"
+            helper="Enviada enquanto o agente está pensando na resposta."
+            value={form.processingMessage}
+            onChange={(v) => set("processingMessage", v)}
+            disabled={disabled}
+          />
+          <RequiredMessageField
+            label="Mensagem de transbordo ao atendimento humano"
+            helper="Enviada uma única vez, quando o ticket é criado para um atendente."
+            value={form.transferMessage}
+            onChange={(v) => set("transferMessage", v)}
+            disabled={disabled}
+          />
+          <RequiredMessageField
+            label="Mensagem de formato não suportado"
+            helper="Enviada quando o cliente manda um tipo de mensagem que o agente não processa."
+            value={form.unsupportedFormatMessage}
+            onChange={(v) => set("unsupportedFormatMessage", v)}
+            disabled={disabled}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Mensagens opcionais</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-5">
+          <ToggleableMessageField
+            label="Mensagem de boas-vindas"
+            value={form.welcomeMessage}
+            enabled={form.welcomeEnabled}
+            onChangeValue={(v) => set("welcomeMessage", v)}
+            onChangeEnabled={(v) => set("welcomeEnabled", v)}
+            disabled={disabled}
+          />
+          <ToggleableMessageField
+            label="Mensagem de fora de horário de atendimento humano"
+            value={form.outOfHoursMessage}
+            enabled={form.outOfHoursEnabled}
+            onChangeValue={(v) => set("outOfHoursMessage", v)}
+            onChangeEnabled={(v) => set("outOfHoursEnabled", v)}
+            disabled={disabled}
+          />
+          <ToggleableMessageField
+            label="Mensagem de finalização"
+            value={form.closingMessage}
+            enabled={form.closingEnabled}
+            onChangeValue={(v) => set("closingMessage", v)}
+            onChangeEnabled={(v) => set("closingEnabled", v)}
+            disabled={disabled}
+          />
+          <ToggleableMessageField
+            label="Mensagem de erro"
+            value={form.errorMessage}
+            enabled={form.errorEnabled}
+            onChangeValue={(v) => set("errorMessage", v)}
+            onChangeEnabled={(v) => set("errorEnabled", v)}
+            disabled={disabled}
+          />
+        </CardContent>
+      </Card>
+
+      {error && <p className="text-destructive text-sm">{error}</p>}
+
+      {canWrite && (
+        <div className="flex justify-end gap-2">
+          <Button type="submit" disabled={saving}>
+            {saving ? "Salvando…" : isNew ? "Criar agente" : "Salvar alterações"}
+          </Button>
+        </div>
+      )}
+    </form>
   );
 }
