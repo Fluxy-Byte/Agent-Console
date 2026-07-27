@@ -25,14 +25,43 @@ interface TimelineEntry {
   node: ReactNode;
 }
 
+/// Mensagem não guarda quem exatamente respondeu (o Mongo não sabe qual
+/// atendente — só o Postgres, via TicketMessage) — aproxima pelo ticket cuja
+/// janela [createdAt, closedAt] contém o horário da mensagem, já que só um
+/// atendente por vez fica com um ticket em aberto.
+function resolveAttendantName(messageCreatedAt: string, tickets: TicketSummary[]): string {
+  const messageTime = new Date(messageCreatedAt).getTime();
+  const ticket = tickets.find((t) => {
+    const opened = new Date(t.createdAt).getTime();
+    const closed = t.closedAt ? new Date(t.closedAt).getTime() : Infinity;
+    return messageTime >= opened && messageTime <= closed;
+  });
+  return ticket?.assignedUser?.name ?? "Atendente";
+}
+
+function resolveSenderLabel(message: MessageDocument, target: Target, tickets: TicketSummary[]): string {
+  switch (message.senderType) {
+    case "CUSTOMER":
+      return target.name || target.waId;
+    case "AGENT_AI":
+      return target.whatsappChannel?.agent?.name ?? "Agente de IA";
+    case "ATTENDANT":
+      return resolveAttendantName(message.createdAt, tickets);
+    default:
+      return "Sistema";
+  }
+}
+
 /// Intercala as mensagens com marcadores de abertura/encerramento de ticket
 /// no ponto certo da linha do tempo, ordenando tudo por createdAt — os
 /// tickets sempre aparecem independente do filtro de tipo de mensagem
 /// aplicado (são contexto da conversa, não mensagens).
-function buildTimeline(history: MessageDocument[], tickets: TicketSummary[]): TimelineEntry[] {
+function buildTimeline(history: MessageDocument[], tickets: TicketSummary[], target: Target): TimelineEntry[] {
   const entries: TimelineEntry[] = history.map((message) => ({
     createdAt: message.createdAt,
-    node: <MessageBubble key={message._id} message={message} />,
+    node: (
+      <MessageBubble key={message._id} message={message} senderLabel={resolveSenderLabel(message, target, tickets)} />
+    ),
   }));
 
   for (const ticket of tickets) {
@@ -62,7 +91,7 @@ function TicketDivider({ ticketNumber, label }: { ticketNumber: number; label: "
   );
 }
 
-function MessageBubble({ message }: { message: MessageDocument }) {
+function MessageBubble({ message, senderLabel }: { message: MessageDocument; senderLabel: string }) {
   return (
     <div
       className={cn(
@@ -71,7 +100,7 @@ function MessageBubble({ message }: { message: MessageDocument }) {
       )}
     >
       <p className="text-muted-foreground mb-1 text-xs">
-        {message.senderType} · {message.messageType}
+        {senderLabel} · {new Date(message.createdAt).toLocaleString("pt-BR")}
       </p>
       {message.text || message.mediaUrl || "(sem conteúdo)"}
     </div>
@@ -128,6 +157,9 @@ export function TargetDetailPage() {
                   <div key={ticket.id} className="flex items-center justify-between border-b py-1.5 text-sm last:border-0">
                     <span>
                       #{ticket.ticketNumber} · {ticket.queue.name}
+                      {ticket.assignedUser && (
+                        <span className="text-muted-foreground"> · {ticket.assignedUser.email}</span>
+                      )}
                     </span>
                     <Badge variant="outline">{TICKET_STATUS_LABELS[ticket.status]}</Badge>
                   </div>
@@ -163,7 +195,7 @@ export function TargetDetailPage() {
               <p className="text-muted-foreground text-sm">Nenhuma mensagem ainda.</p>
             ) : (
               <div className="flex flex-col gap-2">
-                {buildTimeline(history, target.tickets ?? []).map((entry) => entry.node)}
+                {buildTimeline(history, target.tickets ?? [], target).map((entry) => entry.node)}
               </div>
             )}
           </CardContent>
