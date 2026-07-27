@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { LogIn, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MetadataView } from "@/components/metadata-view";
 import { cn } from "@/lib/utils";
 import type { MessageDocument, MessageType, Target, TicketSummary } from "@/types/domain";
@@ -176,24 +177,30 @@ export function TargetDetailPage() {
                 {!target.tickets || target.tickets.length === 0 ? (
                   <p className="text-muted-foreground text-sm">Nenhum ticket para este contato ainda.</p>
                 ) : (
-                  <div className="flex flex-col gap-2">
-                    {target.tickets.map((ticket) => (
-                      <div key={ticket.id} className="flex flex-col gap-0.5 border-b py-2 text-sm last:border-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <span>
-                            #{ticket.ticketNumber} · {ticket.queue.name}
-                          </span>
-                          <Badge variant="outline" className="shrink-0">
-                            {TICKET_STATUS_LABELS[ticket.status]}
-                          </Badge>
-                        </div>
-                        <p className="text-muted-foreground text-xs">
-                          {ticket.queue.serviceIsland.name}
-                          {ticket.assignedUser && ` · ${ticket.assignedUser.email}`}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Ticket</TableHead>
+                        <TableHead>Fila</TableHead>
+                        <TableHead>Ilha</TableHead>
+                        <TableHead>Atendente</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {target.tickets.map((ticket) => (
+                        <TableRow key={ticket.id}>
+                          <TableCell>#{ticket.ticketNumber}</TableCell>
+                          <TableCell>{ticket.queue.name}</TableCell>
+                          <TableCell>{ticket.queue.serviceIsland.name}</TableCell>
+                          <TableCell>{ticket.assignedUser?.email ?? "—"}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{TICKET_STATUS_LABELS[ticket.status]}</Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 )}
               </CardContent>
             </Card>
