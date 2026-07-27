@@ -13,9 +13,14 @@ import type { Company, Member } from "@/types/domain";
 const ROLE_OPTIONS: MemberRole[] = ["GERENTE", "SUPERVISOR", "ATENDENTE"];
 
 export function BusinessDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id: paramId } = useParams<{ id: string }>();
   const can = useCan();
   const currentUserId = useAppSelector((s) => s.auth.user?.id);
+  // Sem :id na rota (tela "Acessos" do menu lateral, /access) = gerencia a
+  // empresa ativa. Com :id (vindo da lista de empresas) = gerencia a empresa
+  // informada, mesmo que não seja a ativa (ex: administrador navegando).
+  const activeCompanyId = useAppSelector((s) => s.activeCompany?.id);
+  const id = paramId ?? activeCompanyId;
   const { data: company } = useSWR<Company>(id ? `/api/companies/${id}` : null);
   const { data: members, mutate } = useSWR<Member[]>(id ? `/api/companies/${id}/members` : null);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -37,7 +42,7 @@ export function BusinessDetailPage() {
   }
 
   return (
-    <div className="bg-dot-grid min-h-screen p-6">
+    <div className="p-6">
       <div className="mx-auto flex max-w-3xl flex-col gap-6">
         <div>
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">

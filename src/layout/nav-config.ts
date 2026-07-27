@@ -31,6 +31,6 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Configurações",
-    items: [{ label: "Acessos", to: "/business", icon: ShieldCheck, action: PermissionAction.ACCESS_VIEW }],
+    items: [{ label: "Acessos", to: "/access", icon: ShieldCheck, action: PermissionAction.ACCESS_VIEW }],
   },
 ];

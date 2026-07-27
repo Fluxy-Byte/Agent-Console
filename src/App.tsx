@@ -77,6 +77,7 @@ export function App() {
               <Route path="/wc/:id" element={<WhatsappChannelDetailPage />} />
               <Route path="/service-island" element={<ServiceIslandsListPage />} />
               <Route path="/service-island/:id" element={<ServiceIslandDetailPage />} />
+              <Route path="/access" element={<BusinessDetailPage />} />
             </Route>
           </Route>
         </Route>
