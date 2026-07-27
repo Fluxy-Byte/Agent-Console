@@ -160,17 +160,19 @@ export function TargetDetailPage() {
                 ) : (
                   <div className="flex flex-col gap-2">
                     {target.tickets.map((ticket) => (
-                      <div
-                        key={ticket.id}
-                        className="flex items-center justify-between border-b py-1.5 text-sm last:border-0"
-                      >
-                        <span>
-                          #{ticket.ticketNumber} · {ticket.queue.name}
-                          {ticket.assignedUser && (
-                            <span className="text-muted-foreground"> · {ticket.assignedUser.email}</span>
-                          )}
-                        </span>
-                        <Badge variant="outline">{TICKET_STATUS_LABELS[ticket.status]}</Badge>
+                      <div key={ticket.id} className="flex flex-col gap-0.5 border-b py-2 text-sm last:border-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span>
+                            #{ticket.ticketNumber} · {ticket.queue.name}
+                          </span>
+                          <Badge variant="outline" className="shrink-0">
+                            {TICKET_STATUS_LABELS[ticket.status]}
+                          </Badge>
+                        </div>
+                        <p className="text-muted-foreground text-xs">
+                          {ticket.queue.serviceIsland.name}
+                          {ticket.assignedUser && ` · ${ticket.assignedUser.email}`}
+                        </p>
                       </div>
                     ))}
                   </div>

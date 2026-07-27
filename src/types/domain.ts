@@ -87,7 +87,7 @@ export interface TicketSummary {
   id: string;
   ticketNumber: number;
   status: "WAITING" | "IN_PROGRESS" | "CLOSED";
-  queue: { name: string };
+  queue: { name: string; serviceIsland: { id: string; name: string } };
   assignedUser: { id: string; name: string; email: string } | null;
   createdAt: string;
   closedAt: string | null;
