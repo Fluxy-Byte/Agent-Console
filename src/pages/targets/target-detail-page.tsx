@@ -48,6 +48,8 @@ function resolveSenderLabel(message: MessageDocument, target: Target, tickets: T
       return target.whatsappChannel?.agent?.name ?? "Agente de IA";
     case "ATTENDANT":
       return resolveAttendantName(message.createdAt, tickets);
+    case "CAMPAIGN":
+      return `Campanha: ${message.templateName ?? "template"}`;
     default:
       return "Sistema";
   }
@@ -96,6 +98,8 @@ function TicketDivider({ ticketNumber, label }: { ticketNumber: number; label: "
 }
 
 function MessageBubble({ message, senderLabel }: { message: MessageDocument; senderLabel: string }) {
+  const isCampaign = message.senderType === "CAMPAIGN";
+
   return (
     <div
       className={cn(
@@ -103,9 +107,16 @@ function MessageBubble({ message, senderLabel }: { message: MessageDocument; sen
         message.direction === "INBOUND" ? "bg-muted self-start" : "bg-primary/10 self-end",
       )}
     >
-      <p className="text-muted-foreground mb-1 text-xs">
-        {senderLabel} · {new Date(message.createdAt).toLocaleString("pt-BR")}
-      </p>
+      <div className="mb-1 flex items-center gap-1.5">
+        <p className="text-muted-foreground text-xs">
+          {senderLabel} · {new Date(message.createdAt).toLocaleString("pt-BR")}
+        </p>
+        {isCampaign && (
+          <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+            Disparo ativo
+          </Badge>
+        )}
+      </div>
       {message.messageType === "IMAGE" && message.mediaUrl ? (
         <img src={message.mediaUrl} alt={message.text || "Imagem"} className="max-w-full rounded-md" />
       ) : (

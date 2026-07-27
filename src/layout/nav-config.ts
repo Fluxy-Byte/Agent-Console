@@ -1,4 +1,4 @@
-import { Bot, Contact, MessageSquareText, ShieldCheck, Waypoints } from "lucide-react";
+import { Bot, Contact, Megaphone, MessageSquareText, ShieldCheck, Waypoints } from "lucide-react";
 import { PermissionAction } from "@/domain/permission-action";
 
 export interface NavItem {
@@ -16,7 +16,10 @@ export interface NavGroup {
 export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Operações",
-    items: [{ label: "Contatos", to: "/targets", icon: Contact, action: PermissionAction.CONTACTS_VIEW }],
+    items: [
+      { label: "Contatos", to: "/targets", icon: Contact, action: PermissionAction.CONTACTS_VIEW },
+      { label: "Campanhas", to: "/campaigns", icon: Megaphone, action: PermissionAction.CAMPAIGNS_VIEW },
+    ],
   },
   {
     label: "Configurações para WhatsApp",

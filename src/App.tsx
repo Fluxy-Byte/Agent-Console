@@ -7,6 +7,9 @@ import { SignInPage } from "@/pages/auth/signin-page";
 import { SignUpPage } from "@/pages/auth/signup-page";
 import { AgentDetailPage } from "@/pages/agents/agent-detail-page";
 import { AgentsListPage } from "@/pages/agents/agents-list-page";
+import { CampaignDetailPage } from "@/pages/campaigns/campaign-detail-page";
+import { CampaignNewPage } from "@/pages/campaigns/campaign-new-page";
+import { CampaignsListPage } from "@/pages/campaigns/campaigns-list-page";
 import { ServiceIslandDetailPage } from "@/pages/service-islands/service-island-detail-page";
 import { ServiceIslandsListPage } from "@/pages/service-islands/service-islands-list-page";
 import { TargetDetailPage } from "@/pages/targets/target-detail-page";
@@ -53,6 +56,9 @@ export function App() {
               <Route path="/" element={<Navigate to="/targets" replace />} />
               <Route path="/targets" element={<TargetsListPage />} />
               <Route path="/targets/:id" element={<TargetDetailPage />} />
+              <Route path="/campaigns" element={<CampaignsListPage />} />
+              <Route path="/campaigns/new" element={<CampaignNewPage />} />
+              <Route path="/campaigns/:id" element={<CampaignDetailPage />} />
               <Route path="/agents" element={<AgentsListPage />} />
               <Route path="/agents/new" element={<AgentDetailPage />} />
               <Route path="/agents/:id" element={<AgentDetailPage />} />

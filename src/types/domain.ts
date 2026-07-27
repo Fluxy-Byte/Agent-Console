@@ -131,9 +131,75 @@ export type MessageType = "TEXT" | "AUDIO" | "IMAGE" | "DOCUMENT" | "STICKER";
 export interface MessageDocument {
   _id: string;
   direction: "INBOUND" | "OUTBOUND";
-  senderType: "CUSTOMER" | "AGENT_AI" | "ATTENDANT" | "SYSTEM";
+  senderType: "CUSTOMER" | "AGENT_AI" | "ATTENDANT" | "SYSTEM" | "CAMPAIGN";
   messageType: MessageType;
   text?: string;
   mediaUrl?: string;
+  campaignId?: string;
+  templateName?: string;
   createdAt: string;
+}
+
+export type TemplateCategory = "MARKETING" | "UTILITY" | "AUTHENTICATION";
+
+export interface TemplateComponent {
+  type: "HEADER" | "BODY" | "FOOTER" | "BUTTONS";
+  format?: string;
+  text?: string;
+  buttons?: { type: string; text: string }[];
+}
+
+export interface Template {
+  id: string;
+  name: string;
+  category: TemplateCategory;
+  language: string;
+  status: string;
+  components: TemplateComponent[];
+  variableCount: { header: number; body: number };
+}
+
+export type CampaignStatus = "PROCESSING" | "COMPLETED";
+export type CampaignDispatchType = "CSV" | "MANUAL";
+
+export interface CampaignListItem {
+  id: string;
+  name: string;
+  category: TemplateCategory | null;
+  templateName: string;
+  status: CampaignStatus;
+  dispatchType: CampaignDispatchType;
+  expectedContacts: number;
+  totalContacts: number;
+  totalSent: number;
+  totalFailures: number;
+  whatsappChannelId: string;
+  whatsappChannelDisplayNumber: string;
+  agentId: string;
+  agentName: string;
+  createdByName: string | null;
+  createdByEmail: string | null;
+  sentAt: string;
+}
+
+export interface CampaignTargetItem {
+  id: string;
+  targetId: string;
+  targetName: string | null;
+  targetPhone: string | null;
+  status: string;
+  messageId: string | null;
+  variables: { header?: { text: string }[]; body?: { text: string }[]; button?: { text: string }[] } | null;
+  createdAt: string;
+}
+
+export interface CampaignDetail extends CampaignListItem {
+  targets: CampaignTargetItem[];
+}
+
+export interface CampaignListResult {
+  items: CampaignListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
 }
