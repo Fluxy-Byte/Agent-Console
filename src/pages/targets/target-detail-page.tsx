@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
+import { LogIn, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetadataView } from "@/components/metadata-view";
 import { cn } from "@/lib/utils";
-import type { MessageDocument, MessageType, Target } from "@/types/domain";
+import type { MessageDocument, MessageType, Target, TicketSummary } from "@/types/domain";
 
 const STATUS_LABELS: Record<string, string> = { AI: "IA", HUMAN: "Humano", FINISHED: "Finalizado" };
 const TICKET_STATUS_LABELS: Record<string, string> = { WAITING: "Aguardando", IN_PROGRESS: "Em andamento", CLOSED: "Encerrado" };
@@ -18,6 +19,64 @@ const TYPE_FILTERS: { value: MessageType | ""; label: string }[] = [
   { value: "DOCUMENT", label: "Documento" },
   { value: "IMAGE", label: "Foto" },
 ];
+
+interface TimelineEntry {
+  createdAt: string;
+  node: ReactNode;
+}
+
+/// Intercala as mensagens com marcadores de abertura/encerramento de ticket
+/// no ponto certo da linha do tempo, ordenando tudo por createdAt — os
+/// tickets sempre aparecem independente do filtro de tipo de mensagem
+/// aplicado (são contexto da conversa, não mensagens).
+function buildTimeline(history: MessageDocument[], tickets: TicketSummary[]): TimelineEntry[] {
+  const entries: TimelineEntry[] = history.map((message) => ({
+    createdAt: message.createdAt,
+    node: <MessageBubble key={message._id} message={message} />,
+  }));
+
+  for (const ticket of tickets) {
+    entries.push({
+      createdAt: ticket.createdAt,
+      node: <TicketDivider key={`${ticket.id}-open`} ticketNumber={ticket.ticketNumber} label="Abertura" />,
+    });
+    if (ticket.closedAt) {
+      entries.push({
+        createdAt: ticket.closedAt,
+        node: <TicketDivider key={`${ticket.id}-close`} ticketNumber={ticket.ticketNumber} label="Encerramento" />,
+      });
+    }
+  }
+
+  return entries.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+}
+
+function TicketDivider({ ticketNumber, label }: { ticketNumber: number; label: "Abertura" | "Encerramento" }) {
+  return (
+    <div className="flex items-center justify-center py-1">
+      <Badge variant="outline" className="bg-background text-muted-foreground gap-1.5 font-normal">
+        {label === "Abertura" ? <LogIn className="size-3" /> : <LogOut className="size-3" />}
+        #{ticketNumber} - {label}
+      </Badge>
+    </div>
+  );
+}
+
+function MessageBubble({ message }: { message: MessageDocument }) {
+  return (
+    <div
+      className={cn(
+        "max-w-[80%] rounded-lg px-3 py-2 text-sm",
+        message.direction === "INBOUND" ? "bg-muted self-start" : "bg-primary/10 self-end",
+      )}
+    >
+      <p className="text-muted-foreground mb-1 text-xs">
+        {message.senderType} · {message.messageType}
+      </p>
+      {message.text || message.mediaUrl || "(sem conteúdo)"}
+    </div>
+  );
+}
 
 export function TargetDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -104,22 +163,7 @@ export function TargetDetailPage() {
               <p className="text-muted-foreground text-sm">Nenhuma mensagem ainda.</p>
             ) : (
               <div className="flex flex-col gap-2">
-                {history.map((message) => (
-                  <div
-                    key={message._id}
-                    className={cn(
-                      "max-w-[80%] rounded-lg px-3 py-2 text-sm",
-                      message.direction === "INBOUND"
-                        ? "bg-muted self-start"
-                        : "bg-primary/10 self-end",
-                    )}
-                  >
-                    <p className="text-muted-foreground mb-1 text-xs">
-                      {message.senderType} · {message.messageType}
-                    </p>
-                    {message.text || message.mediaUrl || "(sem conteúdo)"}
-                  </div>
-                ))}
+                {buildTimeline(history, target.tickets ?? []).map((entry) => entry.node)}
               </div>
             )}
           </CardContent>
