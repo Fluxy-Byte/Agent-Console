@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { ChevronsLeft, ChevronsRight, LogOut } from "lucide-react";
+import fluxyLogo from "@/assets/Logo.png";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useCan } from "@/hooks/use-can";
@@ -34,10 +35,8 @@ export function AppShell() {
         )}
       >
         <div className="flex h-14 items-center gap-2 px-4">
-          <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-lg font-semibold">
-            F
-          </div>
-          {!collapsed && <span className="font-[family-name:var(--font-display)] font-semibold">Fluxy</span>}
+          <img src={fluxyLogo} alt="Fluxy" className="size-8 shrink-0 rounded-lg" />
+          {!collapsed && <span className="font-[family-name:var(--font-display)] font-semibold">Fluxy Agents</span>}
         </div>
 
         <nav className="flex-1 overflow-y-auto px-2 py-2">
