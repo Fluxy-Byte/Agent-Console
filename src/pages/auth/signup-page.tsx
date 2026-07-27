@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { refreshSessionState } from "@/hooks/use-bootstrap-session";
 import { signUp } from "@/lib/auth-client";
 import { useAppDispatch } from "@/store/hooks";
@@ -42,16 +43,16 @@ export function SignUpPage() {
 
   return (
     <AuthLayout>
-      <Card className="w-full max-w-sm">
+      <Card className="w-full max-w-sm shadow-xl">
         <CardHeader>
-          <CardTitle>Criar conta</CardTitle>
+          <CardTitle className="text-xl">Criar conta</CardTitle>
           <CardDescription>Comece a configurar seus agentes de IA no WhatsApp.</CardDescription>
         </CardHeader>
         <CardContent>
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="name">Nome</Label>
-              <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
+              <Input id="name" required placeholder="Seu nome" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="email">E-mail</Label>
@@ -60,24 +61,25 @@ export function SignUpPage() {
                 type="email"
                 required
                 autoComplete="email"
+                placeholder="voce@empresa.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="password">Senha</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 required
                 minLength={8}
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <span className="text-muted-foreground text-xs">Mínimo de 8 caracteres.</span>
             </div>
             {error && <p className="text-destructive text-sm">{error}</p>}
-            <Button type="submit" disabled={loading} className="mt-2">
+            <Button type="submit" disabled={loading} className="mt-2" size="lg">
               {loading ? "Criando..." : "Criar conta"}
             </Button>
           </form>

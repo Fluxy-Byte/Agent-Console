@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { refreshSessionState } from "@/hooks/use-bootstrap-session";
 import { signIn } from "@/lib/auth-client";
 import { useAppDispatch } from "@/store/hooks";
@@ -37,9 +38,9 @@ export function SignInPage() {
 
   return (
     <AuthLayout>
-      <Card className="w-full max-w-sm">
+      <Card className="w-full max-w-sm shadow-xl">
         <CardHeader>
-          <CardTitle>Entrar</CardTitle>
+          <CardTitle className="text-xl">Bem-vindo de volta</CardTitle>
           <CardDescription>Acesse o painel de gestão de agentes de IA.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -51,15 +52,20 @@ export function SignInPage() {
                 type="email"
                 required
                 autoComplete="email"
+                placeholder="voce@empresa.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="password">Senha</Label>
-              <Input
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Senha</Label>
+                <Link to="/forgot-password" className="text-primary text-xs font-medium hover:underline">
+                  Esqueceu a senha?
+                </Link>
+              </div>
+              <PasswordInput
                 id="password"
-                type="password"
                 required
                 autoComplete="current-password"
                 value={password}
@@ -67,7 +73,7 @@ export function SignInPage() {
               />
             </div>
             {error && <p className="text-destructive text-sm">{error}</p>}
-            <Button type="submit" disabled={loading} className="mt-2">
+            <Button type="submit" disabled={loading} className="mt-2" size="lg">
               {loading ? "Entrando..." : "Entrar"}
             </Button>
           </form>

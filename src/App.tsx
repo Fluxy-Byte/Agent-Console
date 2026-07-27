@@ -3,6 +3,8 @@ import { Toaster } from "sonner";
 import { AppShell } from "@/layout/app-shell";
 import { BusinessDetailPage } from "@/pages/business/business-detail-page";
 import { BusinessListPage } from "@/pages/business/business-list-page";
+import { ForgotPasswordPage } from "@/pages/auth/forgot-password-page";
+import { ResetPasswordPage } from "@/pages/auth/reset-password-page";
 import { SignInPage } from "@/pages/auth/signin-page";
 import { SignUpPage } from "@/pages/auth/signup-page";
 import { AgentDetailPage } from "@/pages/agents/agent-detail-page";
@@ -46,6 +48,15 @@ export function App() {
             </RedirectIfBootstrapped>
           }
         />
+        <Route
+          path="/forgot-password"
+          element={
+            <RedirectIfBootstrapped>
+              <ForgotPasswordPage />
+            </RedirectIfBootstrapped>
+          }
+        />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route element={<RequireAuth />}>
           <Route path="/business" element={<BusinessListPage />} />
