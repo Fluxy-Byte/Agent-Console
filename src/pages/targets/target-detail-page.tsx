@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MetadataView } from "@/components/metadata-view";
 import { cn } from "@/lib/utils";
 import type { MessageDocument, MessageType, Target } from "@/types/domain";
 
@@ -31,8 +32,6 @@ export function TargetDetailPage() {
 
   if (!target) return <div className="p-6 text-sm text-muted-foreground">Carregando…</div>;
 
-  const metadataEntries = target.metadata ? Object.entries(target.metadata) : [];
-
   return (
     <div className="p-6">
       <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -53,18 +52,7 @@ export function TargetDetailPage() {
             <CardTitle>Metadados</CardTitle>
           </CardHeader>
           <CardContent>
-            {metadataEntries.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Nenhum metadado registrado ainda.</p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {metadataEntries.map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between border-b py-1.5 text-sm last:border-0">
-                    <span className="text-muted-foreground">{key}</span>
-                    <span className="font-medium">{String(value)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <MetadataView metadata={target.metadata} />
           </CardContent>
         </Card>
 
