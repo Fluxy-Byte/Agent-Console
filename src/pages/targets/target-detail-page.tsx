@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
 import { LogIn, LogOut } from "lucide-react";
@@ -116,6 +116,24 @@ export function TargetDetailPage() {
   const { data: target } = useSWR<Target>(id ? `/api/targets/${id}` : null);
   const [messageType, setMessageType] = useState<MessageType | "">("");
 
+  // CSS grid stretch não dá conta disso: um item com height:100% dentro de
+  // uma trilha auto-sized entra num ciclo de medição que o navegador resolve
+  // usando a altura NATURAL (não cortada) do conteúdo pra dimensionar a
+  // trilha — ou seja, o histórico crescia junto em vez de cortar com scroll.
+  // Medindo a coluna esquerda de verdade e aplicando como max-height fixo no
+  // card da direita elimina esse ciclo.
+  const leftColumnRef = useRef<HTMLDivElement>(null);
+  const [leftHeight, setLeftHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const el = leftColumnRef.current;
+    if (!el) return;
+
+    const observer = new ResizeObserver(([entry]) => setLeftHeight(entry.contentRect.height));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const historyParams = new URLSearchParams({ limit: "200" });
   if (messageType) historyParams.set("messageType", messageType);
   const { data: history } = useSWR<MessageDocument[]>(
@@ -139,8 +157,8 @@ export function TargetDetailPage() {
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:items-stretch">
-          <div className="flex flex-col gap-6">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:items-start">
+          <div ref={leftColumnRef} className="flex flex-col gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Metadados</CardTitle>
@@ -181,10 +199,10 @@ export function TargetDetailPage() {
             </Card>
           </div>
 
-          {/* min-h-0 no Card e no CardContent é o que permite o histórico rolar
-              por dentro em vez de esticar a coluna além da altura da esquerda —
-              o grid (items-stretch, padrão) já iguala as duas colunas. */}
-          <Card className="flex min-h-0 flex-col lg:h-full">
+          <Card
+            className="flex min-h-0 flex-col lg:max-h-[var(--history-max-h)]"
+            style={{ "--history-max-h": leftHeight ? `${leftHeight}px` : "none" } as CSSProperties}
+          >
             <CardHeader>
               <CardTitle>Histórico de conversas</CardTitle>
             </CardHeader>
