@@ -33,6 +33,24 @@ export interface Agent {
   errorMessage: string;
   errorEnabled: boolean;
   defaultQueueId: string | null;
+  personality: string | null;
+  ragEnabled: boolean;
+  ragChunkSize: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type RagDocumentStatus = "PROCESSING" | "READY" | "FAILED";
+
+export interface RagDocument {
+  id: string;
+  agentId: string;
+  fileName: string;
+  categories: string[];
+  chunkSize: number;
+  status: RagDocumentStatus;
+  chunkCount: number | null;
+  errorMessage: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -44,3 +44,7 @@ export function DialogTitle({ className, ...props }: React.ComponentProps<typeof
 export function DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>) {
   return <DialogPrimitive.Description className={cn("text-muted-foreground text-sm", className)} {...props} />;
 }
+
+export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn("mt-4 flex justify-end gap-2", className)} {...props} />;
+}

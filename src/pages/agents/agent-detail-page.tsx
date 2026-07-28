@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { toast } from "sonner";
+import { FileText, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,10 +11,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { RagDocumentsDialog, type RagUploadBatch } from "@/components/rag-documents-dialog";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
 import { api, ApiError } from "@/lib/api";
-import type { Agent } from "@/types/domain";
+import type { Agent, RagDocument } from "@/types/domain";
+
+const RAG_STATUS_BADGE: Record<RagDocument["status"], { label: string; variant: "warning" | "success" | "destructive" }> = {
+  PROCESSING: { label: "Processando...", variant: "warning" },
+  READY: { label: "Pronto", variant: "success" },
+  FAILED: { label: "Falhou", variant: "destructive" },
+};
+
+async function uploadRagBatch(agentId: string, batch: RagUploadBatch): Promise<void> {
+  for (const file of batch.files) {
+    const { uploadUrl, s3Key } = await api.post<{ uploadUrl: string; s3Key: string }>(
+      `/api/agents/${agentId}/rag/presign`,
+      { fileName: file.name, contentType: file.type },
+    );
+    await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+    await api.post(`/api/agents/${agentId}/rag/documents`, {
+      fileName: file.name,
+      s3Key,
+      categories: batch.categories,
+      chunkSize: batch.chunkSize,
+    });
+  }
+}
 
 interface FormState {
   name: string;
@@ -28,6 +53,9 @@ interface FormState {
   closingEnabled: boolean;
   errorMessage: string;
   errorEnabled: boolean;
+  personality: string;
+  ragEnabled: boolean;
+  ragChunkSize: number;
 }
 
 const EMPTY_FORM: FormState = {
@@ -51,6 +79,9 @@ const EMPTY_FORM: FormState = {
   errorMessage:
     "Peço desculpas, mas encontrei um problema inesperado ao tentar processar sua solicitação. Poderia tentar novamente, por favor? Caso o problema persista, um de nossos atendentes poderá te ajudar diretamente.",
   errorEnabled: true,
+  personality: "Comunique-se de forma cordial, clara e objetiva, como um atendente profissional e prestativo.",
+  ragEnabled: false,
+  ragChunkSize: 500,
 };
 
 function toForm(agent: Agent): FormState {
@@ -68,6 +99,9 @@ function toForm(agent: Agent): FormState {
     closingEnabled: agent.closingEnabled,
     errorMessage: agent.errorMessage,
     errorEnabled: agent.errorEnabled,
+    personality: agent.personality ?? "",
+    ragEnabled: agent.ragEnabled,
+    ragChunkSize: agent.ragChunkSize ?? 500,
   };
 }
 
@@ -142,6 +176,17 @@ export function AgentDetailPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Modo criação: ainda não existe agentId pra vincular um RagDocument, então
+  // os lotes ficam "preparados" aqui e só são enviados de verdade depois que
+  // o agente é criado (ver handleSubmit).
+  const [pendingRagUploads, setPendingRagUploads] = useState<RagUploadBatch[]>([]);
+  const [uploadingRag, setUploadingRag] = useState(false);
+
+  const { data: ragDocuments, mutate: mutateRagDocuments } = useSWR<RagDocument[]>(
+    !isNew && id ? `/api/agents/${id}/rag/documents` : null,
+    { refreshInterval: (data) => (data?.some((d) => d.status === "PROCESSING") ? 3000 : 0) },
+  );
+
   useEffect(() => {
     if (agent) setForm(toForm(agent));
   }, [agent]);
@@ -153,6 +198,27 @@ export function AgentDetailPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  async function handleAttachDocuments(batch: RagUploadBatch) {
+    set("ragChunkSize", batch.chunkSize);
+
+    if (isNew) {
+      setPendingRagUploads((prev) => [...prev, batch]);
+      toast.success(`${batch.files.length} arquivo(s) preparado(s) — serão enviados ao criar o agente.`);
+      return;
+    }
+
+    setUploadingRag(true);
+    try {
+      await uploadRagBatch(id!, batch);
+      await mutateRagDocuments();
+      toast.success("Documentos anexados — processando em segundo plano.");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Não foi possível anexar os documentos.");
+    } finally {
+      setUploadingRag(false);
+    }
+  }
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
@@ -160,6 +226,15 @@ export function AgentDetailPage() {
     try {
       if (isNew) {
         const created = await api.post<Agent>("/api/agents", form);
+
+        for (const batch of pendingRagUploads) {
+          try {
+            await uploadRagBatch(created.id, batch);
+          } catch {
+            toast.error(`Não foi possível anexar ${batch.files.map((f) => f.name).join(", ")}.`);
+          }
+        }
+
         toast.success("Agente criado.");
         navigate(`/agents/${created.id}`, { replace: true });
       } else {
@@ -210,6 +285,19 @@ export function AgentDetailPage() {
           <div className="flex items-center justify-between">
             <Label>Agente ativo</Label>
             <Switch checked={form.isActive} onCheckedChange={(v) => set("isActive", v)} disabled={disabled} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="agent-personality">Personalidade do seu agente</Label>
+            <p className="text-muted-foreground text-xs">
+              Como o agente deve falar e se comunicar — isso é sempre incluído no prompt de geração de resposta,
+              moldando o tom das mensagens.
+            </p>
+            <Textarea
+              id="agent-personality"
+              disabled={disabled}
+              value={form.personality}
+              onChange={(e) => set("personality", e.target.value)}
+            />
           </div>
         </CardContent>
       </Card>
@@ -280,6 +368,80 @@ export function AgentDetailPage() {
             onChangeEnabled={(v) => set("errorEnabled", v)}
             disabled={disabled}
           />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Base de conhecimento (RAG)</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Ativar RAG</Label>
+              <p className="text-muted-foreground text-xs">
+                O agente consulta os documentos anexados abaixo pra responder com base neles.
+              </p>
+            </div>
+            <Switch checked={form.ragEnabled} onCheckedChange={(v) => set("ragEnabled", v)} disabled={disabled} />
+          </div>
+
+          {form.ragEnabled && (
+            <div className="flex flex-col gap-3">
+              <RagDocumentsDialog
+                defaultChunkSize={form.ragChunkSize}
+                submitting={uploadingRag}
+                onSubmit={handleAttachDocuments}
+                trigger={
+                  <Button type="button" variant="outline" size="sm" disabled={disabled} className="w-fit gap-2">
+                    <Plus className="size-4" /> Anexar documentos
+                  </Button>
+                }
+              />
+
+              {isNew && pendingRagUploads.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  <p className="text-muted-foreground text-xs">
+                    Serão enviados assim que o agente for criado:
+                  </p>
+                  {pendingRagUploads.map((batch, index) => (
+                    <div key={index} className="border-border flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
+                      <FileText className="text-muted-foreground size-4 shrink-0" />
+                      <span className="truncate">{batch.files.map((f) => f.name).join(", ")}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!isNew && (
+                <div className="flex flex-col gap-1.5">
+                  {!ragDocuments || ragDocuments.length === 0 ? (
+                    <p className="text-muted-foreground text-sm">Nenhum documento anexado ainda.</p>
+                  ) : (
+                    ragDocuments.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="border-border flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm"
+                      >
+                        <div className="flex min-w-0 items-center gap-2">
+                          <FileText className="text-muted-foreground size-4 shrink-0" />
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">{doc.fileName}</p>
+                            {doc.categories.length > 0 && (
+                              <p className="text-muted-foreground truncate text-xs">{doc.categories.join(", ")}</p>
+                            )}
+                          </div>
+                        </div>
+                        <Badge variant={RAG_STATUS_BADGE[doc.status].variant}>
+                          {RAG_STATUS_BADGE[doc.status].label}
+                        </Badge>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
