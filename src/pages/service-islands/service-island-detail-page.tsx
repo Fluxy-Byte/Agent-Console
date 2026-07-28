@@ -2,13 +2,25 @@ import { type FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { toast } from "sonner";
-import { Pencil, Plus, Users } from "lucide-react";
+import { Pencil, Plus, Trash2, Users } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
@@ -16,6 +28,7 @@ import { api, ApiError } from "@/lib/api";
 import { useAppSelector } from "@/store/hooks";
 import type { IslandTicket, Member, ServiceIsland } from "@/types/domain";
 import { QueueFormDialog } from "./queue-form-dialog";
+import { TagFormDialog } from "./tag-form-dialog";
 
 const DAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const TICKET_STATUS_LABELS: Record<string, string> = { WAITING: "Aguardando", IN_PROGRESS: "Em andamento", CLOSED: "Encerrado" };
@@ -34,13 +47,19 @@ export function ServiceIslandDetailPage() {
 
   const canRenameIsland = can(PermissionAction.SERVICE_ISLANDS_WRITE);
   const canManageQueues = can(PermissionAction.QUEUES_WRITE);
+  const canManageTags = can(PermissionAction.QUEUES_WRITE);
 
   const [name, setName] = useState("");
+  const [requireCloseTag, setRequireCloseTag] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deletingTagId, setDeletingTagId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (island) setName(island.name);
+    if (island) {
+      setName(island.name);
+      setRequireCloseTag(island.requireCloseTag);
+    }
   }, [island]);
 
   async function handleRename(event: FormEvent) {
@@ -48,13 +67,26 @@ export function ServiceIslandDetailPage() {
     setError(null);
     setSaving(true);
     try {
-      await api.put(`/api/service-islands/${id}`, { name });
+      await api.put(`/api/service-islands/${id}`, { name, requireCloseTag });
       await mutate();
-      toast.success("Ilha renomeada.");
+      toast.success("Ilha atualizada.");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Não foi possível renomear.");
+      setError(err instanceof ApiError ? err.message : "Não foi possível salvar.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDeleteTag(tagId: string) {
+    setDeletingTagId(tagId);
+    try {
+      await api.delete(`/api/service-islands/${id}/tags/${tagId}`);
+      await mutate();
+      toast.success("Tag excluída.");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Não foi possível excluir a tag.");
+    } finally {
+      setDeletingTagId(null);
     }
   }
 
@@ -69,22 +101,35 @@ export function ServiceIslandDetailPage() {
           <CardTitle>Ilha de atendimento</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleRename} className="flex items-end gap-3">
-            <div className="flex flex-1 flex-col gap-1.5">
-              <Label htmlFor="island-name">Nome</Label>
-              <Input
-                id="island-name"
-                value={name}
-                disabled={!canRenameIsland || saving}
-                onChange={(e) => setName(e.target.value)}
-              />
+          <form onSubmit={handleRename} className="flex flex-col gap-4">
+            <div className="flex items-end gap-3">
+              <div className="flex flex-1 flex-col gap-1.5">
+                <Label htmlFor="island-name">Nome</Label>
+                <Input
+                  id="island-name"
+                  value={name}
+                  disabled={!canRenameIsland || saving}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              {canRenameIsland && (
+                <Button type="submit" disabled={saving}>
+                  {saving ? "Salvando…" : "Salvar"}
+                </Button>
+              )}
             </div>
-            {canRenameIsland && (
-              <Button type="submit" disabled={saving}>
-                {saving ? "Salvando…" : "Salvar"}
-              </Button>
-            )}
+
+            <div className="flex items-center justify-between border-t pt-4">
+              <div>
+                <Label>Exigir tag ao encerrar</Label>
+                <p className="text-muted-foreground text-xs">
+                  Atendentes não conseguem encerrar um ticket de nenhuma fila desta ilha sem escolher uma tag.
+                </p>
+              </div>
+              <Switch checked={requireCloseTag} disabled={!canRenameIsland || saving} onCheckedChange={setRequireCloseTag} />
+            </div>
           </form>
+
           {error && <p className="text-destructive mt-2 text-sm">{error}</p>}
           <p className="text-muted-foreground mt-3 text-xs">
             Canal: {island.whatsappChannel?.displayNumber}
@@ -154,6 +199,70 @@ export function ServiceIslandDetailPage() {
         )}
       </div>
 
+      <div className="flex items-center justify-between">
+        <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold">Tags de fechamento</h2>
+        {canManageTags && (
+          <TagFormDialog
+            serviceIslandId={island.id}
+            onSaved={() => mutate()}
+            trigger={
+              <Button size="sm">
+                <Plus className="size-4" /> Nova tag
+              </Button>
+            }
+          />
+        )}
+      </div>
+
+      <Card>
+        <CardContent className="flex flex-col gap-2 p-4">
+          {island.closeTags?.map((tag) => (
+            <div key={tag.id} className="flex items-center justify-between gap-2 rounded-md border px-3 py-2">
+              <p className="text-sm font-medium">{tag.name}</p>
+              {canManageTags && (
+                <div className="flex items-center gap-2">
+                  <TagFormDialog
+                    serviceIslandId={island.id}
+                    tag={tag}
+                    onSaved={() => mutate()}
+                    trigger={
+                      <Button size="sm" variant="outline">
+                        <Pencil className="size-4" /> Editar
+                      </Button>
+                    }
+                  />
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="destructive" disabled={deletingTagId === tag.id}>
+                        <Trash2 className="size-4" /> Excluir
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir tag "{tag.name}"?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tickets já encerrados com essa tag mantêm o histórico, mas ela deixa de aparecer como opção
+                          para novos encerramentos. Esta ação não pode ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction variant="destructive" onClick={() => handleDeleteTag(tag.id)}>
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              )}
+            </div>
+          ))}
+          {island.closeTags && island.closeTags.length === 0 && (
+            <p className="text-muted-foreground text-sm">Nenhuma tag de fechamento cadastrada nesta ilha ainda.</p>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Tickets de atendimento humano</CardTitle>
@@ -170,6 +279,7 @@ export function ServiceIslandDetailPage() {
                   <TableHead>Fila</TableHead>
                   <TableHead>Atendente</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Tag de fechamento</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -186,6 +296,7 @@ export function ServiceIslandDetailPage() {
                     <TableCell>
                       <Badge variant="outline">{TICKET_STATUS_LABELS[ticket.status]}</Badge>
                     </TableCell>
+                    <TableCell>{ticket.closeTag?.name ?? "—"}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

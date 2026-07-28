@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
@@ -57,22 +58,25 @@ export function CampaignsListPage() {
             <Label htmlFor="campaigns-agent" className="text-xs">
               Agente
             </Label>
-            <select
-              id="campaigns-agent"
-              className="border-input bg-background h-9 rounded-md border px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            <Select
               value={agentId}
-              onChange={(e) => {
-                setAgentId(e.target.value);
+              onValueChange={(value) => {
+                setAgentId(value);
                 setPage(1);
               }}
             >
-              <option value={ALL_AGENTS}>Todos os agentes</option>
-              {agents?.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="campaigns-agent" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_AGENTS}>Todos os agentes</SelectItem>
+                {agents?.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           {canWrite && (
             <Button onClick={() => navigate("/campaigns/new")}>

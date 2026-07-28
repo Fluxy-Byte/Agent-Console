@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
 import { api, ApiError } from "@/lib/api";
@@ -68,20 +69,28 @@ export function WhatsappChannelDetailPage() {
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="wc-agent">Agente</Label>
-            <select
-              id="wc-agent"
+            <Select
+              value={form.agentId || channel.agentId}
+              onValueChange={(value) => setForm((f) => ({ ...f, agentId: value }))}
               disabled={!canWrite || saving}
-              className="border-input bg-background h-9 rounded-md border px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              value={form.agentId}
-              onChange={(e) => setForm((f) => ({ ...f, agentId: e.target.value }))}
             >
-              {agents?.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-              {!agents && <option value={form.agentId}>{channel.agent?.name ?? form.agentId}</option>}
-            </select>
+              <SelectTrigger id="wc-agent" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {agents
+                  ? agents.map((a) => (
+                      <SelectItem key={a.id} value={a.id}>
+                        {a.name}
+                      </SelectItem>
+                    ))
+                  : (
+                      <SelectItem value={form.agentId || channel.agentId}>
+                        {channel.agent?.name ?? form.agentId}
+                      </SelectItem>
+                    )}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="wc-phone-number-id">Phone Number ID</Label>

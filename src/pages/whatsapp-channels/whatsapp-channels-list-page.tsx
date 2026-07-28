@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
 import { api, ApiError } from "@/lib/api";
@@ -162,22 +163,18 @@ export function WhatsappChannelsListPage() {
                 <form className="flex flex-col gap-4" onSubmit={handleSearch}>
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="lookup-agent">Agente</Label>
-                    <select
-                      id="lookup-agent"
-                      required
-                      className="border-input bg-background h-9 rounded-md border px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      value={lookupAgentId}
-                      onChange={(e) => setLookupAgentId(e.target.value)}
-                    >
-                      <option value="" disabled>
-                        Selecione um agente
-                      </option>
-                      {agents?.map((a) => (
-                        <option key={a.id} value={a.id}>
-                          {a.name}
-                        </option>
-                      ))}
-                    </select>
+                    <Select value={lookupAgentId} onValueChange={setLookupAgentId}>
+                      <SelectTrigger id="lookup-agent" className="w-full">
+                        <SelectValue placeholder="Selecione um agente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {agents?.map((a) => (
+                          <SelectItem key={a.id} value={a.id}>
+                            {a.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="lookup-waba-id">WhatsApp Business Account ID</Label>
@@ -251,22 +248,18 @@ export function WhatsappChannelsListPage() {
                 <form className="flex flex-col gap-4" onSubmit={handleCreate}>
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="wc-agent">Agente</Label>
-                    <select
-                      id="wc-agent"
-                      required
-                      className="border-input bg-background h-9 rounded-md border px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      value={agentId}
-                      onChange={(e) => setAgentId(e.target.value)}
-                    >
-                      <option value="" disabled>
-                        Selecione um agente
-                      </option>
-                      {agents?.map((a) => (
-                        <option key={a.id} value={a.id}>
-                          {a.name}
-                        </option>
-                      ))}
-                    </select>
+                    <Select value={agentId} onValueChange={setAgentId}>
+                      <SelectTrigger id="wc-agent" className="w-full">
+                        <SelectValue placeholder="Selecione um agente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {agents?.map((a) => (
+                          <SelectItem key={a.id} value={a.id}>
+                            {a.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="wc-phone-number-id">Phone Number ID</Label>
@@ -291,7 +284,7 @@ export function WhatsappChannelsListPage() {
                     <Input id="wc-waba-id" required value={wabaId} onChange={(e) => setWabaId(e.target.value)} />
                   </div>
                   {error && <p className="text-destructive text-sm">{error}</p>}
-                  <Button type="submit" disabled={saving}>
+                  <Button type="submit" disabled={saving || !agentId}>
                     {saving ? "Criando…" : "Criar canal"}
                   </Button>
                 </form>

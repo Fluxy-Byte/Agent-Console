@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Agent, TargetListResult } from "@/types/domain";
 
 const STATUS_LABELS: Record<string, string> = { AI: "IA", HUMAN: "Humano", FINISHED: "Finalizado" };
@@ -42,22 +43,25 @@ export function TargetsListPage() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="filter-agent">Agente</Label>
-            <select
-              id="filter-agent"
-              className="border-input bg-background h-9 rounded-md border px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              value={agentId}
-              onChange={(e) => {
-                setAgentId(e.target.value);
+            <Select
+              value={agentId || "all"}
+              onValueChange={(value) => {
+                setAgentId(value === "all" ? "" : value);
                 setPage(1);
               }}
             >
-              <option value="">Todos</option>
-              {agents?.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="filter-agent" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {agents?.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="filter-name">Nome</Label>

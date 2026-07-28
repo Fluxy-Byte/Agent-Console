@@ -4,7 +4,7 @@ import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { api } from "@/lib/api";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction, ROLE_LABELS, type MemberRole } from "@/domain/permission-action";
@@ -76,20 +76,22 @@ export function BusinessDetailPage() {
                 </div>
 
                 {canWrite ? (
-                  <select
-                    className={cn(
-                      "border-input bg-background rounded-md border px-2 py-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    )}
+                  <Select
                     value={member.role}
                     disabled={savingId === member.id}
-                    onChange={(e) => handleRoleChange(member.id, e.target.value as MemberRole)}
+                    onValueChange={(value) => handleRoleChange(member.id, value as MemberRole)}
                   >
-                    {ROLE_OPTIONS.map((role) => (
-                      <option key={role} value={role}>
-                        {ROLE_LABELS[role]}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger size="sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ROLE_OPTIONS.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {ROLE_LABELS[role]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 ) : (
                   <Badge variant="outline">{ROLE_LABELS[member.role]}</Badge>
                 )}

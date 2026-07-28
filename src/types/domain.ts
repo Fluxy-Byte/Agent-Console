@@ -68,15 +68,25 @@ export interface WhatsappChannel {
   agent?: Agent;
 }
 
+export interface TicketCloseTag {
+  id: string;
+  serviceIslandId: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ServiceIsland {
   id: string;
   organizationId: string;
   whatsappChannelId: string;
   name: string;
+  requireCloseTag: boolean;
   createdAt: string;
   updatedAt: string;
   whatsappChannel?: WhatsappChannel;
   queues?: Queue[];
+  closeTags?: TicketCloseTag[];
 }
 
 export interface QueueMember {
@@ -133,6 +143,7 @@ export interface IslandTicket {
   target: { id: string; name: string | null; waId: string };
   queue: { id: string; name: string };
   assignedUser: { id: string; name: string; email: string } | null;
+  closeTag: { id: string; name: string } | null;
   createdAt: string;
   closedAt: string | null;
 }

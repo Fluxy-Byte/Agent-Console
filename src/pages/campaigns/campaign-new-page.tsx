@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { api, ApiError } from "@/lib/api";
@@ -257,38 +258,33 @@ export function CampaignNewPage() {
         <CardContent className="flex flex-col gap-4 sm:flex-row">
           <div className="flex flex-1 flex-col gap-1.5">
             <Label>Agente</Label>
-            <select
-              className="border-input bg-background h-9 rounded-md border px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              value={agentId}
-              onChange={(e) => setAgentId(e.target.value)}
-            >
-              <option value="" disabled>
-                Selecione um agente
-              </option>
-              {agents?.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
+            <Select value={agentId} onValueChange={setAgentId}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecione um agente" />
+              </SelectTrigger>
+              <SelectContent>
+                {agents?.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-1 flex-col gap-1.5">
             <Label>WhatsApp Channel</Label>
-            <select
-              className="border-input bg-background h-9 rounded-md border px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-              value={whatsappChannelId}
-              onChange={(e) => setWhatsappChannelId(e.target.value)}
-              disabled={!agentId}
-            >
-              <option value="" disabled>
-                Selecione um canal
-              </option>
-              {channelsForAgent.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.displayNumber}
-                </option>
-              ))}
-            </select>
+            <Select value={whatsappChannelId} onValueChange={setWhatsappChannelId} disabled={!agentId}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecione um canal" />
+              </SelectTrigger>
+              <SelectContent>
+                {channelsForAgent.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.displayNumber}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
