@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
+import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
@@ -44,6 +45,11 @@ export function BusinessDetailPage() {
   return (
     <div className="p-6">
       <div className="mx-auto flex max-w-3xl flex-col gap-6">
+        {/* Sem :id (rota /access, vinda do menu lateral) = trilha fixa "Acessos".
+            Com :id (vindo da lista de empresas em /business) essa página não
+            faz parte do fluxo com sidebar, então não mostramos breadcrumb. */}
+        {!paramId && <PageBreadcrumb items={[{ label: "Acessos" }]} />}
+
         <div>
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
             {company?.name ?? "Empresa"}

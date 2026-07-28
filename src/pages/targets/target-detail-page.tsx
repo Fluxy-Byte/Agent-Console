@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MetadataView } from "@/components/metadata-view";
+import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { cn } from "@/lib/utils";
 import type { MessageDocument, MessageType, Target, TicketSummary } from "@/types/domain";
 
@@ -141,6 +142,8 @@ export function TargetDetailPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
+      <PageBreadcrumb items={[{ label: "Contatos", to: "/targets" }, { label: target.name || target.waId }]} />
+
       <div>
         <div className="flex items-center gap-2">
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">

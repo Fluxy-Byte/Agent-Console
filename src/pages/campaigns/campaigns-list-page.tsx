@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import { Megaphone, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -42,6 +43,8 @@ export function CampaignsListPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
+      <PageBreadcrumb items={[{ label: "Campanhas" }]} />
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Campanhas</h1>

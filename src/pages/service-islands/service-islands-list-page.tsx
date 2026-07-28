@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import { Waypoints } from "lucide-react";
+import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ServiceIsland } from "@/types/domain";
 
@@ -10,6 +11,8 @@ export function ServiceIslandsListPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
+      <PageBreadcrumb items={[{ label: "Ilhas de Atendimento" }]} />
+
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Ilhas de Atendimento</h1>
         <p className="text-muted-foreground mt-1 text-sm">

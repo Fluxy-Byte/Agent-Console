@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import { Bot, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useCan } from "@/hooks/use-can";
@@ -15,6 +16,8 @@ export function AgentsListPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
+      <PageBreadcrumb items={[{ label: "Agentes" }]} />
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Agentes</h1>

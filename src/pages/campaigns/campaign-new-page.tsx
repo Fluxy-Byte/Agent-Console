@@ -5,6 +5,7 @@ import Papa from "papaparse";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle2, Download, FileSpreadsheet, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -239,6 +240,8 @@ export function CampaignNewPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-6">
+      <PageBreadcrumb items={[{ label: "Campanhas", to: "/campaigns" }, { label: "Nova campanha" }]} />
+
       <Button variant="ghost" size="sm" onClick={() => navigate("/campaigns")} className="w-fit gap-2 px-2">
         <ArrowLeft className="size-4" /> Voltar
       </Button>

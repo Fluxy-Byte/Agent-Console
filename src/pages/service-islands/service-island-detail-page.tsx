@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { toast } from "sonner";
 import { Pencil, Plus, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -61,6 +62,8 @@ export function ServiceIslandDetailPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
+      <PageBreadcrumb items={[{ label: "Ilhas de Atendimento", to: "/service-island" }, { label: island.name }]} />
+
       <Card>
         <CardHeader>
           <CardTitle>Ilha de atendimento</CardTitle>

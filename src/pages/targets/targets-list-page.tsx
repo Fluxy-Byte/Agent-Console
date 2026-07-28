@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import type { Agent, TargetListResult } from "@/types/domain";
 
 const STATUS_LABELS: Record<string, string> = { AI: "IA", HUMAN: "Humano", FINISHED: "Finalizado" };
@@ -30,6 +31,8 @@ export function TargetsListPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
+      <PageBreadcrumb items={[{ label: "Contatos" }]} />
+
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Contatos</h1>
         <p className="text-muted-foreground mt-1 text-sm">Contatos cadastrados nos WhatsApp Channel desta empresa.</p>
