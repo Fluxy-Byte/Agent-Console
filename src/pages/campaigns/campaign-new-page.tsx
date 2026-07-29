@@ -11,10 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { api, ApiError } from "@/lib/api";
-import type { Agent, Template, WhatsappChannel } from "@/types/domain";
+import type { Agent, ServiceIsland, Template, WhatsappChannel } from "@/types/domain";
 
 interface ParsedRow {
   index: number;
@@ -49,6 +50,7 @@ export function CampaignNewPage() {
 
   const { data: agents } = useSWR<Agent[]>("/api/agents");
   const { data: channels } = useSWR<WhatsappChannel[]>("/api/wc");
+  const { data: islands } = useSWR<ServiceIsland[]>("/api/service-islands");
 
   const [agentId, setAgentId] = useState("");
   const [whatsappChannelId, setWhatsappChannelId] = useState("");
@@ -58,6 +60,11 @@ export function CampaignNewPage() {
   const [campaignName, setCampaignName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [routeToHuman, setRouteToHuman] = useState(false);
+  const [routeToQueueId, setRouteToQueueId] = useState("");
+  const [assignSpecificAttendant, setAssignSpecificAttendant] = useState(false);
+  const [routeToUserId, setRouteToUserId] = useState("");
 
   const [mode, setMode] = useState<"CSV" | "MANUAL">("CSV");
 
@@ -70,6 +77,9 @@ export function CampaignNewPage() {
   const [manualVariables, setManualVariables] = useState<string[]>([]);
 
   const channelsForAgent = channels?.filter((c) => c.agentId === agentId) ?? [];
+  const currentIsland = islands?.find((i) => i.whatsappChannelId === whatsappChannelId);
+  const queuesForIsland = currentIsland?.queues ?? [];
+  const selectedQueue = queuesForIsland.find((q) => q.id === routeToQueueId);
   const selectedTemplate = templates?.find((t) => t.name === templateName) ?? null;
   const headerCount = selectedTemplate?.variableCount.header ?? 0;
   const bodyCount = selectedTemplate?.variableCount.body ?? 0;
@@ -82,7 +92,13 @@ export function CampaignNewPage() {
 
   useEffect(() => {
     setWhatsappChannelId("");
+    setRouteToQueueId("");
   }, [agentId]);
+
+  // Fila muda -> o atendente selecionado pode não pertencer mais a ela.
+  useEffect(() => {
+    setRouteToUserId("");
+  }, [routeToQueueId]);
 
   useEffect(() => {
     setTemplateName("");
@@ -181,7 +197,9 @@ export function CampaignNewPage() {
       !submitting &&
       (mode === "CSV"
         ? rows && rows.length > 0 && invalidRows.length === 0
-        : manualPhoneDigits.length >= 8 && manualErrors.length === 0 && !manualMissingVariable),
+        : manualPhoneDigits.length >= 8 && manualErrors.length === 0 && !manualMissingVariable) &&
+      (!routeToHuman || routeToQueueId) &&
+      (!routeToHuman || !assignSpecificAttendant || routeToUserId),
   );
 
   async function handleSubmit() {
@@ -229,6 +247,8 @@ export function CampaignNewPage() {
         templateHeaderText: headerComponent?.text,
         templateBodyText: bodyComponent?.text,
         contacts,
+        routeToQueueId: routeToHuman ? routeToQueueId : undefined,
+        routeToUserId: routeToHuman && assignSpecificAttendant ? routeToUserId : undefined,
       });
       toast.success("Campanha adicionada à fila de disparo.");
       navigate(`/campaigns/${result.id}`);
@@ -288,6 +308,76 @@ export function CampaignNewPage() {
           </div>
         </CardContent>
       </Card>
+
+      {whatsappChannelId && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Atendimento humano</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Direcionar para atendimento humano</Label>
+                <p className="text-muted-foreground text-xs">
+                  Em vez de continuar com a IA, os contatos atingidos já entram numa fila de atendimento humano.
+                </p>
+              </div>
+              <Switch checked={routeToHuman} onCheckedChange={setRouteToHuman} />
+            </div>
+
+            {routeToHuman && (
+              <>
+                <div className="flex flex-col gap-1.5">
+                  <Label>Fila de atendimento</Label>
+                  <Select value={routeToQueueId} onValueChange={setRouteToQueueId}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecione uma fila" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {queuesForIsland.map((q) => (
+                        <SelectItem key={q.id} value={q.id}>
+                          {q.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {queuesForIsland.length === 0 && (
+                    <p className="text-muted-foreground text-xs">
+                      Nenhuma fila cadastrada na ilha de atendimento deste canal ainda.
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label>Atribuir a um atendente específico</Label>
+                  <Switch checked={assignSpecificAttendant} onCheckedChange={setAssignSpecificAttendant} />
+                </div>
+
+                {assignSpecificAttendant && (
+                  <div className="flex flex-col gap-1.5">
+                    <Label>Atendente</Label>
+                    <Select value={routeToUserId} onValueChange={setRouteToUserId} disabled={!routeToQueueId}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecione um atendente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {selectedQueue?.members.map((m) => (
+                          <SelectItem key={m.userId} value={m.userId}>
+                            {m.user.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedQueue && selectedQueue.members.length === 0 && (
+                      <p className="text-muted-foreground text-xs">Nenhum atendente cadastrado nessa fila ainda.</p>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {whatsappChannelId && (
         <Card>
