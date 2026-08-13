@@ -275,6 +275,26 @@ export interface CampaignTargetItem {
   createdAt: string;
 }
 
+export interface CampaignStats {
+  totalCampaigns: number;
+  completedCampaigns: number;
+  totalMessagesSent: number;
+  totalFailures: number;
+  uniqueContacts: number;
+}
+
+export interface CampaignFilterOptions {
+  templates: string[];
+}
+
+export interface TargetStats {
+  total: number;
+  active: number;
+  interactionsToday: number;
+  lastInteractionAt: string | null;
+  primaryAgentName: string | null;
+}
+
 export interface CampaignDetail extends CampaignListItem {
   targets: CampaignTargetItem[];
 }
