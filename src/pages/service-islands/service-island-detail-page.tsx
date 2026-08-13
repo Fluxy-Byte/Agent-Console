@@ -45,7 +45,7 @@ export function ServiceIslandDetailPage() {
         </TabsContent>
 
         <TabsContent value="history">
-          <HistoryTab islandId={island.id} />
+          <HistoryTab island={island} />
         </TabsContent>
 
         <TabsContent value="queues">

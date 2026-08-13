@@ -142,10 +142,13 @@ export interface Target {
   tickets?: TicketSummary[];
 }
 
+export type TicketCloseReason = "RESOLVED" | "TRANSFERRED_QUEUE" | "TRANSFERRED_AGENT" | "SESSION_EXPIRED" | "ABANDONED";
+
 export interface IslandTicket {
   id: string;
   ticketNumber: number;
   status: "WAITING" | "IN_PROGRESS" | "CLOSED";
+  closeReason: TicketCloseReason | null;
   target: { id: string; name: string | null; waId: string };
   queue: { id: string; name: string };
   assignedUser: { id: string; name: string; email: string } | null;
@@ -178,17 +181,35 @@ export interface TicketCloseTagListResult {
   pageSize: number;
 }
 
+export interface AttendantSummary {
+  userId: string;
+  name: string;
+  email: string;
+  queueName: string;
+  status: "ONLINE" | "PAUSED" | "OFFLINE";
+  statusUpdatedAt: string | null;
+  ticketCount: number;
+}
+
 export interface IslandMonitoring {
   queues: { queueId: string; queueName: string; waitingCount: number; inProgressCount: number }[];
-  attendants: { online: number; paused: number; offline: number; total: number };
+  attendants: { online: number; paused: number; offline: number; total: number; list: AttendantSummary[] };
   waitingTickets: IslandTicket[];
   inProgressTickets: IslandTicket[];
+}
+
+export interface TicketHistoryStats {
+  total: number;
+  concluded: number;
+  canceled: number;
+  inProgress: number;
 }
 
 export interface TicketDetail {
   id: string;
   ticketNumber: number;
   status: "WAITING" | "IN_PROGRESS" | "CLOSED";
+  closeReason: TicketCloseReason | null;
   target: { id: string; name: string | null; waId: string; email: string | null; metadata: Record<string, unknown> | null };
   queue: { id: string; name: string };
   assignedUser: { id: string; name: string; email: string } | null;
@@ -198,6 +219,7 @@ export interface TicketDetail {
   closedAt: string | null;
   waitDurationMs: number | null;
   handlingDurationMs: number | null;
+  messagingSession: { id: string; lastCustomerMessageAt: string };
   history: MessageDocument[];
 }
 
