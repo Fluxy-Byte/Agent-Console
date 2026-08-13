@@ -5,6 +5,7 @@ export interface Company {
   name: string;
   cnpj: string;
   status: string | null;
+  hasApiAccessToken: boolean;
 }
 
 export interface Member {
@@ -62,6 +63,7 @@ export interface WhatsappChannel {
   phoneNumberId: string;
   displayNumber: string;
   wabaId: string;
+  hasMetaAccessToken: boolean;
   createdAt: string;
   updatedAt: string;
   serviceIsland?: ServiceIsland | null;
@@ -82,6 +84,7 @@ export interface ServiceIsland {
   whatsappChannelId: string;
   name: string;
   requireCloseTag: boolean;
+  allowActiveDispatch: boolean;
   createdAt: string;
   updatedAt: string;
   whatsappChannel?: WhatsappChannel;
@@ -106,7 +109,10 @@ export interface Queue {
   businessDays: number[];
   createdAt: string;
   updatedAt: string;
-  members: QueueMember[];
+  // Só vem preenchido em endpoints que fazem include explícito dos membros
+  // (ex: GET /api/service-islands/:id) — tratar sempre como potencialmente
+  // ausente.
+  members?: QueueMember[];
 }
 
 export type TargetStatus = "AI" | "HUMAN" | "FINISHED";
@@ -145,7 +151,54 @@ export interface IslandTicket {
   assignedUser: { id: string; name: string; email: string } | null;
   closeTag: { id: string; name: string } | null;
   createdAt: string;
+  assignedAt: string | null;
   closedAt: string | null;
+  waitDurationMs: number | null;
+  handlingDurationMs: number | null;
+}
+
+export interface IslandTicketListResult {
+  items: IslandTicket[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface QueueListResult {
+  items: Queue[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface TicketCloseTagListResult {
+  items: TicketCloseTag[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface IslandMonitoring {
+  queues: { queueId: string; queueName: string; waitingCount: number; inProgressCount: number }[];
+  attendants: { online: number; paused: number; offline: number; total: number };
+  waitingTickets: IslandTicket[];
+  inProgressTickets: IslandTicket[];
+}
+
+export interface TicketDetail {
+  id: string;
+  ticketNumber: number;
+  status: "WAITING" | "IN_PROGRESS" | "CLOSED";
+  target: { id: string; name: string | null; waId: string; email: string | null; metadata: Record<string, unknown> | null };
+  queue: { id: string; name: string };
+  assignedUser: { id: string; name: string; email: string } | null;
+  closeTag: { id: string; name: string } | null;
+  createdAt: string;
+  assignedAt: string | null;
+  closedAt: string | null;
+  waitDurationMs: number | null;
+  handlingDurationMs: number | null;
+  history: MessageDocument[];
 }
 
 export interface TargetListResult {

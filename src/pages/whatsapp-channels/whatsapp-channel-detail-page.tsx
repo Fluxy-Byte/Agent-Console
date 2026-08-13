@@ -23,6 +23,7 @@ export function WhatsappChannelDetailPage() {
   const { data: agents } = useSWR<Agent[]>(canWrite ? "/api/agents" : null);
 
   const [form, setForm] = useState({ agentId: "", phoneNumberId: "", displayNumber: "", wabaId: "" });
+  const [metaAccessToken, setMetaAccessToken] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,7 +43,10 @@ export function WhatsappChannelDetailPage() {
     setError(null);
     setSaving(true);
     try {
-      await api.put(`/api/wc/${id}`, form);
+      // Campo em branco = não mexe no token já salvo — só envia se o usuário
+      // digitou um novo.
+      await api.put(`/api/wc/${id}`, metaAccessToken ? { ...form, metaAccessToken } : form);
+      setMetaAccessToken("");
       toast.success("WhatsApp Channel atualizado.");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Não foi possível salvar.");
@@ -117,6 +121,17 @@ export function WhatsappChannelDetailPage() {
               disabled={!canWrite || saving}
               value={form.wabaId}
               onChange={(e) => setForm((f) => ({ ...f, wabaId: e.target.value }))}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="wc-meta-access-token">Token de acesso da Meta</Label>
+            <Input
+              id="wc-meta-access-token"
+              type="password"
+              disabled={!canWrite || saving}
+              placeholder={channel.hasMetaAccessToken ? "•••• configurado — digite para trocar" : "Nenhum token configurado"}
+              value={metaAccessToken}
+              onChange={(e) => setMetaAccessToken(e.target.value)}
             />
           </div>
         </CardContent>

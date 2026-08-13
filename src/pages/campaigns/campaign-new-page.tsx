@@ -361,14 +361,14 @@ export function CampaignNewPage() {
                         <SelectValue placeholder="Selecione um atendente" />
                       </SelectTrigger>
                       <SelectContent>
-                        {selectedQueue?.members.map((m) => (
+                        {(selectedQueue?.members ?? []).map((m) => (
                           <SelectItem key={m.userId} value={m.userId}>
                             {m.user.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {selectedQueue && selectedQueue.members.length === 0 && (
+                    {selectedQueue && (selectedQueue.members?.length ?? 0) === 0 && (
                       <p className="text-muted-foreground text-xs">Nenhum atendente cadastrado nessa fila ainda.</p>
                     )}
                   </div>

@@ -13,6 +13,7 @@ import { CampaignDetailPage } from "@/pages/campaigns/campaign-detail-page";
 import { CampaignNewPage } from "@/pages/campaigns/campaign-new-page";
 import { CampaignsListPage } from "@/pages/campaigns/campaigns-list-page";
 import { ServiceIslandDetailPage } from "@/pages/service-islands/service-island-detail-page";
+import { ServiceIslandQueueDetailPage } from "@/pages/service-islands/service-island-queue-detail-page";
 import { ServiceIslandsListPage } from "@/pages/service-islands/service-islands-list-page";
 import { TargetDetailPage } from "@/pages/targets/target-detail-page";
 import { TargetsListPage } from "@/pages/targets/targets-list-page";
@@ -77,6 +78,7 @@ export function App() {
               <Route path="/wc/:id" element={<WhatsappChannelDetailPage />} />
               <Route path="/service-island" element={<ServiceIslandsListPage />} />
               <Route path="/service-island/:id" element={<ServiceIslandDetailPage />} />
+              <Route path="/service-island/:islandId/queue/:queueId" element={<ServiceIslandQueueDetailPage />} />
               <Route path="/access" element={<BusinessDetailPage />} />
             </Route>
           </Route>

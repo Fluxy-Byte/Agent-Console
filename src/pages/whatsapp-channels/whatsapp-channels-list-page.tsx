@@ -42,12 +42,14 @@ export function WhatsappChannelsListPage() {
   const [phoneNumberId, setPhoneNumberId] = useState("");
   const [displayNumber, setDisplayNumber] = useState("");
   const [wabaId, setWabaId] = useState("");
+  const [metaAccessToken, setMetaAccessToken] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [lookupOpen, setLookupOpen] = useState(false);
   const [lookupAgentId, setLookupAgentId] = useState("");
   const [lookupWabaId, setLookupWabaId] = useState("");
+  const [lookupMetaAccessToken, setLookupMetaAccessToken] = useState("");
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [results, setResults] = useState<WabaPhoneNumberResult[] | null>(null);
@@ -56,6 +58,7 @@ export function WhatsappChannelsListPage() {
   function resetLookup() {
     setLookupAgentId("");
     setLookupWabaId("");
+    setLookupMetaAccessToken("");
     setSearchError(null);
     setResults(null);
   }
@@ -65,7 +68,10 @@ export function WhatsappChannelsListPage() {
     setSearchError(null);
     setSearching(true);
     try {
-      const found = await api.post<WabaPhoneNumberResult[]>("/api/wc/waba-lookup", { wabaId: lookupWabaId });
+      const found = await api.post<WabaPhoneNumberResult[]>("/api/wc/waba-lookup", {
+        wabaId: lookupWabaId,
+        metaAccessToken: lookupMetaAccessToken,
+      });
       setResults(found);
       if (found.length === 0) setSearchError("Nenhum número encontrado para este WABA.");
     } catch (err) {
@@ -90,6 +96,7 @@ export function WhatsappChannelsListPage() {
       const result = await api.post<{ created: unknown[]; skipped: unknown[] }>("/api/wc/bulk", {
         agentId: lookupAgentId,
         wabaId: lookupWabaId,
+        metaAccessToken: lookupMetaAccessToken,
         phoneNumbers: toRegister.map((r) => ({ phoneNumberId: r.phoneNumberId, displayNumber: r.displayNumber })),
       });
       await mutate();
@@ -112,13 +119,14 @@ export function WhatsappChannelsListPage() {
     setError(null);
     setSaving(true);
     try {
-      await api.post("/api/wc", { agentId, phoneNumberId, displayNumber, wabaId });
+      await api.post("/api/wc", { agentId, phoneNumberId, displayNumber, wabaId, metaAccessToken });
       await mutate();
       setOpen(false);
       setAgentId("");
       setPhoneNumberId("");
       setDisplayNumber("");
       setWabaId("");
+      setMetaAccessToken("");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Não foi possível criar o canal.");
     } finally {
@@ -178,12 +186,22 @@ export function WhatsappChannelsListPage() {
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="lookup-waba-id">WhatsApp Business Account ID</Label>
+                    <Input
+                      id="lookup-waba-id"
+                      required
+                      value={lookupWabaId}
+                      onChange={(e) => setLookupWabaId(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="lookup-meta-access-token">Token de acesso da Meta</Label>
                     <div className="flex gap-2">
                       <Input
-                        id="lookup-waba-id"
+                        id="lookup-meta-access-token"
+                        type="password"
                         required
-                        value={lookupWabaId}
-                        onChange={(e) => setLookupWabaId(e.target.value)}
+                        value={lookupMetaAccessToken}
+                        onChange={(e) => setLookupMetaAccessToken(e.target.value)}
                       />
                       <Button type="submit" disabled={searching || !lookupAgentId}>
                         {searching ? "Buscando…" : "Procurar"}
@@ -282,6 +300,16 @@ export function WhatsappChannelsListPage() {
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="wc-waba-id">WhatsApp Business Account ID</Label>
                     <Input id="wc-waba-id" required value={wabaId} onChange={(e) => setWabaId(e.target.value)} />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="wc-meta-access-token">Token de acesso da Meta</Label>
+                    <Input
+                      id="wc-meta-access-token"
+                      type="password"
+                      required
+                      value={metaAccessToken}
+                      onChange={(e) => setMetaAccessToken(e.target.value)}
+                    />
                   </div>
                   {error && <p className="text-destructive text-sm">{error}</p>}
                   <Button type="submit" disabled={saving || !agentId}>

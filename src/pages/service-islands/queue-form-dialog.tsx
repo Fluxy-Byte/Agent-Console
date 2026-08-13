@@ -32,7 +32,7 @@ export function QueueFormDialog({ serviceIslandId, queue, members, onSaved, trig
   const [businessHoursStart, setBusinessHoursStart] = useState(queue?.businessHoursStart ?? "08:00");
   const [businessHoursEnd, setBusinessHoursEnd] = useState(queue?.businessHoursEnd ?? "18:00");
   const [businessDays, setBusinessDays] = useState<number[]>(queue?.businessDays ?? [1, 2, 3, 4, 5]);
-  const [memberUserIds, setMemberUserIds] = useState<string[]>(queue?.members.map((m) => m.userId) ?? []);
+  const [memberUserIds, setMemberUserIds] = useState<string[]>(queue?.members?.map((m) => m.userId) ?? []);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,7 +43,7 @@ export function QueueFormDialog({ serviceIslandId, queue, members, onSaved, trig
       setBusinessHoursStart(queue.businessHoursStart ?? "08:00");
       setBusinessHoursEnd(queue.businessHoursEnd ?? "18:00");
       setBusinessDays(queue.businessDays);
-      setMemberUserIds(queue.members.map((m) => m.userId));
+      setMemberUserIds(queue.members?.map((m) => m.userId) ?? []);
     }
   }, [open, queue]);
 
