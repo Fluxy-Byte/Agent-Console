@@ -91,7 +91,7 @@ export function TicketDetailDialog({ ticketId, onOpenChange }: TicketDetailDialo
 
   return (
     <Dialog open={ticketId !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] max-w-4xl overflow-hidden p-0">
+      <DialogContent className="max-h-[85vh] max-w-6xl overflow-hidden p-0">
         {!ticket ? (
           <div className="text-muted-foreground p-6 text-sm">Carregando…</div>
         ) : (
@@ -105,7 +105,7 @@ export function TicketDetailDialog({ ticketId, onOpenChange }: TicketDetailDialo
               </div>
             </DialogHeader>
 
-            <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[220px_1fr_240px]">
+            <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[260px_1fr_280px]">
               <div className="border-border flex flex-col gap-3 border-b p-4 md:border-r md:border-b-0">
                 <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Contato</h3>
                 <div>
