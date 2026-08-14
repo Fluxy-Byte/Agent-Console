@@ -1,15 +1,17 @@
 import { type FormEvent, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { toast } from "sonner";
+import { ArrowLeft, Clock, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useCan } from "@/hooks/use-can";
-import { PermissionAction } from "@/domain/permission-action";
+import { PermissionAction, ROLE_LABELS } from "@/domain/permission-action";
 import { api, ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/store/hooks";
@@ -19,6 +21,7 @@ const DAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 export function ServiceIslandQueueDetailPage() {
   const { islandId, queueId } = useParams<{ islandId: string; queueId: string }>();
+  const navigate = useNavigate();
   const can = useCan();
   const canWrite = can(PermissionAction.QUEUES_WRITE);
   const activeCompanyId = useAppSelector((s) => s.activeCompany?.id);
@@ -30,17 +33,20 @@ export function ServiceIslandQueueDetailPage() {
   const { data: members } = useSWR<Member[]>(activeCompanyId ? `/api/companies/${activeCompanyId}/members` : null);
 
   const [name, setName] = useState("");
+  const [isActive, setIsActive] = useState(true);
   const [businessHoursEnabled, setBusinessHoursEnabled] = useState(false);
   const [businessHoursStart, setBusinessHoursStart] = useState("08:00");
   const [businessHoursEnd, setBusinessHoursEnd] = useState("18:00");
   const [businessDays, setBusinessDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [memberUserIds, setMemberUserIds] = useState<string[]>([]);
+  const [attendantSearch, setAttendantSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (queue) {
       setName(queue.name);
+      setIsActive(queue.isActive);
       setBusinessHoursEnabled(queue.businessHoursEnabled);
       setBusinessHoursStart(queue.businessHoursStart ?? "08:00");
       setBusinessHoursEnd(queue.businessHoursEnd ?? "18:00");
@@ -64,6 +70,7 @@ export function ServiceIslandQueueDetailPage() {
     try {
       await api.put(`/api/service-islands/${islandId}/queues/${queueId}`, {
         name,
+        isActive,
         businessHoursEnabled,
         businessHoursStart: businessHoursEnabled ? businessHoursStart : undefined,
         businessHoursEnd: businessHoursEnabled ? businessHoursEnd : undefined,
@@ -79,7 +86,11 @@ export function ServiceIslandQueueDetailPage() {
     }
   }
 
-  if (!queue || !island) return <div className="p-6 text-sm text-muted-foreground">Carregando…</div>;
+  if (!queue || !island) return <div className="text-muted-foreground p-6 text-sm">Carregando…</div>;
+
+  const filteredMembers = (members ?? []).filter((m) =>
+    m.user.name.toLowerCase().includes(attendantSearch.toLowerCase()),
+  );
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6 p-6">
@@ -91,103 +102,176 @@ export function ServiceIslandQueueDetailPage() {
         ]}
       />
 
-      <div>
-        <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">{queue.name}</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Configurações da fila.</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <Button type="button" variant="outline" size="icon" onClick={() => navigate(`/service-island/${island.id}`)}>
+            <ArrowLeft className="size-4" />
+          </Button>
+          <div>
+            <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Editar fila</h1>
+            <p className="text-muted-foreground mt-1 text-sm">Configure as informações, horários e atendentes da fila.</p>
+          </div>
+        </div>
+        {canWrite && (
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={() => navigate(`/service-island/${island.id}`)}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? "Salvando…" : "Salvar alterações"}
+            </Button>
+          </div>
+        )}
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Fila</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="queue-name">Nome</Label>
-            <Input id="queue-name" required disabled={!canWrite} value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Regras de horário</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <Label>Horário de atendimento personalizado</Label>
-            <Switch checked={businessHoursEnabled} disabled={!canWrite} onCheckedChange={setBusinessHoursEnabled} />
-          </div>
-
-          {businessHoursEnabled && (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="queue-start">Início</Label>
-                  <Input
-                    id="queue-start"
-                    type="time"
-                    disabled={!canWrite}
-                    value={businessHoursStart}
-                    onChange={(e) => setBusinessHoursStart(e.target.value)}
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="queue-end">Fim</Label>
-                  <Input
-                    id="queue-end"
-                    type="time"
-                    disabled={!canWrite}
-                    value={businessHoursEnd}
-                    onChange={(e) => setBusinessHoursEnd(e.target.value)}
-                  />
-                </div>
+        <CardContent className="flex flex-col gap-6 p-6">
+          <div className="flex flex-col gap-4">
+            <div>
+              <h2 className="text-base font-semibold">Informações da fila</h2>
+              <p className="text-muted-foreground text-sm">Defina o nome e a situação desta fila.</p>
+            </div>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex flex-1 flex-col gap-1.5">
+                <Label htmlFor="queue-name">Nome da fila</Label>
+                <Input id="queue-name" required disabled={!canWrite} value={name} onChange={(e) => setName(e.target.value)} />
               </div>
-              <div className="flex flex-col gap-1.5">
-                <Label>Dias</Label>
-                <div className="flex flex-wrap gap-1.5">
-                  {DAY_LABELS.map((label, day) => (
-                    <button
-                      key={day}
-                      type="button"
+              <div className="flex items-center gap-3 sm:w-64 sm:justify-between">
+                <div>
+                  <Label>Fila ativa</Label>
+                  <p className="text-muted-foreground text-xs">Disponível para receber atendimentos</p>
+                </div>
+                <Switch checked={isActive} disabled={!canWrite} onCheckedChange={setIsActive} />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 border-t pt-6">
+            <div>
+              <h2 className="text-base font-semibold">Horário de atendimento</h2>
+              <p className="text-muted-foreground text-sm">Defina quando esta fila estará disponível.</p>
+            </div>
+
+            <div className="border-border bg-muted/30 flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <p className="text-sm font-medium">Usar horário personalizado</p>
+                <p className="text-muted-foreground text-xs">
+                  Quando desativado, a fila permanece disponível sem restrição de horário.
+                </p>
+              </div>
+              <Switch checked={businessHoursEnabled} disabled={!canWrite} onCheckedChange={setBusinessHoursEnabled} />
+            </div>
+
+            {businessHoursEnabled ? (
+              <div className="border-border flex flex-col gap-4 rounded-lg border p-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="queue-start">Início</Label>
+                    <Input
+                      id="queue-start"
+                      type="time"
                       disabled={!canWrite}
-                      onClick={() => toggleDay(day)}
-                      className={cn(
-                        "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                        businessDays.includes(day)
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-input bg-background",
-                      )}
-                    >
-                      {label}
-                    </button>
-                  ))}
+                      value={businessHoursStart}
+                      onChange={(e) => setBusinessHoursStart(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="queue-end">Fim</Label>
+                    <Input
+                      id="queue-end"
+                      type="time"
+                      disabled={!canWrite}
+                      value={businessHoursEnd}
+                      onChange={(e) => setBusinessHoursEnd(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label>Dias</Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {DAY_LABELS.map((label, day) => (
+                      <button
+                        key={day}
+                        type="button"
+                        disabled={!canWrite}
+                        onClick={() => toggleDay(day)}
+                        className={cn(
+                          "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                          businessDays.includes(day)
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-input bg-background",
+                        )}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Atendentes atribuídos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-1 rounded-md border p-2">
-            {members?.map((member) => (
-              <label key={member.userId} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  disabled={!canWrite}
-                  checked={memberUserIds.includes(member.userId)}
-                  onChange={() => toggleMember(member.userId)}
-                />
-                {member.user.name}
-              </label>
-            ))}
-            {members && members.length === 0 && (
-              <p className="text-muted-foreground text-xs">Nenhum usuário nesta empresa.</p>
+            ) : (
+              <div className="border-border bg-muted/30 text-muted-foreground flex items-center gap-2 rounded-lg border p-4 text-sm">
+                <Clock className="size-4" /> Atendimento disponível em qualquer horário
+              </div>
             )}
+          </div>
+
+          <div className="flex flex-col gap-4 border-t pt-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-base font-semibold">Atendentes atribuídos</h2>
+                <p className="text-muted-foreground text-sm">Selecione quem poderá receber atendimentos nesta fila.</p>
+              </div>
+              <Badge className="bg-primary/10 text-primary border-transparent shrink-0">
+                {memberUserIds.length} selecionado{memberUserIds.length === 1 ? "" : "s"}
+              </Badge>
+            </div>
+
+            <div className="relative">
+              <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+              <Input
+                placeholder="Buscar atendente..."
+                className="pl-9"
+                value={attendantSearch}
+                onChange={(e) => setAttendantSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              {filteredMembers.map((member) => {
+                const checked = memberUserIds.includes(member.userId);
+                return (
+                  <label
+                    key={member.userId}
+                    className={cn(
+                      "border-border flex cursor-pointer items-center justify-between gap-3 rounded-lg border p-3",
+                      checked && "border-primary/40 bg-primary/5",
+                    )}
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-medium">
+                        {member.user.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{member.user.name}</p>
+                        <p className="text-muted-foreground truncate text-xs">
+                          {ROLE_LABELS[member.role]} · {member.user.email}
+                        </p>
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      className="size-4 shrink-0 accent-primary"
+                      disabled={!canWrite}
+                      checked={checked}
+                      onChange={() => toggleMember(member.userId)}
+                    />
+                  </label>
+                );
+              })}
+              {filteredMembers.length === 0 && (
+                <p className="text-muted-foreground py-2 text-center text-sm">Nenhum atendente encontrado.</p>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -195,7 +279,10 @@ export function ServiceIslandQueueDetailPage() {
       {error && <p className="text-destructive text-sm">{error}</p>}
 
       {canWrite && (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={() => navigate(`/service-island/${island.id}`)}>
+            Cancelar
+          </Button>
           <Button type="submit" disabled={saving}>
             {saving ? "Salvando…" : "Salvar alterações"}
           </Button>

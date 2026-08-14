@@ -1,16 +1,28 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { Pencil, Plus, Users } from "lucide-react";
+import { CheckCircle2, ListChecks, MoreVertical, Plus, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { MetricCard } from "@/components/metric-card";
 import { PaginationControls } from "@/components/pagination-controls";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAppSelector } from "@/store/hooks";
-import type { Member, QueueListResult } from "@/types/domain";
+import type { Member, QueueListResult, QueueStats } from "@/types/domain";
 import { QueueFormDialog } from "./queue-form-dialog";
 
+const ALL = "all";
 const DAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+const SITUATION_OPTIONS = [
+  { value: ALL, label: "Todas as situações" },
+  { value: "true", label: "Ativas" },
+  { value: "false", label: "Inativas" },
+];
 
 interface QueuesTabProps {
   islandId: string;
@@ -20,70 +32,158 @@ interface QueuesTabProps {
 export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
   const navigate = useNavigate();
   const activeCompanyId = useAppSelector((s) => s.activeCompany?.id);
+  const [search, setSearch] = useState("");
+  const [isActive, setIsActive] = useState(ALL);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   const { data: members } = useSWR<Member[]>(activeCompanyId ? `/api/companies/${activeCompanyId}/members` : null);
+  const { data: stats } = useSWR<QueueStats>(`/api/service-islands/${islandId}/queues/stats`);
+
+  const listParams = new URLSearchParams();
+  if (search) listParams.set("search", search);
+  if (isActive !== ALL) listParams.set("isActive", isActive);
+  listParams.set("page", String(page));
+  listParams.set("pageSize", String(pageSize));
   const { data: queues, mutate } = useSWR<QueueListResult>(
-    `/api/service-islands/${islandId}/queues?page=${page}&pageSize=${pageSize}`,
+    `/api/service-islands/${islandId}/queues?${listParams.toString()}`,
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold">Filas</h2>
-        {canManageQueues && (
-          <QueueFormDialog
-            serviceIslandId={islandId}
-            members={members ?? []}
-            onSaved={() => mutate()}
-            trigger={
-              <Button size="sm">
-                <Plus className="size-4" /> Nova fila
-              </Button>
-            }
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold">Filas de atendimento</h2>
+          <p className="text-muted-foreground mt-1 text-sm">Gerencie as filas e seus atendentes</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            placeholder="Buscar fila..."
+            className="w-52"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
-        )}
-      </div>
-
-      <div className="flex flex-col gap-3">
-        {queues?.items.map((queue) => (
-          <Card key={queue.id}>
-            <CardContent className="flex items-center justify-between gap-4 p-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium">{queue.name}</p>
-                  <Badge variant={queue.isActive ? "default" : "outline"}>{queue.isActive ? "Ativa" : "Inativa"}</Badge>
-                </div>
-                <p className="text-muted-foreground mt-1 flex items-center gap-3 text-xs">
-                  <span className="flex items-center gap-1">
-                    <Users className="size-3" /> {queue.members?.length ?? 0} atendente(s)
-                  </span>
-                  {queue.businessHoursEnabled ? (
-                    <span>
-                      {queue.businessHoursStart}–{queue.businessHoursEnd} ·{" "}
-                      {queue.businessDays.map((d) => DAY_LABELS[d]).join(", ")}
-                    </span>
-                  ) : (
-                    <span>Sem horário restrito</span>
-                  )}
-                </p>
-              </div>
-              {canManageQueues && (
-                <Button size="sm" variant="outline" onClick={() => navigate(`/service-island/${islandId}/queue/${queue.id}`)}>
-                  <Pencil className="size-4" /> Editar
+          <Select
+            value={isActive}
+            onValueChange={(v) => {
+              setIsActive(v);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-[170px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SITUATION_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {canManageQueues && (
+            <QueueFormDialog
+              serviceIslandId={islandId}
+              members={members ?? []}
+              onSaved={() => mutate()}
+              trigger={
+                <Button>
+                  <Plus className="size-4" /> Nova fila
                 </Button>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-        {queues && queues.items.length === 0 && (
-          <p className="text-muted-foreground text-sm">Nenhuma fila cadastrada nesta ilha ainda.</p>
-        )}
+              }
+            />
+          )}
+        </div>
       </div>
 
-      {queues && queues.total > 0 && (
-        <Card className="overflow-hidden p-0">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <MetricCard
+          icon={ListChecks}
+          iconClassName="bg-primary/10 text-primary"
+          label="Filas"
+          value={stats ? stats.total : "—"}
+          sublabel="Cadastradas nesta ilha"
+        />
+        <MetricCard
+          icon={CheckCircle2}
+          iconClassName="bg-success/15 text-success"
+          label="Ativas"
+          value={stats ? stats.active : "—"}
+          sublabel="Recebendo atendimentos"
+        />
+        <MetricCard
+          icon={XCircle}
+          iconClassName="bg-muted text-muted-foreground"
+          label="Inativas"
+          value={stats ? stats.inactive : "—"}
+          sublabel="Fora de operação"
+        />
+      </div>
+
+      <Card className="overflow-hidden p-0">
+        {!queues || queues.items.length === 0 ? (
+          <div className="text-muted-foreground p-6 text-sm">
+            {!queues ? "Carregando…" : "Nenhuma fila encontrada com os filtros atuais."}
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome da fila</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Atendentes</TableHead>
+                <TableHead>Horário</TableHead>
+                <TableHead>Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {queues.items.map((queue) => (
+                <TableRow key={queue.id}>
+                  <TableCell className="font-medium">{queue.name}</TableCell>
+                  <TableCell>
+                    <Badge
+                      className={
+                        queue.isActive ? "bg-primary/10 text-primary border-transparent" : "bg-muted text-muted-foreground border-transparent"
+                      }
+                    >
+                      {queue.isActive ? "Ativa" : "Inativa"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{queue.members?.length ?? 0}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {queue.businessHoursEnabled ? (
+                      <>
+                        {queue.businessHoursStart}–{queue.businessHoursEnd} ·{" "}
+                        {queue.businessDays.map((d) => DAY_LABELS[d]).join(", ")}
+                      </>
+                    ) : (
+                      "Sem horário restrito"
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon" className="size-8">
+                          <MoreVertical className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => navigate(`/service-island/${islandId}/queue/${queue.id}`)}>
+                          Editar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+
+        {queues && queues.total > 0 && (
           <PaginationControls
             page={page}
             pageSize={pageSize}
@@ -94,8 +194,8 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
               setPage(1);
             }}
           />
-        </Card>
-      )}
+        )}
+      </Card>
     </div>
   );
 }

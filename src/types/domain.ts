@@ -174,6 +174,12 @@ export interface QueueListResult {
   pageSize: number;
 }
 
+export interface QueueStats {
+  total: number;
+  active: number;
+  inactive: number;
+}
+
 export interface TicketCloseTagListResult {
   items: TicketCloseTag[];
   total: number;
