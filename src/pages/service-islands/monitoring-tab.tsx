@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/pagination-controls";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { AttendantSummary, IslandMonitoring } from "@/types/domain";
 
@@ -95,6 +97,7 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
   const [showAll, setShowAll] = useState(false);
   const [queuePage, setQueuePage] = useState(1);
   const [attendantPage, setAttendantPage] = useState(1);
+  const [attendantPageSize, setAttendantPageSize] = useState(10);
 
   if (!data) return <p className="text-muted-foreground p-4 text-sm">Carregando…</p>;
 
@@ -110,11 +113,11 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
   const queuePageClamped = Math.min(queuePage, queueTotalPages);
   const pagedQueues = data.queues.slice((queuePageClamped - 1) * ROWS_PER_PAGE, queuePageClamped * ROWS_PER_PAGE);
 
-  const attendantTotalPages = Math.max(1, Math.ceil(attendantRows.length / ROWS_PER_PAGE));
+  const attendantTotalPages = Math.max(1, Math.ceil(attendantRows.length / attendantPageSize));
   const attendantPageClamped = Math.min(attendantPage, attendantTotalPages);
   const pagedAttendants = attendantRows.slice(
-    (attendantPageClamped - 1) * ROWS_PER_PAGE,
-    attendantPageClamped * ROWS_PER_PAGE,
+    (attendantPageClamped - 1) * attendantPageSize,
+    attendantPageClamped * attendantPageSize,
   );
 
   return (
@@ -200,28 +203,54 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
               </div>
             </div>
 
-            <div className="flex flex-col gap-1">
-              {pagedAttendants.map((a) => (
-                <div key={a.userId} className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <div className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
-                      {a.name.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="truncate font-medium">{a.name}</span>
-                  </div>
-                  <span className="text-muted-foreground truncate text-xs">{a.queueName}</span>
-                  <span className="text-muted-foreground text-xs">{a.ticketCount}</span>
-                  <span className="flex items-center gap-1.5 text-xs">
-                    <span className={cn("size-1.5 rounded-full", STATUS_DOT[a.status])} />
-                    {STATUS_LABELS[a.status]}
-                  </span>
-                </div>
-              ))}
-              {attendantRows.length === 0 && (
-                <p className="text-muted-foreground py-2 text-center text-sm">Nenhum atendente encontrado.</p>
-              )}
-            </div>
-            <MiniPagination page={attendantPageClamped} totalPages={attendantTotalPages} onChange={setAttendantPage} />
+            {attendantRows.length === 0 ? (
+              <p className="text-muted-foreground py-2 text-center text-sm">Nenhum atendente encontrado.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Atendente</TableHead>
+                    <TableHead>Fila</TableHead>
+                    <TableHead>Tickets</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pagedAttendants.map((a) => (
+                    <TableRow key={a.userId}>
+                      <TableCell>
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
+                            {a.name.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="truncate font-medium">{a.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{a.queueName}</TableCell>
+                      <TableCell className="text-muted-foreground">{a.ticketCount}</TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className={cn("size-1.5 rounded-full", STATUS_DOT[a.status])} />
+                          {STATUS_LABELS[a.status]}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+            {attendantRows.length > 0 && (
+              <PaginationControls
+                page={attendantPageClamped}
+                pageSize={attendantPageSize}
+                total={attendantRows.length}
+                onPageChange={setAttendantPage}
+                onPageSizeChange={(size) => {
+                  setAttendantPageSize(size);
+                  setAttendantPage(1);
+                }}
+              />
+            )}
           </CardContent>
         </Card>
       </div>
