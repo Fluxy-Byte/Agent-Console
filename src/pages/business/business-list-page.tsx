@@ -104,7 +104,10 @@ export function BusinessListPage() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Entrar com código de convite</DialogTitle>
-                  <DialogDescription>Digite o código que o gestor da empresa te enviou.</DialogDescription>
+                  <DialogDescription>
+                    Digite o código que o gestor da empresa te enviou. Ele só funciona com a conta cadastrada no
+                    mesmo e-mail para o qual o código foi gerado.
+                  </DialogDescription>
                 </DialogHeader>
                 <form className="flex flex-col gap-4" onSubmit={handleRedeem}>
                   <div className="flex flex-col gap-1.5">

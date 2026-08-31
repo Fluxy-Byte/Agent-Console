@@ -12,6 +12,7 @@ export interface InvitationMember {
   id: string;
   organizationId: string;
   code: string;
+  email: string;
   role: MemberRole;
   finish: boolean;
   userId: string | null;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
 import { Check, Copy, KeyRound, Ticket } from "lucide-react";
@@ -14,6 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { api, ApiError } from "@/lib/api";
 import { useCan } from "@/hooks/use-can";
@@ -46,6 +48,7 @@ export function BusinessDetailPage() {
   const [copied, setCopied] = useState(false);
 
   const [inviteRole, setInviteRole] = useState<MemberRole>("ATENDENTE");
+  const [inviteEmail, setInviteEmail] = useState("");
   const [generatingCode, setGeneratingCode] = useState(false);
   const [codeError, setCodeError] = useState<string | null>(null);
   const [generatedCode, setGeneratedCode] = useState<InvitationMember | null>(null);
@@ -88,13 +91,18 @@ export function BusinessDetailPage() {
     toast.success("Token copiado.");
   }
 
-  async function handleGenerateCode() {
+  async function handleGenerateCode(event: FormEvent) {
+    event.preventDefault();
     setCodeError(null);
     setGeneratingCode(true);
     try {
-      const invitation = await api.post<InvitationMember>(`/api/companies/${id}/invite-codes`, { role: inviteRole });
+      const invitation = await api.post<InvitationMember>(`/api/companies/${id}/invite-codes`, {
+        role: inviteRole,
+        email: inviteEmail,
+      });
       setGeneratedCode(invitation);
       setCodeCopied(false);
+      setInviteEmail("");
       await mutateInviteCodes();
     } catch (err) {
       setCodeError(err instanceof ApiError ? err.message : "Não foi possível gerar o código.");
@@ -198,10 +206,22 @@ export function BusinessDetailPage() {
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <p className="text-muted-foreground text-sm">
-                Gere um código para compartilhar com quem você quer convidar. A pessoa digita esse código na tela de
-                cadastro e entra direto nesta empresa, já com o papel escolhido abaixo.
+                Gere um código pro e-mail da pessoa que você quer convidar. Na tela de cadastro, o resgate só é
+                aceito se ela se cadastrar com esse mesmo e-mail — já entra direto nesta empresa, com o papel
+                escolhido abaixo.
               </p>
-              <div className="flex items-center gap-2">
+              <form onSubmit={handleGenerateCode} className="flex items-end gap-2">
+                <div className="flex flex-1 flex-col gap-1.5">
+                  <Label htmlFor="invite-email">E-mail convidado</Label>
+                  <Input
+                    id="invite-email"
+                    type="email"
+                    required
+                    placeholder="pessoa@empresa.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                  />
+                </div>
                 <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as MemberRole)}>
                   <SelectTrigger size="sm" className="w-40">
                     <SelectValue />
@@ -214,11 +234,11 @@ export function BusinessDetailPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="sm" disabled={generatingCode} onClick={handleGenerateCode}>
+                <Button type="submit" variant="outline" size="sm" disabled={generatingCode}>
                   <Ticket className="size-4" />
                   {generatingCode ? "Gerando…" : "Gerar código"}
                 </Button>
-              </div>
+              </form>
               {codeError && <p className="text-destructive text-sm">{codeError}</p>}
 
               {inviteCodes && inviteCodes.length > 0 && (
@@ -233,7 +253,9 @@ export function BusinessDetailPage() {
                           {invitation.code}
                         </code>
                         <div className="min-w-0">
-                          <p className="text-xs font-medium">{ROLE_LABELS[invitation.role]}</p>
+                          <p className="text-xs font-medium">
+                            {ROLE_LABELS[invitation.role]} · <span className="font-normal">{invitation.email}</span>
+                          </p>
                           <p className="text-muted-foreground truncate text-xs">
                             {invitation.finish ? "Ainda não utilizado" : `Usado por ${invitation.user?.name ?? "—"}`}
                           </p>
@@ -288,8 +310,8 @@ export function BusinessDetailPage() {
           <DialogHeader>
             <DialogTitle>Código gerado</DialogTitle>
             <DialogDescription>
-              Envie este código para a pessoa convidada digitar na tela de cadastro. Papel: {" "}
-              {generatedCode && ROLE_LABELS[generatedCode.role]}.
+              Envie este código para <strong>{generatedCode?.email}</strong> digitar na tela de cadastro — só é
+              aceito se ela se cadastrar com esse e-mail. Papel: {generatedCode && ROLE_LABELS[generatedCode.role]}.
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center gap-2">
