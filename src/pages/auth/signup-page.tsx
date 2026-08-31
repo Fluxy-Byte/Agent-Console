@@ -46,7 +46,9 @@ export function SignUpPage() {
       <Card className="w-full max-w-sm shadow-xl">
         <CardHeader>
           <CardTitle className="text-xl">Criar conta</CardTitle>
-          <CardDescription>Comece a configurar seus agentes de IA no WhatsApp.</CardDescription>
+          <CardDescription>
+            Depois de criar sua conta, você poderá criar uma empresa ou entrar com um código de convite.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>

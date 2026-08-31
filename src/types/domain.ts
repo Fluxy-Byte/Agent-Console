@@ -8,6 +8,18 @@ export interface Company {
   hasApiAccessToken: boolean;
 }
 
+export interface InvitationMember {
+  id: string;
+  organizationId: string;
+  code: string;
+  role: MemberRole;
+  finish: boolean;
+  userId: string | null;
+  user: { id: string; name: string; email: string } | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Member {
   id: string;
   organizationId: string;

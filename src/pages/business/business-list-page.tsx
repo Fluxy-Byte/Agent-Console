@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { Building2, Plus } from "lucide-react";
+import { Building2, Plus, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setActiveCompany } from "@/store/slices/active-company-slice";
 import type { Company, Member } from "@/types/domain";
@@ -33,6 +33,11 @@ export function BusinessListPage() {
   const [error, setError] = useState<string | null>(null);
   const [activating, setActivating] = useState<string | null>(null);
 
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [code, setCode] = useState("");
+  const [redeeming, setRedeeming] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+
   async function handleCreate(event: FormEvent) {
     event.preventDefault();
     setError(null);
@@ -48,6 +53,23 @@ export function BusinessListPage() {
       setError(err instanceof Error ? err.message : "Não foi possível criar a empresa.");
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function handleRedeem(event: FormEvent) {
+    event.preventDefault();
+    setInviteError(null);
+    setRedeeming(true);
+    try {
+      const company = await api.post<Company>("/api/companies/redeem-invite", { code });
+      await mutate();
+      setInviteDialogOpen(false);
+      setCode("");
+      await handleActivate(company);
+    } catch (err) {
+      setInviteError(err instanceof ApiError ? err.message : "Não foi possível resgatar o código.");
+    } finally {
+      setRedeeming(false);
     }
   }
 
@@ -72,33 +94,67 @@ export function BusinessListPage() {
             <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Empresas</h1>
             <p className="text-muted-foreground mt-1 text-sm">Escolha a empresa que deseja acessar.</p>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="size-4" /> Nova empresa
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Criar empresa</DialogTitle>
-                <DialogDescription>Você se torna Gerente da empresa criada.</DialogDescription>
-              </DialogHeader>
-              <form className="flex flex-col gap-4" onSubmit={handleCreate}>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="company-name">Nome</Label>
-                  <Input id="company-name" required value={name} onChange={(e) => setName(e.target.value)} />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="company-cnpj">CNPJ</Label>
-                  <Input id="company-cnpj" required value={cnpj} onChange={(e) => setCnpj(e.target.value)} />
-                </div>
-                {error && <p className="text-destructive text-sm">{error}</p>}
-                <Button type="submit" disabled={creating}>
-                  {creating ? "Criando..." : "Criar e acessar"}
+          <div className="flex gap-2">
+            <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Ticket className="size-4" /> Tenho um código de convite
                 </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Entrar com código de convite</DialogTitle>
+                  <DialogDescription>Digite o código que o gestor da empresa te enviou.</DialogDescription>
+                </DialogHeader>
+                <form className="flex flex-col gap-4" onSubmit={handleRedeem}>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="invite-code">Código</Label>
+                    <Input
+                      id="invite-code"
+                      required
+                      autoFocus
+                      placeholder="Ex: 7K3PXQ9M"
+                      className="text-center text-lg tracking-[0.3em] uppercase"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.toUpperCase())}
+                    />
+                  </div>
+                  {inviteError && <p className="text-destructive text-sm">{inviteError}</p>}
+                  <Button type="submit" disabled={redeeming}>
+                    {redeeming ? "Entrando..." : "Entrar na empresa"}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="size-4" /> Nova empresa
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Criar empresa</DialogTitle>
+                  <DialogDescription>Você se torna Gerente da empresa criada.</DialogDescription>
+                </DialogHeader>
+                <form className="flex flex-col gap-4" onSubmit={handleCreate}>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="company-name">Nome</Label>
+                    <Input id="company-name" required value={name} onChange={(e) => setName(e.target.value)} />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="company-cnpj">CNPJ</Label>
+                    <Input id="company-cnpj" required value={cnpj} onChange={(e) => setCnpj(e.target.value)} />
+                  </div>
+                  {error && <p className="text-destructive text-sm">{error}</p>}
+                  <Button type="submit" disabled={creating}>
+                    {creating ? "Criando..." : "Criar e acessar"}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -130,7 +186,7 @@ export function BusinessListPage() {
           ))}
           {companies && companies.length === 0 && (
             <p className="text-muted-foreground col-span-2 text-sm">
-              Você ainda não faz parte de nenhuma empresa. Crie uma para começar.
+              Você ainda não faz parte de nenhuma empresa. Crie uma nova ou entre com um código de convite.
             </p>
           )}
         </div>
