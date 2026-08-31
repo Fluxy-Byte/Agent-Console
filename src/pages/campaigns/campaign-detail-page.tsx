@@ -72,7 +72,7 @@ export function CampaignDetailPage() {
     openMetric === "sent" ? sentTargets : openMetric === "failures" ? failedTargets : (campaign.targets ?? []);
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6">
       <PageBreadcrumb items={[{ label: "Campanhas", to: "/campaigns" }, { label: campaign.name }]} />
 
       <Button variant="ghost" size="sm" onClick={() => navigate("/campaigns")} className="w-fit gap-2 px-2">
