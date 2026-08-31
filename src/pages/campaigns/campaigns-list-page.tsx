@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { AlertTriangle, CheckCircle2, MessageCircle, MoreVertical, Plus, Send, Users } from "lucide-react";
+import { AlertTriangle, CheckCircle2, MoreVertical, Plus, Send, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -34,11 +34,6 @@ const STATUS_OPTIONS = [
 const STATUS_BADGE: Record<string, { label: string; variant: "warning" | "success" }> = {
   PROCESSING: { label: "Enviando...", variant: "warning" },
   COMPLETED: { label: "Concluída", variant: "success" },
-};
-
-const QUICK_STATUS_BADGE: Record<string, { label: string; variant: "warning" | "secondary" }> = {
-  PROCESSING: { label: "Ativo", variant: "warning" },
-  COMPLETED: { label: "Finalizada", variant: "secondary" },
 };
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
@@ -250,7 +245,7 @@ export function CampaignsListPage() {
             <thead>
               <tr className="border-border text-muted-foreground border-b text-left text-xs uppercase">
                 <th className="px-4 py-3 font-medium">Campanha</th>
-                <th className="px-4 py-3 font-medium">Template</th>
+                <th className="px-4 py-3 font-medium">Template/Tipo</th>
                 <th className="px-4 py-3 font-medium">Agente / Canal</th>
                 <th className="px-4 py-3 font-medium">Enviado por</th>
                 <th className="px-4 py-3 font-medium">
@@ -269,7 +264,6 @@ export function CampaignsListPage() {
             <tbody>
               {result?.items.map((c) => {
                 const progressPct = c.expectedContacts > 0 ? Math.round((c.totalContacts / c.expectedContacts) * 100) : 0;
-                const quick = QUICK_STATUS_BADGE[c.status];
                 const statusBadge = STATUS_BADGE[c.status];
                 const sentAt = new Date(c.sentAt);
 
@@ -289,27 +283,21 @@ export function CampaignsListPage() {
                             {c.name}
                           </button>
                           <p className="text-muted-foreground text-xs">ID: {c.id}</p>
-                          {quick && (
-                            <Badge variant={quick.variant} className="mt-1">
-                              {quick.label}
-                            </Badge>
-                          )}
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3 align-top">
                       <div className="flex flex-col gap-1">
                         <span>{c.templateName}</span>
-                        {c.category && <Badge variant="outline">{CATEGORY_LABEL[c.category] ?? c.category}</Badge>}
+                        {c.category && (
+                          <span className="text-muted-foreground text-xs">{CATEGORY_LABEL[c.category] ?? c.category}</span>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3 align-top">
                       <div className="flex flex-col gap-1 text-sm">
                         <span>{c.agentName}</span>
                         <span className="text-muted-foreground text-xs">{c.whatsappChannelDisplayNumber}</span>
-                        <Badge variant="success" className="w-fit gap-1">
-                          <MessageCircle className="size-3" /> WhatsApp
-                        </Badge>
                       </div>
                     </td>
                     <td className="text-muted-foreground px-4 py-3 align-top text-sm">
