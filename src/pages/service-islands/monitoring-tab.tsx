@@ -2,12 +2,14 @@ import { useState } from "react";
 import useSWR from "swr";
 import { Headphones, Hourglass, Search, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { AttendantSummary, IslandMonitoring } from "@/types/domain";
 
 const MONITORING_REFRESH_MS = 8000;
+const ROWS_PER_PAGE = 10;
 
 const STATUS_LABELS: Record<AttendantSummary["status"], string> = { ONLINE: "Online", PAUSED: "Em pausa", OFFLINE: "Offline" };
 const STATUS_DOT: Record<AttendantSummary["status"], string> = {
@@ -15,6 +17,51 @@ const STATUS_DOT: Record<AttendantSummary["status"], string> = {
   PAUSED: "bg-amber-500",
   OFFLINE: "bg-muted-foreground",
 };
+
+/// Paginação compacta pra listas já carregadas por inteiro no client (não é
+/// paginação de servidor) — só liga/desliga Anterior/Próxima, sem seletor de
+/// tamanho de página, pra caber dentro de um card sem competir com o conteúdo.
+function MiniPagination({
+  page,
+  totalPages,
+  onChange,
+}: {
+  page: number;
+  totalPages: number;
+  onChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="flex items-center justify-between pt-1">
+      <span className="text-muted-foreground text-xs">
+        Página {page} de {totalPages}
+      </span>
+      <div className="flex gap-1.5">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-7 px-2 text-xs"
+          disabled={page <= 1}
+          onClick={() => onChange(page - 1)}
+        >
+          Anterior
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-7 px-2 text-xs"
+          disabled={page >= totalPages}
+          onClick={() => onChange(page + 1)}
+        >
+          Próxima
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function TicketList({ tickets, emptyLabel }: { tickets: IslandMonitoring["waitingTickets"]; emptyLabel: string }) {
   if (tickets.length === 0) {
@@ -46,12 +93,29 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
 
   const [search, setSearch] = useState("");
   const [showAll, setShowAll] = useState(false);
+  const [queuePage, setQueuePage] = useState(1);
+  const [attendantPage, setAttendantPage] = useState(1);
 
   if (!data) return <p className="text-muted-foreground p-4 text-sm">Carregando…</p>;
 
   const attendantRows = data.attendants.list
     .filter((a) => showAll || a.status === "ONLINE")
     .filter((a) => !search || a.name.toLowerCase().includes(search.toLowerCase()));
+
+  // Listas já vêm inteiras da API (1 fetch só) — a paginação aqui é só de
+  // exibição (slice no client), por isso a página é sempre "grampeada" no
+  // total atual em vez de resetada por efeito: se um filtro reduzir a lista,
+  // a página cai sozinha pra última válida, nunca fica em branco.
+  const queueTotalPages = Math.max(1, Math.ceil(data.queues.length / ROWS_PER_PAGE));
+  const queuePageClamped = Math.min(queuePage, queueTotalPages);
+  const pagedQueues = data.queues.slice((queuePageClamped - 1) * ROWS_PER_PAGE, queuePageClamped * ROWS_PER_PAGE);
+
+  const attendantTotalPages = Math.max(1, Math.ceil(attendantRows.length / ROWS_PER_PAGE));
+  const attendantPageClamped = Math.min(attendantPage, attendantTotalPages);
+  const pagedAttendants = attendantRows.slice(
+    (attendantPageClamped - 1) * ROWS_PER_PAGE,
+    attendantPageClamped * ROWS_PER_PAGE,
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -64,7 +128,7 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
             </span>
           </CardHeader>
           <CardContent className="flex flex-col gap-1">
-            {data.queues.map((q) => (
+            {pagedQueues.map((q) => (
               <div key={q.queueId} className="hover:bg-accent/50 flex items-center justify-between gap-3 rounded-md px-2 py-2">
                 <div className="flex min-w-0 items-center gap-2">
                   <div className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-md">
@@ -83,6 +147,7 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
               </div>
             ))}
             {data.queues.length === 0 && <p className="text-muted-foreground text-sm">Nenhuma fila cadastrada.</p>}
+            <MiniPagination page={queuePageClamped} totalPages={queueTotalPages} onChange={setQueuePage} />
           </CardContent>
         </Card>
 
@@ -115,23 +180,28 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm font-medium">
                 {showAll ? `Atendentes (${data.attendants.total})` : `Atendentes online (${data.attendants.online})`}
               </p>
-              <div className="relative w-44">
-                <Search className="text-muted-foreground absolute top-1/2 left-2 size-3.5 -translate-y-1/2" />
-                <Input
-                  placeholder="Buscar atendente..."
-                  className="h-8 pl-7 text-xs"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+              <div className="flex items-center gap-2">
+                <div className="relative w-44">
+                  <Search className="text-muted-foreground absolute top-1/2 left-2 size-3.5 -translate-y-1/2" />
+                  <Input
+                    placeholder="Buscar atendente..."
+                    className="h-8 pl-7 text-xs"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+                <Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={() => setShowAll((v) => !v)}>
+                  {showAll ? "Ver só online" : "Ver todos os atendentes"}
+                </Button>
               </div>
             </div>
 
             <div className="flex flex-col gap-1">
-              {attendantRows.map((a) => (
+              {pagedAttendants.map((a) => (
                 <div key={a.userId} className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm">
                   <div className="flex min-w-0 items-center gap-2">
                     <div className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
@@ -151,10 +221,7 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
                 <p className="text-muted-foreground py-2 text-center text-sm">Nenhum atendente encontrado.</p>
               )}
             </div>
-
-            <button type="button" className="text-primary self-start text-xs font-medium hover:underline" onClick={() => setShowAll((v) => !v)}>
-              {showAll ? "Ver só atendentes online" : "Ver todos os atendentes"}
-            </button>
+            <MiniPagination page={attendantPageClamped} totalPages={attendantTotalPages} onChange={setAttendantPage} />
           </CardContent>
         </Card>
       </div>
