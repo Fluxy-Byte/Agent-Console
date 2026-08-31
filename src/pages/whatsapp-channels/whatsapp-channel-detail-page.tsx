@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { toast } from "sonner";
-import { BarChart3, ShieldCheck } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { BadgeCheck, BarChart3, Gauge, Send, ShieldCheck, Wifi, type LucideIcon } from "lucide-react";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,30 +12,101 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
 import { api, ApiError } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import type { Agent, MonthlyConversations, WhatsappChannel, WhatsappChannelStatus } from "@/types/domain";
 import { MonthlyConversationsChart } from "./monthly-conversations-chart";
 
-type BadgeVariant = "success" | "warning" | "destructive" | "outline";
+type StatusSeverity = "success" | "warning" | "destructive" | "neutral";
 
 const GOOD_STATUSES = new Set(["CONNECTED", "GREEN", "VERIFIED", "APPROVED", "AVAILABLE_WITHOUT_REVIEW"]);
 const BAD_STATUSES = new Set(["RED", "FLAGGED", "RESTRICTED", "RATE_LIMITED", "BANNED", "DECLINED", "EXPIRED"]);
 const WARN_STATUSES = new Set(["YELLOW", "PENDING", "PENDING_REVIEW", "NOT_VERIFIED"]);
 
-function statusVariant(value?: string): BadgeVariant {
-  if (!value) return "outline";
+function statusSeverity(value?: string): StatusSeverity {
+  if (!value) return "neutral";
   if (GOOD_STATUSES.has(value)) return "success";
   if (BAD_STATUSES.has(value)) return "destructive";
   if (WARN_STATUSES.has(value)) return "warning";
-  return "outline";
+  return "neutral";
 }
 
-const STATUS_FIELD_LABEL: Record<string, string> = {
-  status: "Status da conexão",
-  quality_rating: "Qualidade",
-  name_status: "Nome do perfil",
-  code_verification_status: "Verificação",
-  messaging_limit_tier: "Limite de envio",
+const SEVERITY_ICON_CLASS: Record<StatusSeverity, string> = {
+  success: "bg-success/15 text-success",
+  warning: "bg-warning/15 text-warning",
+  destructive: "bg-destructive/15 text-destructive",
+  neutral: "bg-muted text-muted-foreground",
 };
+
+const SEVERITY_TEXT_CLASS: Record<StatusSeverity, string> = {
+  success: "text-success",
+  warning: "text-warning",
+  destructive: "text-destructive",
+  neutral: "text-foreground",
+};
+
+/// Valores brutos que a Graph API da Meta devolve pros campos de status do
+/// número — sempre em inglês. Um único dicionário cobre todos os campos: os
+/// valores não colidem em significado entre eles (ex: EXPIRED sempre quer
+/// dizer "expirado", não importa em qual campo apareça).
+const STATUS_VALUE_LABEL: Record<string, string> = {
+  CONNECTED: "Conectado",
+  PENDING: "Pendente",
+  FLAGGED: "Sinalizado",
+  RESTRICTED: "Restrito",
+  RATE_LIMITED: "Taxa limitada",
+  BANNED: "Banido",
+  DELETED: "Excluído",
+  MIGRATED: "Migrado",
+  UNKNOWN: "Desconhecido",
+  UNVERIFIED: "Não verificado",
+  GREEN: "Alta",
+  YELLOW: "Média",
+  RED: "Baixa",
+  NA: "Não disponível",
+  APPROVED: "Aprovado",
+  AVAILABLE_WITHOUT_REVIEW: "Disponível sem revisão",
+  DECLINED: "Recusado",
+  EXPIRED: "Expirado",
+  PENDING_REVIEW: "Em revisão",
+  NONE: "Nenhum",
+  VERIFIED: "Verificado",
+  NOT_VERIFIED: "Não verificado",
+  TIER_50: "Até 50 conversas/dia",
+  TIER_250: "Até 250 conversas/dia",
+  TIER_1K: "Até 1 mil conversas/dia",
+  TIER_10K: "Até 10 mil conversas/dia",
+  TIER_100K: "Até 100 mil conversas/dia",
+  TIER_UNLIMITED: "Ilimitado",
+};
+
+function translateStatusValue(value: string): string {
+  return STATUS_VALUE_LABEL[value] ?? value.replaceAll("_", " ");
+}
+
+const STATUS_FIELD_META: Record<string, { label: string; icon: LucideIcon }> = {
+  status: { label: "Status da conexão", icon: Wifi },
+  quality_rating: { label: "Qualidade", icon: Gauge },
+  name_status: { label: "Nome do perfil", icon: BadgeCheck },
+  code_verification_status: { label: "Verificação", icon: ShieldCheck },
+  messaging_limit_tier: { label: "Limite de envio", icon: Send },
+};
+
+function StatusTile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
+  const severity = statusSeverity(value);
+  return (
+    <div className="border-border bg-card flex items-center gap-3 rounded-xl border p-4">
+      <div className={cn("flex size-11 shrink-0 items-center justify-center rounded-full", SEVERITY_ICON_CLASS[severity])}>
+        <Icon className="size-5" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-muted-foreground text-xs">{label}</p>
+        <p className={cn("truncate text-base font-semibold", SEVERITY_TEXT_CLASS[severity])}>
+          {translateStatusValue(value)}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export function WhatsappChannelDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -170,7 +240,10 @@ export function WhatsappChannelDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ShieldCheck className="text-primary size-4" /> Status do número na Meta
+              <div className="bg-primary/15 text-primary flex size-7 items-center justify-center rounded-lg">
+                <ShieldCheck className="size-4" />
+              </div>
+              Status do número na Meta
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -181,18 +254,11 @@ export function WhatsappChannelDetailPage() {
               </p>
             )}
             {status && (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                {Object.entries(STATUS_FIELD_LABEL).map(([field, label]) => {
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {Object.entries(STATUS_FIELD_META).map(([field, meta]) => {
                   const value = status[field as keyof WhatsappChannelStatus] as string | undefined;
                   if (!value) return null;
-                  return (
-                    <div key={field} className="flex flex-col gap-1">
-                      <span className="text-muted-foreground text-xs">{label}</span>
-                      <Badge variant={statusVariant(value)} className="w-fit">
-                        {value.replaceAll("_", " ")}
-                      </Badge>
-                    </div>
-                  );
+                  return <StatusTile key={field} icon={meta.icon} label={meta.label} value={value} />;
                 })}
               </div>
             )}
@@ -204,7 +270,10 @@ export function WhatsappChannelDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="text-primary size-4" /> Conversas por mês em {conversations.year}
+              <div className="bg-primary/15 text-primary flex size-7 items-center justify-center rounded-lg">
+                <BarChart3 className="size-4" />
+              </div>
+              Conversas por mês em {conversations.year}
             </CardTitle>
           </CardHeader>
           <CardContent>
