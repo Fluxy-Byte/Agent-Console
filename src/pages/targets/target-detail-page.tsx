@@ -5,9 +5,11 @@ import { LogIn, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MetadataView } from "@/components/metadata-view";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { cn } from "@/lib/utils";
+import { TicketDetailDialog } from "../service-islands/ticket-detail-dialog";
 import type { MessageDocument, MessageType, Target, TicketSummary } from "@/types/domain";
 
 const STATUS_LABELS: Record<string, string> = { AI: "IA", HUMAN: "Humano", FINISHED: "Finalizado" };
@@ -131,6 +133,7 @@ export function TargetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: target } = useSWR<Target>(id ? `/api/targets/${id}` : null);
   const [messageType, setMessageType] = useState<MessageType | "">("");
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
 
   const historyParams = new URLSearchParams({ limit: "200" });
   if (messageType) historyParams.set("messageType", messageType);
@@ -156,17 +159,64 @@ export function TargetDetailPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:items-start">
-        <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Metadados</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <MetadataView metadata={target.metadata} />
-            </CardContent>
-          </Card>
+      <Tabs defaultValue="history">
+        <TabsList>
+          <TabsTrigger value="history">Histórico de conversa</TabsTrigger>
+          <TabsTrigger value="tickets">Tickets de atendimento</TabsTrigger>
+        </TabsList>
 
+        <TabsContent value="history">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:items-start">
+            <Card>
+              <CardHeader>
+                <CardTitle>Metadados</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <MetadataView metadata={target.metadata} />
+              </CardContent>
+            </Card>
+
+            {/* aside: gruda no topo da viewport ao rolar a página (sticky) e
+                nunca passa da altura da tela (max-h em cima de 100vh) — antes
+                só era limitado pela altura da coluna esquerda, que podia ela
+                mesma estourar a tela com muitos metadados. */}
+            <aside className="flex min-h-0 flex-col lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)]">
+              <Card className="flex min-h-0 flex-1 flex-col">
+                <CardHeader>
+                  <CardTitle>Histórico de conversas</CardTitle>
+                </CardHeader>
+                <CardContent className="flex min-h-0 flex-1 flex-col gap-4">
+                  <div className="flex flex-wrap gap-1.5">
+                    {TYPE_FILTERS.map((filter) => (
+                      <button
+                        key={filter.value}
+                        onClick={() => setMessageType(filter.value)}
+                        className={cn(
+                          "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                          messageType === filter.value
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-input bg-background",
+                        )}
+                      >
+                        {filter.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {!history || history.length === 0 ? (
+                    <p className="text-muted-foreground text-sm">Nenhuma mensagem ainda.</p>
+                  ) : (
+                    <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+                      {buildTimeline(history, target.tickets ?? [], target).map((entry) => entry.node)}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </aside>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="tickets">
           <Card>
             <CardHeader>
               <CardTitle>Tickets de atendimento humano</CardTitle>
@@ -187,7 +237,11 @@ export function TargetDetailPage() {
                   </TableHeader>
                   <TableBody>
                     {target.tickets.map((ticket) => (
-                      <TableRow key={ticket.id}>
+                      <TableRow
+                        key={ticket.id}
+                        className="hover:bg-accent cursor-pointer"
+                        onClick={() => setSelectedTicketId(ticket.id)}
+                      >
                         <TableCell>#{ticket.ticketNumber}</TableCell>
                         <TableCell>{ticket.queue.name}</TableCell>
                         <TableCell>{ticket.queue.serviceIsland.name}</TableCell>
@@ -202,46 +256,10 @@ export function TargetDetailPage() {
               )}
             </CardContent>
           </Card>
-        </div>
+        </TabsContent>
+      </Tabs>
 
-        {/* aside: gruda no topo da viewport ao rolar a página (sticky) e nunca
-            passa da altura da tela (max-h em cima de 100vh) — antes só era
-            limitado pela altura da coluna esquerda, que podia ela mesma
-            estourar a tela com muitos tickets/metadados. */}
-        <aside className="flex min-h-0 flex-col lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)]">
-          <Card className="flex min-h-0 flex-1 flex-col">
-            <CardHeader>
-              <CardTitle>Histórico de conversas</CardTitle>
-            </CardHeader>
-            <CardContent className="flex min-h-0 flex-1 flex-col gap-4">
-              <div className="flex flex-wrap gap-1.5">
-                {TYPE_FILTERS.map((filter) => (
-                  <button
-                    key={filter.value}
-                    onClick={() => setMessageType(filter.value)}
-                    className={cn(
-                      "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                      messageType === filter.value
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-input bg-background",
-                    )}
-                  >
-                    {filter.label}
-                  </button>
-                ))}
-              </div>
-
-              {!history || history.length === 0 ? (
-                <p className="text-muted-foreground text-sm">Nenhuma mensagem ainda.</p>
-              ) : (
-                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-                  {buildTimeline(history, target.tickets ?? [], target).map((entry) => entry.node)}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </aside>
-      </div>
+      <TicketDetailDialog ticketId={selectedTicketId} onOpenChange={(open) => !open && setSelectedTicketId(null)} />
     </div>
   );
 }
