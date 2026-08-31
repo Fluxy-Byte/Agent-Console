@@ -104,6 +104,11 @@ export interface MonthlyConversations {
   months: { month: number; count: number }[];
 }
 
+export interface MonthlyMessageVolume {
+  year: number;
+  months: { month: number; sent: number; received: number }[];
+}
+
 export interface TicketCloseTag {
   id: string;
   serviceIslandId: string;
