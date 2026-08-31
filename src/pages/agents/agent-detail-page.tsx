@@ -91,6 +91,13 @@ export function AgentDetailPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Tokens de IA nunca vêm preenchidos do backend (só a prévia de 6 chars,
+  // em agent.openaiTokenPreview/geminiTokenPreview) — campo em branco aqui =
+  // não mexe no token já salvo, mesmo padrão do metaAccessToken do WhatsApp
+  // Channel.
+  const [openaiToken, setOpenaiToken] = useState("");
+  const [geminiToken, setGeminiToken] = useState("");
+
   // Modo criação: ainda não existe agentId pra vincular um RagDocument, então
   // os lotes ficam "preparados" aqui e só são enviados de verdade depois que
   // o agente é criado (ver handleSubmit).
@@ -139,8 +146,13 @@ export function AgentDetailPage() {
     setError(null);
     setSaving(true);
     try {
+      const tokenOverrides = {
+        ...(openaiToken ? { openaiToken } : {}),
+        ...(geminiToken ? { geminiToken } : {}),
+      };
+
       if (isNew) {
-        const created = await api.post<Agent>("/api/agents", form);
+        const created = await api.post<Agent>("/api/agents", { ...form, ...tokenOverrides });
 
         for (const batch of pendingRagUploads) {
           try {
@@ -153,9 +165,11 @@ export function AgentDetailPage() {
         toast.success("Agente criado.");
         navigate(`/agents/${created.id}`, { replace: true });
       } else {
-        await api.put<Agent>(`/api/agents/${id}`, form);
+        await api.put<Agent>(`/api/agents/${id}`, { ...form, ...tokenOverrides });
         toast.success("Agente atualizado.");
       }
+      setOpenaiToken("");
+      setGeminiToken("");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Não foi possível salvar o agente.");
     } finally {
@@ -190,7 +204,17 @@ export function AgentDetailPage() {
         </TabsList>
 
         <TabsContent value="identity">
-          <IdentityTab form={form} set={set} disabled={disabled} />
+          <IdentityTab
+            form={form}
+            set={set}
+            disabled={disabled}
+            openaiToken={openaiToken}
+            onChangeOpenaiToken={setOpenaiToken}
+            openaiTokenPreview={agent?.openaiTokenPreview ?? null}
+            geminiToken={geminiToken}
+            onChangeGeminiToken={setGeminiToken}
+            geminiTokenPreview={agent?.geminiTokenPreview ?? null}
+          />
         </TabsContent>
 
         <TabsContent value="messages">

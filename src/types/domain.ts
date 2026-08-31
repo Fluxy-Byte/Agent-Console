@@ -50,6 +50,10 @@ export interface Agent {
   personality: string | null;
   ragEnabled: boolean;
   ragChunkSize: number | null;
+  /// 6 primeiros chars do token decifrado, só pra confirmação visual — nunca
+  /// o token completo. null quando nenhum token está configurado.
+  openaiTokenPreview: string | null;
+  geminiTokenPreview: string | null;
   createdAt: string;
   updatedAt: string;
 }
