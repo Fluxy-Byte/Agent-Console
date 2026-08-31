@@ -89,20 +89,24 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
     setSelectedIds(checked ? new Set(queues.items.map((q) => q.id)) : new Set());
   }
 
-  /// Cada fila é excluída individualmente (o backend bloqueia quem tem
-  /// ticket) — segue excluindo as demais mesmo se uma falhar, e no fim
-  /// resume tudo num único toast em vez de um toast de erro por item.
+  /// Cada fila é excluída individualmente — o backend decide sozinho se é
+  /// exclusão de verdade ou soft delete (fila com ticket vira "desabilitada":
+  /// some da lista, mas o histórico de atendimento continua no banco). Segue
+  /// processando as demais mesmo se uma falhar de verdade (erro de rede/
+  /// permissão), e no fim resume tudo num único toast.
   async function handleBulkDelete() {
     const ids = Array.from(selectedIds);
     setDeleting(true);
     let deletedCount = 0;
+    let disabledCount = 0;
     const failures: string[] = [];
 
     for (const id of ids) {
       const queue = queues?.items.find((q) => q.id === id);
       try {
-        await api.delete(`/api/service-islands/${islandId}/queues/${id}`);
-        deletedCount++;
+        const result = await api.delete<{ softDeleted: boolean }>(`/api/service-islands/${islandId}/queues/${id}`);
+        if (result.softDeleted) disabledCount++;
+        else deletedCount++;
       } catch (err) {
         const message = err instanceof ApiError ? err.message : "Erro desconhecido.";
         failures.push(`${queue?.name ?? id}: ${message}`);
@@ -115,6 +119,9 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
 
     if (deletedCount > 0) {
       toast.success(`${deletedCount} fila(s) excluída(s).`);
+    }
+    if (disabledCount > 0) {
+      toast.success(`${disabledCount} fila(s) desabilitada(s) — tinham histórico de atendimento, que foi preservado.`);
     }
     if (failures.length > 0) {
       toast.error(`${failures.length} fila(s) não puderam ser excluídas.`, {
@@ -169,8 +176,9 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Excluir {selectedCount} fila(s)?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Filas com algum ticket (mesmo já encerrado) não são excluídas — isso apagaria esse histórico de
-                    atendimento junto. Esta ação não pode ser desfeita.
+                    Filas sem nenhum ticket são excluídas de verdade. Filas com algum ticket (mesmo já encerrado) são
+                    só desabilitadas — somem desta lista, mas o histórico de atendimento é preservado. Esta ação não
+                    pode ser desfeita.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
