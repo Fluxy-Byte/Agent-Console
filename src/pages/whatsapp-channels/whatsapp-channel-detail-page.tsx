@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { toast } from "sonner";
+import { BarChart3, ShieldCheck } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +13,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
 import { api, ApiError } from "@/lib/api";
-import type { Agent, WhatsappChannel } from "@/types/domain";
+import type { Agent, MonthlyConversations, WhatsappChannel, WhatsappChannelStatus } from "@/types/domain";
+import { MonthlyConversationsChart } from "./monthly-conversations-chart";
+
+type BadgeVariant = "success" | "warning" | "destructive" | "outline";
+
+const GOOD_STATUSES = new Set(["CONNECTED", "GREEN", "VERIFIED", "APPROVED", "AVAILABLE_WITHOUT_REVIEW"]);
+const BAD_STATUSES = new Set(["RED", "FLAGGED", "RESTRICTED", "RATE_LIMITED", "BANNED", "DECLINED", "EXPIRED"]);
+const WARN_STATUSES = new Set(["YELLOW", "PENDING", "PENDING_REVIEW", "NOT_VERIFIED"]);
+
+function statusVariant(value?: string): BadgeVariant {
+  if (!value) return "outline";
+  if (GOOD_STATUSES.has(value)) return "success";
+  if (BAD_STATUSES.has(value)) return "destructive";
+  if (WARN_STATUSES.has(value)) return "warning";
+  return "outline";
+}
+
+const STATUS_FIELD_LABEL: Record<string, string> = {
+  status: "Status da conexão",
+  quality_rating: "Qualidade",
+  name_status: "Nome do perfil",
+  code_verification_status: "Verificação",
+  messaging_limit_tier: "Limite de envio",
+};
 
 export function WhatsappChannelDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +46,10 @@ export function WhatsappChannelDetailPage() {
 
   const { data: channel } = useSWR<WhatsappChannel>(id ? `/api/wc/${id}` : null);
   const { data: agents } = useSWR<Agent[]>(canWrite ? "/api/agents" : null);
+  const { data: status, error: statusError } = useSWR<WhatsappChannelStatus>(
+    id && channel?.hasMetaAccessToken ? `/api/wc/${id}/status` : null,
+  );
+  const { data: conversations } = useSWR<MonthlyConversations>(id ? `/api/wc/${id}/conversations-by-month` : null);
 
   const [form, setForm] = useState({ agentId: "", phoneNumberId: "", displayNumber: "", wabaId: "" });
   const [metaAccessToken, setMetaAccessToken] = useState("");
@@ -136,6 +165,53 @@ export function WhatsappChannelDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {channel.hasMetaAccessToken && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldCheck className="text-primary size-4" /> Status do número na Meta
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!status && !statusError && <p className="text-muted-foreground text-sm">Consultando a Meta…</p>}
+            {statusError && (
+              <p className="text-destructive text-sm">
+                {statusError instanceof ApiError ? statusError.message : "Não foi possível consultar o status."}
+              </p>
+            )}
+            {status && (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                {Object.entries(STATUS_FIELD_LABEL).map(([field, label]) => {
+                  const value = status[field as keyof WhatsappChannelStatus] as string | undefined;
+                  if (!value) return null;
+                  return (
+                    <div key={field} className="flex flex-col gap-1">
+                      <span className="text-muted-foreground text-xs">{label}</span>
+                      <Badge variant={statusVariant(value)} className="w-fit">
+                        {value.replaceAll("_", " ")}
+                      </Badge>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {conversations && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="text-primary size-4" /> Conversas por mês em {conversations.year}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MonthlyConversationsChart data={conversations} />
+          </CardContent>
+        </Card>
+      )}
 
       {channel.serviceIsland && (
         <Card>

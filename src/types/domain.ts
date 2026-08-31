@@ -83,6 +83,23 @@ export interface WhatsappChannel {
   agent?: Agent;
 }
 
+export interface WhatsappChannelStatus {
+  id: string;
+  display_phone_number?: string;
+  verified_name?: string;
+  status?: string;
+  quality_rating?: string;
+  name_status?: string;
+  code_verification_status?: string;
+  messaging_limit_tier?: string;
+  throughput?: { level?: string };
+}
+
+export interface MonthlyConversations {
+  year: number;
+  months: { month: number; count: number }[];
+}
+
 export interface TicketCloseTag {
   id: string;
   serviceIslandId: string;
