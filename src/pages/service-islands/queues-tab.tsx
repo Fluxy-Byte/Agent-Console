@@ -1,16 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { CheckCircle2, ListChecks, MoreVertical, Plus, XCircle } from "lucide-react";
+import { CheckCircle2, ListChecks, MoreVertical, Plus, Trash2, XCircle } from "lucide-react";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { MetricCard } from "@/components/metric-card";
 import { PaginationControls } from "@/components/pagination-controls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { api, ApiError } from "@/lib/api";
 import { useAppSelector } from "@/store/hooks";
 import type { Member, QueueListResult, QueueStats } from "@/types/domain";
 import { QueueFormDialog } from "./queue-form-dialog";
@@ -49,6 +63,66 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
     `/api/service-islands/${islandId}/queues?${listParams.toString()}`,
   );
 
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
+
+  // Muda de página/filtro = a seleção não corresponde mais ao que está na
+  // tela — mais seguro limpar do que deixar ids "fantasma" marcados.
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [queues]);
+
+  const selectedCount = selectedIds.size;
+  const allOnPageSelected = Boolean(queues?.items.length) && queues!.items.every((q) => selectedIds.has(q.id));
+
+  function toggleSelected(queueId: string, checked: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(queueId);
+      else next.delete(queueId);
+      return next;
+    });
+  }
+
+  function toggleSelectAll(checked: boolean) {
+    if (!queues) return;
+    setSelectedIds(checked ? new Set(queues.items.map((q) => q.id)) : new Set());
+  }
+
+  /// Cada fila é excluída individualmente (o backend bloqueia quem tem
+  /// ticket) — segue excluindo as demais mesmo se uma falhar, e no fim
+  /// resume tudo num único toast em vez de um toast de erro por item.
+  async function handleBulkDelete() {
+    const ids = Array.from(selectedIds);
+    setDeleting(true);
+    let deletedCount = 0;
+    const failures: string[] = [];
+
+    for (const id of ids) {
+      const queue = queues?.items.find((q) => q.id === id);
+      try {
+        await api.delete(`/api/service-islands/${islandId}/queues/${id}`);
+        deletedCount++;
+      } catch (err) {
+        const message = err instanceof ApiError ? err.message : "Erro desconhecido.";
+        failures.push(`${queue?.name ?? id}: ${message}`);
+      }
+    }
+
+    setDeleting(false);
+    setSelectedIds(new Set());
+    await mutate();
+
+    if (deletedCount > 0) {
+      toast.success(`${deletedCount} fila(s) excluída(s).`);
+    }
+    if (failures.length > 0) {
+      toast.error(`${failures.length} fila(s) não puderam ser excluídas.`, {
+        description: failures.join("\n"),
+      });
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -84,6 +158,30 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
               ))}
             </SelectContent>
           </Select>
+          {canManageQueues && selectedCount > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" disabled={deleting}>
+                  <Trash2 className="size-4" /> Excluir selecionadas ({selectedCount})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir {selectedCount} fila(s)?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Filas com algum ticket (mesmo já encerrado) não são excluídas — isso apagaria esse histórico de
+                    atendimento junto. Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction variant="destructive" onClick={handleBulkDelete}>
+                    Excluir
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           {canManageQueues && (
             <QueueFormDialog
               serviceIslandId={islandId}
@@ -132,6 +230,15 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
           <Table>
             <TableHeader>
               <TableRow>
+                {canManageQueues && (
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={allOnPageSelected}
+                      onCheckedChange={(checked) => toggleSelectAll(checked === true)}
+                      aria-label="Selecionar todas as filas desta página"
+                    />
+                  </TableHead>
+                )}
                 <TableHead>Nome da fila</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Atendentes</TableHead>
@@ -142,6 +249,15 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
             <TableBody>
               {queues.items.map((queue) => (
                 <TableRow key={queue.id}>
+                  {canManageQueues && (
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(queue.id)}
+                        onCheckedChange={(checked) => toggleSelected(queue.id, checked === true)}
+                        aria-label={`Selecionar fila ${queue.name}`}
+                      />
+                    </TableCell>
+                  )}
                   <TableCell className="font-medium">{queue.name}</TableCell>
                   <TableCell>
                     <Badge
