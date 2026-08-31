@@ -23,10 +23,10 @@ export function TableRow({ className, ...props }: React.HTMLAttributes<HTMLTable
 
 export function TableHead({ className, ...props }: React.ThHTMLAttributes<HTMLTableCellElement>) {
   return (
-    <th className={cn("text-muted-foreground px-2 py-2 text-left text-xs font-medium whitespace-nowrap", className)} {...props} />
+    <th className={cn("text-muted-foreground px-2 py-2 text-center text-xs font-medium whitespace-nowrap", className)} {...props} />
   );
 }
 
 export function TableCell({ className, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) {
-  return <td className={cn("px-2 py-2 align-top", className)} {...props} />;
+  return <td className={cn("px-2 py-2 text-center align-top", className)} {...props} />;
 }

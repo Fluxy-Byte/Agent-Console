@@ -12,7 +12,7 @@ interface SortableThProps {
 /// colunas ordenáveis das tabelas de Campanhas/Contatos.
 export function SortableTh({ label, active, dir, onClick }: SortableThProps) {
   return (
-    <button type="button" onClick={onClick} className="hover:text-foreground flex items-center gap-1 font-medium">
+    <button type="button" onClick={onClick} className="hover:text-foreground inline-flex items-center gap-1 font-medium">
       {label}
       <ChevronDown className={cn("size-3.5 transition-transform", active ? (dir === "asc" ? "rotate-180" : "") : "opacity-40")} />
     </button>

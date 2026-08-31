@@ -256,7 +256,7 @@ export function TargetsListPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-border text-muted-foreground border-b text-left text-xs uppercase">
+              <tr className="border-border text-muted-foreground border-b text-center text-xs uppercase">
                 <th className="px-4 py-3 font-medium">
                   <SortableTh label="Nome" active={sortBy === "name"} dir={sortDir} onClick={() => toggleSort("name")} />
                 </th>
@@ -284,8 +284,11 @@ export function TargetsListPage() {
                 const isActive = target.status !== "FINISHED";
                 return (
                   <tr key={target.id} className="border-border hover:bg-accent/30 border-b last:border-0">
-                    <td className="cursor-pointer px-4 py-3" onClick={() => navigate(`/targets/${target.id}`)}>
-                      <div className="flex items-center gap-3">
+                    <td
+                      className="cursor-pointer px-4 py-3 text-center"
+                      onClick={() => navigate(`/targets/${target.id}`)}
+                    >
+                      <div className="flex items-center justify-center gap-3">
                         <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium">
                           {initial ?? "—"}
                         </div>
@@ -298,22 +301,22 @@ export function TargetsListPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className="flex items-center gap-1.5">
+                    <td className="px-4 py-3 text-center">
+                      <span className="inline-flex items-center gap-1.5">
                         <MessageCircle className="text-success size-3.5" /> {target.waId}
                       </span>
                     </td>
-                    <td className="px-4 py-3">{target.whatsappChannel?.agent?.name ?? "—"}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-center">{target.whatsappChannel?.agent?.name ?? "—"}</td>
+                    <td className="px-4 py-3 text-center">
                       <Badge variant={isActive ? "success" : "secondary"}>
                         {isActive ? "Ativo" : STATUS_LABELS[target.status]}
                       </Badge>
                     </td>
-                    <td className="text-muted-foreground px-4 py-3 text-sm">
+                    <td className="text-muted-foreground px-4 py-3 text-center text-sm">
                       {target.lastInteractionAt ? new Date(target.lastInteractionAt).toLocaleString("pt-BR") : "—"}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-2">
                         <Button variant="outline" size="icon" className="size-8" onClick={() => navigate(`/targets/${target.id}`)}>
                           <MessageCircle className="size-4" />
                         </Button>

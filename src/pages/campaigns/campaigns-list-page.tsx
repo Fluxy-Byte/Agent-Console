@@ -243,7 +243,7 @@ export function CampaignsListPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-border text-muted-foreground border-b text-left text-xs uppercase">
+              <tr className="border-border text-muted-foreground border-b text-center text-xs uppercase">
                 <th className="px-4 py-3 font-medium">Campanha</th>
                 <th className="px-4 py-3 font-medium">Template/Tipo</th>
                 <th className="px-4 py-3 font-medium">Agente / Canal</th>
@@ -269,12 +269,12 @@ export function CampaignsListPage() {
 
                 return (
                   <tr key={c.id} className="border-border hover:bg-accent/30 border-b last:border-0">
-                    <td className="px-4 py-3 align-top">
-                      <div className="flex items-start gap-3">
+                    <td className="px-4 py-3 text-center align-top">
+                      <div className="flex items-center justify-center gap-3">
                         <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
                           <Send className="size-4" />
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 text-left">
                           <button
                             type="button"
                             className="text-left font-medium hover:underline"
@@ -286,34 +286,34 @@ export function CampaignsListPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 align-top">
-                      <div className="flex flex-col gap-1">
+                    <td className="px-4 py-3 text-center align-top">
+                      <div className="flex flex-col items-center gap-1">
                         <span>{c.templateName}</span>
                         {c.category && (
                           <span className="text-muted-foreground text-xs">{CATEGORY_LABEL[c.category] ?? c.category}</span>
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 align-top">
-                      <div className="flex flex-col gap-1 text-sm">
+                    <td className="px-4 py-3 text-center align-top">
+                      <div className="flex flex-col items-center gap-1 text-sm">
                         <span>{c.agentName}</span>
                         <span className="text-muted-foreground text-xs">{c.whatsappChannelDisplayNumber}</span>
                       </div>
                     </td>
-                    <td className="text-muted-foreground px-4 py-3 align-top text-sm">
-                      <div className="flex flex-col">
+                    <td className="text-muted-foreground px-4 py-3 text-center align-top text-sm">
+                      <div className="flex flex-col items-center">
                         <span>{c.createdByName ?? "—"}</span>
                         <span className="text-xs">{c.createdByEmail ?? ""}</span>
                       </div>
                     </td>
-                    <td className="text-muted-foreground px-4 py-3 align-top text-sm whitespace-nowrap">
-                      <div className="flex flex-col">
+                    <td className="text-muted-foreground px-4 py-3 text-center align-top text-sm whitespace-nowrap">
+                      <div className="flex flex-col items-center">
                         <span>{sentAt.toLocaleDateString("pt-BR")}</span>
                         <span className="text-xs">{sentAt.toLocaleTimeString("pt-BR")}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 align-top">
-                      <div className="flex flex-col gap-1">
+                    <td className="px-4 py-3 text-center align-top">
+                      <div className="flex flex-col items-center gap-1">
                         <span className="text-xs">
                           {formatNumber(c.totalContacts)} / {formatNumber(c.expectedContacts)}
                         </span>
@@ -327,10 +327,10 @@ export function CampaignsListPage() {
                         {c.totalFailures > 0 && <span className="text-destructive text-xs">{c.totalFailures} falha(s)</span>}
                       </div>
                     </td>
-                    <td className="px-4 py-3 align-top">
+                    <td className="px-4 py-3 text-center align-top">
                       <Badge variant={statusBadge?.variant ?? "outline"}>{statusBadge?.label ?? c.status}</Badge>
                     </td>
-                    <td className="px-4 py-3 align-top">
+                    <td className="px-4 py-3 text-center align-top">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="outline" size="icon" className="size-8">
