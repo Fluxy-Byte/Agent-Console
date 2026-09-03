@@ -12,6 +12,7 @@ import { AgentsListPage } from "@/pages/agents/agents-list-page";
 import { CampaignDetailPage } from "@/pages/campaigns/campaign-detail-page";
 import { CampaignNewPage } from "@/pages/campaigns/campaign-new-page";
 import { CampaignsListPage } from "@/pages/campaigns/campaigns-list-page";
+import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 import { HomePage } from "@/pages/home/home-page";
 import { ServiceIslandDetailPage } from "@/pages/service-islands/service-island-detail-page";
 import { ServiceIslandQueueDetailPage } from "@/pages/service-islands/service-island-queue-detail-page";
@@ -33,6 +34,7 @@ export function App() {
   return (
     <>
       <Toaster richColors position="top-right" />
+      <CookieConsentBanner />
       <Routes>
         <Route
           path="/signin"
