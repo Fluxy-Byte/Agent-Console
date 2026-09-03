@@ -26,7 +26,7 @@ function MetadataEntry({ label, value }: { label: string; value: unknown }) {
 
   return (
     <div className="flex items-center gap-2">
-      <Badge variant="default" className="h-8 shrink-0">
+      <Badge variant="default" className="bg-primary/10 text-primary h-8 shrink-0">
         {label}
       </Badge>
       <Badge

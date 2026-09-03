@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
-import { LogIn, LogOut } from "lucide-react";
+import { Calendar, LogIn, LogOut, Mail, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -167,20 +167,49 @@ export function TargetDetailPage() {
 
         <TabsContent value="history">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:items-start">
-            <Card>
-              <CardHeader>
-                <CardTitle>Metadados</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <MetadataView metadata={target.metadata} />
-              </CardContent>
-            </Card>
+            <div className="flex flex-col gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Metadados</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <MetadataView metadata={target.metadata} />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Informações de contato</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <Mail className="size-4" /> E-mail
+                    </span>
+                    <span className="font-medium">{target.email ?? "—"}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <Calendar className="size-4" /> Data de criação
+                    </span>
+                    <span className="font-medium">{new Date(target.firstInteractionAt).toLocaleString("pt-BR")}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <MessageCircle className="size-4" /> BSUID
+                    </span>
+                    <span className="font-medium">{target.waId}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
             {/* aside: gruda no topo da viewport ao rolar a página (sticky) e
-                nunca passa da altura da tela (max-h em cima de 100vh) — antes
-                só era limitado pela altura da coluna esquerda, que podia ela
-                mesma estourar a tela com muitos metadados. */}
-            <aside className="flex min-h-0 flex-col lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)]">
+                nunca passa da altura da tela (max-h em cima de 100dvh, sem
+                depender do breakpoint lg) — antes o cap só existia em telas
+                grandes, então em janelas menores o card crescia com o
+                conteúdo e estourava a viewport. */}
+            <aside className="flex min-h-0 max-h-[calc(100dvh-3rem)] flex-col lg:sticky lg:top-6">
               <Card className="flex min-h-0 flex-1 flex-col">
                 <CardHeader>
                   <CardTitle>Histórico de conversas</CardTitle>
