@@ -1,4 +1,4 @@
-import { Bot, Contact, Megaphone, MessageSquareText, ShieldCheck, Waypoints } from "lucide-react";
+import { Bot, Contact, Megaphone, MessageCircleMore, ShieldCheck, Waypoints } from "lucide-react";
 import { PermissionAction } from "@/domain/permission-action";
 
 export interface NavItem {
@@ -25,7 +25,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Configurações para WhatsApp",
     items: [
       { label: "Agentes", to: "/agents", icon: Bot, action: PermissionAction.AGENTS_VIEW },
-      { label: "WhatsApp Channel", to: "/wc", icon: MessageSquareText, action: PermissionAction.WABAS_VIEW },
+      { label: "WhatsApp Channel", to: "/wc", icon: MessageCircleMore, action: PermissionAction.WABAS_VIEW },
       { label: "Ilhas de Atendimento", to: "/service-island", icon: Waypoints, action: PermissionAction.SERVICE_ISLANDS_VIEW },
     ],
   },

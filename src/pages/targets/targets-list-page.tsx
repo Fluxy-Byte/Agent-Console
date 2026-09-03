@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { Clock, Contact, Lock, MessageCircle, Plus, SlidersHorizontal, UserCheck, Users } from "lucide-react";
+import { Clock, Contact, Lock, MessageCircle, Plus, SlidersHorizontal, UserCheck, UserRound, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -289,7 +289,7 @@ export function TargetsListPage() {
                     >
                       <div className="flex items-center justify-start gap-3">
                         <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium">
-                          {initial ?? "—"}
+                          {initial ?? <UserRound className="size-4" />}
                         </div>
                         <div>
                           {target.name ? (
@@ -300,11 +300,7 @@ export function TargetsListPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center gap-1.5">
-                        <MessageCircle className="text-success size-3.5" /> {target.waId}
-                      </span>
-                    </td>
+                    <td className="px-4 py-3 text-center">{target.waId}</td>
                     <td className="px-4 py-3 text-center">{target.whatsappChannel?.agent?.name ?? "—"}</td>
                     <td className="px-4 py-3 text-center">
                       <Badge variant={isActive ? "success" : "secondary"}>
