@@ -28,11 +28,6 @@ export function AuthLayout({ children, hideMobileLogo }: AuthLayoutProps) {
         <div className="pointer-events-none absolute -right-32 bottom-0 size-[28rem] rounded-full bg-white/10 blur-3xl" />
         <div className="bg-dot-grid pointer-events-none absolute inset-0 opacity-[0.07]" />
 
-        <div className="relative flex items-center gap-2">
-          <img src={fluxyLogo} alt="Fluxy" className="size-9 rounded-lg" />
-          <span className="font-[family-name:var(--font-display)] text-lg font-semibold text-white">Fluxy Agents</span>
-        </div>
-
         <div className="relative flex flex-col gap-8">
           <h1 className="font-[family-name:var(--font-display)] max-w-md text-4xl leading-tight font-semibold text-white">
             Atendimento no WhatsApp, potencializado por IA.
