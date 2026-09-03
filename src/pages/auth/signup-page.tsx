@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { CheckCircle2, Circle } from "lucide-react";
 import fluxyLogo from "@/assets/Logo.png";
 import { AuthLayout } from "@/components/auth-layout";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,14 @@ import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import { refreshSessionState } from "@/hooks/use-bootstrap-session";
 import { signUp } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/store/hooks";
+
+const PASSWORD_REQUIREMENTS = [
+  { label: "Mínimo de 8 caracteres", test: (value: string) => value.length >= 8 },
+  { label: "Pelo menos 1 número", test: (value: string) => /\d/.test(value) },
+  { label: "Pelo menos 1 símbolo", test: (value: string) => /[^A-Za-z0-9]/.test(value) },
+];
 
 export function SignUpPage() {
   const navigate = useNavigate();
@@ -20,9 +28,18 @@ export function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const passwordChecks = PASSWORD_REQUIREMENTS.map((req) => ({ ...req, met: req.test(password) }));
+  const passwordValid = passwordChecks.every((check) => check.met);
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+
+    if (!passwordValid) {
+      setError("A senha precisa ter no mínimo 8 caracteres, incluindo 1 número e 1 símbolo.");
+      return;
+    }
+
     setLoading(true);
 
     const { error: signUpError } = await signUp.email({ name, email, password });
@@ -92,7 +109,20 @@ export function SignUpPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <span className="text-muted-foreground text-xs">Mínimo de 8 caracteres.</span>
+              <div className="mt-1 flex flex-col gap-1">
+                {passwordChecks.map((check) => (
+                  <span
+                    key={check.label}
+                    className={cn(
+                      "flex items-center gap-1.5 text-xs",
+                      check.met ? "text-success" : "text-muted-foreground",
+                    )}
+                  >
+                    {check.met ? <CheckCircle2 className="size-3.5" /> : <Circle className="size-3.5" />}
+                    {check.label}
+                  </span>
+                ))}
+              </div>
             </div>
             {error && <p className="text-destructive text-sm">{error}</p>}
             <Button type="submit" disabled={loading} className="mt-2 h-12" size="lg">
