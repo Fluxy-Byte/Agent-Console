@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { Clock, Contact, MessageCircle, MoreVertical, Plus, SlidersHorizontal, UserCheck, Users } from "lucide-react";
+import { Clock, Contact, Lock, MessageCircle, Plus, SlidersHorizontal, UserCheck, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { DateRange } from "@/components/calendar";
 import { DateRangePicker } from "@/components/date-range-picker";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MetricCard } from "@/components/metric-card";
@@ -257,7 +256,7 @@ export function TargetsListPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-border text-muted-foreground border-b text-center text-xs uppercase">
-                <th className="px-4 py-3 font-medium">
+                <th className="px-4 py-3 text-left font-medium">
                   <SortableTh label="Nome" active={sortBy === "name"} dir={sortDir} onClick={() => toggleSort("name")} />
                 </th>
                 <th className="px-4 py-3 font-medium">
@@ -285,10 +284,10 @@ export function TargetsListPage() {
                 return (
                   <tr key={target.id} className="border-border hover:bg-accent/30 border-b last:border-0">
                     <td
-                      className="cursor-pointer px-4 py-3 text-center"
+                      className="cursor-pointer px-4 py-3 text-left"
                       onClick={() => navigate(`/targets/${target.id}`)}
                     >
-                      <div className="flex items-center justify-center gap-3">
+                      <div className="flex items-center justify-start gap-3">
                         <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium">
                           {initial ?? "—"}
                         </div>
@@ -316,20 +315,10 @@ export function TargetsListPage() {
                       {target.lastInteractionAt ? new Date(target.lastInteractionAt).toLocaleString("pt-BR") : "—"}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <Button variant="outline" size="icon" className="size-8" onClick={() => navigate(`/targets/${target.id}`)}>
-                          <MessageCircle className="size-4" />
+                      <div className="flex items-center justify-center">
+                        <Button variant="outline" size="icon" className="size-8" disabled title="Em breve">
+                          <Lock className="size-4" />
                         </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon" className="size-8">
-                              <MoreVertical className="size-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => navigate(`/targets/${target.id}`)}>Ver detalhes</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       </div>
                     </td>
                   </tr>
