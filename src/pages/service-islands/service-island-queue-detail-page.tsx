@@ -277,17 +277,6 @@ export function ServiceIslandQueueDetailPage() {
       </Card>
 
       {error && <p className="text-destructive text-sm">{error}</p>}
-
-      {canWrite && (
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={() => navigate(`/service-island/${island.id}`)}>
-            Cancelar
-          </Button>
-          <Button type="submit" disabled={saving}>
-            {saving ? "Salvando…" : "Salvar alterações"}
-          </Button>
-        </div>
-      )}
     </form>
   );
 }
