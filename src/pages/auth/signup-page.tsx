@@ -95,7 +95,7 @@ export function SignUpPage() {
               <span className="text-muted-foreground text-xs">Mínimo de 8 caracteres.</span>
             </div>
             {error && <p className="text-destructive text-sm">{error}</p>}
-            <Button type="submit" disabled={loading} className="mt-2" size="lg">
+            <Button type="submit" disabled={loading} className="mt-2 h-12" size="lg">
               {loading ? "Criando..." : "Criar conta"}
             </Button>
           </form>

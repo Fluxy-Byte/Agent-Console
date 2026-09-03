@@ -80,7 +80,7 @@ export function SignInPage() {
               />
             </div>
             {error && <p className="text-destructive text-sm">{error}</p>}
-            <Button type="submit" disabled={loading} className="mt-2" size="lg">
+            <Button type="submit" disabled={loading} className="mt-2 h-12" size="lg">
               {loading ? "Entrando..." : "Entrar"}
             </Button>
           </form>
