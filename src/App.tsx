@@ -59,6 +59,7 @@ export function App() {
           }
         />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/" element={<HomePage />} />
 
         <Route element={<RequireAuth />}>
           <Route path="/business" element={<BusinessListPage />} />
@@ -66,7 +67,6 @@ export function App() {
 
           <Route element={<RequireActiveCompany />}>
             <Route element={<AppShell />}>
-              <Route path="/" element={<HomePage />} />
               <Route path="/targets" element={<TargetsListPage />} />
               <Route path="/targets/:id" element={<TargetDetailPage />} />
               <Route path="/campaigns" element={<CampaignsListPage />} />
