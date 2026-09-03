@@ -49,23 +49,25 @@ export function AppShell() {
                 {!collapsed && (
                   <p className="text-muted-foreground px-2 py-1 text-xs font-medium uppercase">{group.label}</p>
                 )}
-                {items.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    className={({ isActive }) =>
-                      cn(
-                        "flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors",
-                        isActive
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "text-foreground/80 hover:bg-accent hover:text-accent-foreground",
-                      )
-                    }
-                  >
-                    <item.icon className="size-4 shrink-0" />
-                    {!collapsed && item.label}
-                  </NavLink>
-                ))}
+                <div className="flex flex-col gap-1">
+                  {items.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors",
+                          isActive
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "text-foreground/80 hover:bg-accent hover:text-accent-foreground",
+                        )
+                      }
+                    >
+                      <item.icon className="size-4 shrink-0" />
+                      {!collapsed && item.label}
+                    </NavLink>
+                  ))}
+                </div>
               </div>
             );
           })}
