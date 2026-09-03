@@ -13,7 +13,14 @@ const FEATURES = [
 /// do produto) e o card de entrar/cadastrar (children) centralizado à
 /// direita. Em telas pequenas o painel de marca some e sobra só o card, com
 /// a logo pequena acima dele.
-export function AuthLayout({ children }: { children: ReactNode }) {
+interface AuthLayoutProps {
+  children: ReactNode;
+  /** As páginas cujo card já mostra a logo (signin/signup) não precisam do
+   * cabeçalho de logo mobile duplicado aqui. */
+  hideMobileLogo?: boolean;
+}
+
+export function AuthLayout({ children, hideMobileLogo }: AuthLayoutProps) {
   return (
     <div className="flex min-h-screen">
       <div className="from-primary via-primary to-primary/70 relative hidden overflow-hidden bg-gradient-to-br lg:flex lg:w-1/2 lg:flex-col lg:justify-between lg:p-12">
@@ -46,10 +53,12 @@ export function AuthLayout({ children }: { children: ReactNode }) {
       </div>
 
       <div className="bg-dot-grid flex flex-1 flex-col items-center justify-center gap-6 p-4">
-        <div className="flex items-center gap-2 lg:hidden">
-          <img src={fluxyLogo} alt="Fluxy" className="size-8 rounded-lg" />
-          <span className="font-[family-name:var(--font-display)] text-lg font-semibold">Fluxy Agents</span>
-        </div>
+        {!hideMobileLogo && (
+          <div className="flex items-center gap-2 lg:hidden">
+            <img src={fluxyLogo} alt="Fluxy" className="size-8 rounded-lg" />
+            <span className="font-[family-name:var(--font-display)] text-lg font-semibold">Fluxy Agents</span>
+          </div>
+        )}
         {children}
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import fluxyLogo from "@/assets/Logo.png";
 import { AuthLayout } from "@/components/auth-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,9 +38,13 @@ export function SignInPage() {
   }
 
   return (
-    <AuthLayout>
+    <AuthLayout hideMobileLogo>
       <Card className="w-3/4 max-w-2xl shadow-xl">
         <CardHeader>
+          <div className="mb-1 flex items-center gap-2">
+            <img src={fluxyLogo} alt="Fluxy" className="size-8 rounded-lg" />
+            <span className="font-[family-name:var(--font-display)] text-lg font-semibold">Fluxy Agents</span>
+          </div>
           <CardTitle className="text-xl">Bem-vindo de volta</CardTitle>
           <CardDescription>Acesse o painel de gestão de agentes de IA.</CardDescription>
         </CardHeader>
