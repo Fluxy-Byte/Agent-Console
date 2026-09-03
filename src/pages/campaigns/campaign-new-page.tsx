@@ -526,7 +526,7 @@ export function CampaignNewPage() {
                           <TableRow>
                             <TableHead className="w-12">#</TableHead>
                             <TableHead>Telefone</TableHead>
-                            <TableHead>Nome</TableHead>
+                            <TableHead className="text-left">Nome</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Status</TableHead>
                           </TableRow>
@@ -536,7 +536,7 @@ export function CampaignNewPage() {
                             <TableRow key={r.index}>
                               <TableCell className="text-muted-foreground">{r.index}</TableCell>
                               <TableCell>{r.phone || "—"}</TableCell>
-                              <TableCell>{r.name || "—"}</TableCell>
+                              <TableCell className="text-left">{r.name || "—"}</TableCell>
                               <TableCell>{r.email || "—"}</TableCell>
                               <TableCell>
                                 {r.errors.length === 0 ? (

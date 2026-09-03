@@ -228,7 +228,7 @@ export function TargetDetailPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Ticket</TableHead>
+                      <TableHead className="text-left">Ticket</TableHead>
                       <TableHead>Fila</TableHead>
                       <TableHead>Ilha</TableHead>
                       <TableHead>Atendente</TableHead>
@@ -242,7 +242,7 @@ export function TargetDetailPage() {
                         className="hover:bg-accent cursor-pointer"
                         onClick={() => setSelectedTicketId(ticket.id)}
                       >
-                        <TableCell>#{ticket.ticketNumber}</TableCell>
+                        <TableCell className="text-left">#{ticket.ticketNumber}</TableCell>
                         <TableCell>{ticket.queue.name}</TableCell>
                         <TableCell>{ticket.queue.serviceIsland.name}</TableCell>
                         <TableCell>{ticket.assignedUser?.email ?? "—"}</TableCell>

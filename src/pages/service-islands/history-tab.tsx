@@ -285,7 +285,7 @@ export function HistoryTab({ island }: { island: ServiceIsland }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Ticket</TableHead>
+                <TableHead className="text-left">Ticket</TableHead>
                 <TableHead>Contato</TableHead>
                 <TableHead>Fila</TableHead>
                 <TableHead>Atendente</TableHead>
@@ -300,7 +300,7 @@ export function HistoryTab({ island }: { island: ServiceIsland }) {
                 const s = displayTicketStatus(ticket);
                 return (
                   <TableRow key={ticket.id} className="hover:bg-accent cursor-pointer" onClick={() => setSelectedTicketId(ticket.id)}>
-                    <TableCell>#{ticket.ticketNumber}</TableCell>
+                    <TableCell className="text-left">#{ticket.ticketNumber}</TableCell>
                     <TableCell>{ticket.target.name || ticket.target.waId}</TableCell>
                     <TableCell>{ticket.queue.name}</TableCell>
                     <TableCell>{ticket.assignedUser?.name ?? "—"}</TableCell>

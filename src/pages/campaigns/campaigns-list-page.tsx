@@ -244,7 +244,7 @@ export function CampaignsListPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-border text-muted-foreground border-b text-center text-xs uppercase">
-                <th className="px-4 py-3 font-medium">Campanha</th>
+                <th className="px-4 py-3 text-left font-medium">Campanha</th>
                 <th className="px-4 py-3 font-medium">Template/Tipo</th>
                 <th className="px-4 py-3 font-medium">Agente / Canal</th>
                 <th className="px-4 py-3 font-medium">Enviado por</th>
@@ -269,8 +269,8 @@ export function CampaignsListPage() {
 
                 return (
                   <tr key={c.id} className="border-border hover:bg-accent/30 border-b last:border-0">
-                    <td className="px-4 py-3 text-center align-top">
-                      <div className="flex items-center justify-center gap-3">
+                    <td className="px-4 py-3 text-left align-top">
+                      <div className="flex items-center justify-start gap-3">
                         <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
                           <Send className="size-4" />
                         </div>

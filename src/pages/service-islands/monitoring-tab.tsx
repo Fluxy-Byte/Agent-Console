@@ -209,7 +209,7 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Atendente</TableHead>
+                    <TableHead className="text-left">Atendente</TableHead>
                     <TableHead>Fila</TableHead>
                     <TableHead>Tickets</TableHead>
                     <TableHead>Status</TableHead>
@@ -218,8 +218,8 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
                 <TableBody>
                   {pagedAttendants.map((a) => (
                     <TableRow key={a.userId}>
-                      <TableCell>
-                        <div className="flex items-center justify-center gap-2">
+                      <TableCell className="text-left">
+                        <div className="flex items-center justify-start gap-2">
                           <div className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
                             {a.name.charAt(0).toUpperCase()}
                           </div>

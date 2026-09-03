@@ -247,7 +247,7 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
                     />
                   </TableHead>
                 )}
-                <TableHead>Nome da fila</TableHead>
+                <TableHead className="text-left">Nome da fila</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Atendentes</TableHead>
                 <TableHead>Horário</TableHead>
@@ -266,7 +266,7 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
                       />
                     </TableCell>
                   )}
-                  <TableCell className="font-medium">{queue.name}</TableCell>
+                  <TableCell className="text-left font-medium">{queue.name}</TableCell>
                   <TableCell>
                     <Badge
                       className={
