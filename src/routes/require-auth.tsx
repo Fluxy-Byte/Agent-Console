@@ -28,7 +28,7 @@ export function RedirectIfBootstrapped({ children }: { children: React.ReactNode
   const user = useAppSelector((s) => s.auth.user);
 
   if (status !== "ready") return null;
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to="/targets" replace />;
 
   return <>{children}</>;
 }

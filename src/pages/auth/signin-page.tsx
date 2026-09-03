@@ -34,7 +34,7 @@ export function SignInPage() {
 
     await refreshSessionState(dispatch);
     setLoading(false);
-    navigate("/", { replace: true });
+    navigate("/targets", { replace: true });
   }
 
   return (
