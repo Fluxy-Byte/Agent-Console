@@ -34,10 +34,10 @@ export function AppShell() {
           collapsed ? "w-16" : "w-64",
         )}
       >
-        <div className="flex h-14 items-center gap-2 px-4">
+        <Link to="/" className="flex h-14 items-center gap-2 px-4">
           <img src={fluxyLogo} alt="Fluxy" className="size-8 shrink-0 rounded-lg" />
           {!collapsed && <span className="font-[family-name:var(--font-display)] font-semibold">Fluxy Agents</span>}
-        </div>
+        </Link>
 
         <nav className="flex-1 overflow-y-auto px-2 py-2">
           {NAV_GROUPS.map((group) => {

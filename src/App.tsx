@@ -12,6 +12,7 @@ import { AgentsListPage } from "@/pages/agents/agents-list-page";
 import { CampaignDetailPage } from "@/pages/campaigns/campaign-detail-page";
 import { CampaignNewPage } from "@/pages/campaigns/campaign-new-page";
 import { CampaignsListPage } from "@/pages/campaigns/campaigns-list-page";
+import { HomePage } from "@/pages/home/home-page";
 import { ServiceIslandDetailPage } from "@/pages/service-islands/service-island-detail-page";
 import { ServiceIslandQueueDetailPage } from "@/pages/service-islands/service-island-queue-detail-page";
 import { ServiceIslandsListPage } from "@/pages/service-islands/service-islands-list-page";
@@ -65,7 +66,7 @@ export function App() {
 
           <Route element={<RequireActiveCompany />}>
             <Route element={<AppShell />}>
-              <Route path="/" element={<Navigate to="/targets" replace />} />
+              <Route path="/" element={<HomePage />} />
               <Route path="/targets" element={<TargetsListPage />} />
               <Route path="/targets/:id" element={<TargetDetailPage />} />
               <Route path="/campaigns" element={<CampaignsListPage />} />
