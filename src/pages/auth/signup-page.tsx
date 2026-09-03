@@ -43,7 +43,7 @@ export function SignUpPage() {
 
   return (
     <AuthLayout>
-      <Card className="w-full max-w-sm shadow-xl">
+      <Card className="w-3/4 max-w-2xl shadow-xl">
         <CardHeader>
           <CardTitle className="text-xl">Criar conta</CardTitle>
           <CardDescription>

@@ -38,7 +38,7 @@ export function SignInPage() {
 
   return (
     <AuthLayout>
-      <Card className="w-full max-w-sm shadow-xl">
+      <Card className="w-3/4 max-w-2xl shadow-xl">
         <CardHeader>
           <CardTitle className="text-xl">Bem-vindo de volta</CardTitle>
           <CardDescription>Acesse o painel de gestão de agentes de IA.</CardDescription>
