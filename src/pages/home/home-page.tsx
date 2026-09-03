@@ -136,7 +136,7 @@ export function HomePage() {
               Ir para o painel <ArrowRight className="size-4" />
             </Link>
             <a href={PHONE_WHATSAPP} target="_blank" rel="noreferrer" className={cn(buttonVariants({ size: "lg", variant: "outline" }))}>
-              <MessageCircle className="size-4" /> Falar com a Fluxy
+              <MessageCircle className="size-4" /> Fale com um de nossos vendedores
             </a>
           </div>
         </section>
@@ -255,7 +255,9 @@ export function HomePage() {
         <section>
           <Card className="border-primary/30 bg-primary/5">
             <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-              <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Fale com a Fluxy</h2>
+              <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
+                Fale com um de nossos vendedores
+              </h2>
               <p className="text-muted-foreground max-w-md text-sm">
                 Dúvidas, suporte ou novidades: fale com a gente por ligação ou WhatsApp.
               </p>
