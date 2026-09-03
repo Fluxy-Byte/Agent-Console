@@ -80,7 +80,6 @@ export function SignUpPage() {
                 id="name"
                 required
                 placeholder="Seu nome"
-                className="h-12"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -93,7 +92,6 @@ export function SignUpPage() {
                 required
                 autoComplete="email"
                 placeholder="voce@empresa.com"
-                className="h-12"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -105,7 +103,6 @@ export function SignUpPage() {
                 required
                 minLength={8}
                 autoComplete="new-password"
-                className="h-12"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -125,7 +122,7 @@ export function SignUpPage() {
               </div>
             </div>
             {error && <p className="text-destructive text-sm">{error}</p>}
-            <Button type="submit" disabled={loading} className="mt-2 h-12" size="lg">
+            <Button type="submit" disabled={loading} className="mt-2" size="lg">
               {loading ? "Criando..." : "Criar conta"}
             </Button>
           </form>

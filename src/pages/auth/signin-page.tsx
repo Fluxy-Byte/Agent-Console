@@ -58,7 +58,6 @@ export function SignInPage() {
                 required
                 autoComplete="email"
                 placeholder="voce@empresa.com"
-                className="h-12"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -74,13 +73,12 @@ export function SignInPage() {
                 id="password"
                 required
                 autoComplete="current-password"
-                className="h-12"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
             {error && <p className="text-destructive text-sm">{error}</p>}
-            <Button type="submit" disabled={loading} className="mt-2 h-12" size="lg">
+            <Button type="submit" disabled={loading} className="mt-2" size="lg">
               {loading ? "Entrando..." : "Entrar"}
             </Button>
           </form>
