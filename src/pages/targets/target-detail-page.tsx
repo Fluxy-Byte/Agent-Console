@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
-import { Calendar, IdCard, LogIn, LogOut, Mail, Phone } from "lucide-react";
+import { Bot, Calendar, IdCard, LogIn, LogOut, Mail, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -156,10 +156,7 @@ export function TargetDetailPage() {
           </h1>
           <Badge variant="outline">{STATUS_LABELS[target.status]}</Badge>
         </div>
-        <p className="text-muted-foreground mt-1 text-sm">
-          {target.waId ?? "Sem telefone"} {target.email && `· ${target.email}`} · Agente:{" "}
-          {target.whatsappChannel?.agent?.name}
-        </p>
+        {target.email && <p className="text-muted-foreground mt-1 text-sm">{target.email}</p>}
       </div>
 
       <Tabs defaultValue="history">
@@ -209,6 +206,24 @@ export function TargetDetailPage() {
                     </span>
                     <span className="font-medium">{target.bsuid ?? "Ainda não recebido"}</span>
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-primary/20 bg-primary/5">
+                <CardHeader>
+                  <CardTitle className="text-primary flex items-center gap-2">
+                    <Bot className="size-5" /> Agente de IA
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {target.whatsappChannel?.agent?.name ? (
+                    <p className="text-sm">
+                      Este contato está sendo monitorado pelo agente de IA{" "}
+                      <strong>{target.whatsappChannel.agent.name}</strong>.
+                    </p>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">Nenhum agente de IA vinculado a este canal.</p>
+                  )}
                 </CardContent>
               </Card>
             </div>
