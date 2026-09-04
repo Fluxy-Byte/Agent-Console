@@ -40,6 +40,7 @@ export interface Agent {
   processingMessage: string;
   transferMessage: string;
   unsupportedFormatMessage: string;
+  blockedMessage: string;
   outOfHoursMessage: string;
   outOfHoursEnabled: boolean;
   closingMessage: string;
@@ -177,6 +178,7 @@ export interface Target {
   status: TargetStatus;
   firstInteractionAt: string;
   lastInteractionAt: string | null;
+  blockedAgentIds: string[];
   whatsappChannel?: WhatsappChannel & { agent: Agent };
   tickets?: TicketSummary[];
 }

@@ -6,6 +6,7 @@ export interface FormState {
   processingMessage: string;
   transferMessage: string;
   unsupportedFormatMessage: string;
+  blockedMessage: string;
   outOfHoursMessage: string;
   outOfHoursEnabled: boolean;
   closingMessage: string;

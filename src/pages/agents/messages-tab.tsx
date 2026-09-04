@@ -91,6 +91,13 @@ export function MessagesTab({ form, set, disabled }: AgentFormTabProps) {
             onChange={(v) => set("unsupportedFormatMessage", v)}
             disabled={disabled}
           />
+          <RequiredMessageField
+            label="Mensagem para números bloqueados"
+            helper="Enviada no lugar da IA/atendente quando o contato está bloqueado para este agente."
+            value={form.blockedMessage}
+            onChange={(v) => set("blockedMessage", v)}
+            disabled={disabled}
+          />
         </CardContent>
       </Card>
 

@@ -43,6 +43,8 @@ const EMPTY_FORM: FormState = {
     "Entendido! Para garantir que você receba o melhor atendimento, vou transferir esta conversa para um de nossos atendentes, que dará continuidade a partir daqui. Por favor, aguarde só mais um instante — em breve alguém da nossa equipe vai falar com você.",
   unsupportedFormatMessage:
     "Desculpe, ainda não consigo processar esse tipo de arquivo ou mídia que você enviou. Para que eu possa te ajudar da melhor forma, poderia, por gentileza, reenviar sua solicitação em texto?",
+  blockedMessage:
+    "No momento não conseguimos continuar o atendimento por este canal. Se precisar de suporte, entre em contato por outro meio.",
   outOfHoursMessage:
     "Agradecemos o seu contato! No momento estamos fora do nosso horário de atendimento humano, mas já registramos sua mensagem. Assim que nossa equipe retornar, um de nossos atendentes vai falar com você o quanto antes.",
   outOfHoursEnabled: true,
@@ -66,6 +68,7 @@ function toForm(agent: Agent): FormState {
     processingMessage: agent.processingMessage,
     transferMessage: agent.transferMessage,
     unsupportedFormatMessage: agent.unsupportedFormatMessage,
+    blockedMessage: agent.blockedMessage,
     outOfHoursMessage: agent.outOfHoursMessage,
     outOfHoursEnabled: agent.outOfHoursEnabled,
     closingMessage: agent.closingMessage,

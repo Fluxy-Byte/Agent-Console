@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { Clock, Contact, Lock, MessageCircle, Plus, SlidersHorizontal, UserCheck, UserRound, Users } from "lucide-react";
+import { Clock, Contact, MessageCircle, Plus, SlidersHorizontal, UserCheck, UserRound, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { SortableTh } from "@/components/sortable-th";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
 import type { Agent, TargetListResult, TargetStats } from "@/types/domain";
+import { BlockAgentsDialog } from "./block-agents-dialog";
 import { ContactFormDialog } from "./contact-form-dialog";
 
 const ALL = "all";
@@ -312,9 +313,13 @@ export function TargetsListPage() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center">
-                        <Button variant="outline" size="icon" className="size-8" disabled title="Em breve">
-                          <Lock className="size-4" />
-                        </Button>
+                        <BlockAgentsDialog
+                          targetId={target.id}
+                          targetName={target.name || target.waId}
+                          blockedAgentIds={target.blockedAgentIds}
+                          disabled={!canWrite}
+                          onSaved={() => mutate()}
+                        />
                       </div>
                     </td>
                   </tr>
