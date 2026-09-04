@@ -56,7 +56,9 @@ export function CampaignsListPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const { data: agents } = useSWR<Agent[]>("/api/agents");
+  // includeDeleted: campanhas antigas podem ter sido disparadas por um
+  // agente já excluído — o filtro precisa continuar oferecendo essa opção.
+  const { data: agents } = useSWR<Agent[]>("/api/agents?includeDeleted=true");
   const { data: filterOptions } = useSWR<CampaignFilterOptions>("/api/campaigns/filter-options");
 
   const filterParams = new URLSearchParams();
@@ -116,6 +118,7 @@ export function CampaignsListPage() {
                 {agents?.map((a) => (
                   <SelectItem key={a.id} value={a.id}>
                     {a.name}
+                    {a.deletedAt && " (excluído)"}
                   </SelectItem>
                 ))}
               </SelectContent>

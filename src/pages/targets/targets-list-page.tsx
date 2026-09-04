@@ -42,7 +42,9 @@ export function TargetsListPage() {
   const can = useCan();
   const canWrite = can(PermissionAction.CONTACTS_WRITE);
 
-  const { data: agents } = useSWR<Agent[]>("/api/agents");
+  // includeDeleted: contatos antigos podem estar filtrados por um agente já
+  // excluído — o filtro precisa continuar oferecendo essa opção.
+  const { data: agents } = useSWR<Agent[]>("/api/agents?includeDeleted=true");
 
   const [agentId, setAgentId] = useState(ALL);
   const [name, setName] = useState("");
@@ -170,6 +172,7 @@ export function TargetsListPage() {
                 {agents?.map((a) => (
                   <SelectItem key={a.id} value={a.id}>
                     {a.name}
+                    {a.deletedAt && " (excluído)"}
                   </SelectItem>
                 ))}
               </SelectContent>

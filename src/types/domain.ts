@@ -55,6 +55,10 @@ export interface Agent {
   /// o token completo. null quando nenhum token está configurado.
   openaiTokenPreview: string | null;
   geminiTokenPreview: string | null;
+  /// Soft delete — null = ativo. Excluído nunca aparece na lista de agentes
+  /// nem no vínculo de WhatsApp Channel, mas ainda pode aparecer em filtros
+  /// (Contatos/Campanhas, via ?includeDeleted=true) e telas de informação.
+  deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

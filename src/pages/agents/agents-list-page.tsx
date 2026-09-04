@@ -1,18 +1,48 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { Bot, Plus } from "lucide-react";
+import { toast } from "sonner";
+import { Bot, Plus, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
+import { api, ApiError } from "@/lib/api";
 import type { Agent } from "@/types/domain";
 
 export function AgentsListPage() {
   const navigate = useNavigate();
   const can = useCan();
-  const { data: agents } = useSWR<Agent[]>("/api/agents");
+  const canWrite = can(PermissionAction.AGENTS_WRITE);
+  const { data: agents, mutate } = useSWR<Agent[]>("/api/agents");
+
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function handleDelete(agent: Agent) {
+    setDeletingId(agent.id);
+    try {
+      await api.delete(`/api/agents/${agent.id}`);
+      await mutate();
+      toast.success(`Agente "${agent.name}" excluído.`);
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Não foi possível excluir o agente.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -23,7 +53,7 @@ export function AgentsListPage() {
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Agentes</h1>
           <p className="text-muted-foreground mt-1 text-sm">Agentes de IA configurados para esta empresa.</p>
         </div>
-        {can(PermissionAction.AGENTS_WRITE) && (
+        {canWrite && (
           <Button onClick={() => navigate("/agents/new")}>
             <Plus className="size-4" /> Novo agente
           </Button>
@@ -48,6 +78,38 @@ export function AgentsListPage() {
                 </p>
               </div>
               <Badge variant={agent.isActive ? "default" : "outline"}>{agent.isActive ? "Ativo" : "Inativo"}</Badge>
+              {canWrite && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-destructive size-8 shrink-0"
+                      disabled={deletingId === agent.id}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Excluir "{agent.name}"?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Só é possível excluir um agente sem nenhum WhatsApp Channel vinculado. O agente some da lista
+                        e de qualquer configuração nova, mas continua aparecendo em filtros e informações de
+                        contatos/campanhas antigas.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction variant="destructive" onClick={() => handleDelete(agent)}>
+                        Excluir
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </div>
           </Card>
         ))}
