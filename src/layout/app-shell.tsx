@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { ChevronsLeft, ChevronsRight, LogOut } from "lucide-react";
 import fluxyLogo from "@/assets/Logo.png";
@@ -26,8 +26,22 @@ export function AppShell() {
     window.location.href = "/signin";
   }
 
+  // Trava a rolagem do documento enquanto o shell está montado — toda página
+  // aqui dentro já rola internamente pelo <main>; sem isso, qualquer
+  // conteúdo que escape do contêiner (tabela larga, popover mal posicionado
+  // etc.) faz o body inteiro crescer e o menu lateral "termina" antes do fim
+  // da página em vez de acompanhar o scroll.
+  useEffect(() => {
+    const { body } = document;
+    const previousOverflow = body.style.overflow;
+    body.style.overflow = "hidden";
+    return () => {
+      body.style.overflow = previousOverflow;
+    };
+  }, []);
+
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-dvh overflow-hidden">
       <aside
         className={cn(
           "bg-sidebar-gradient border-border flex flex-col border-r transition-[width] duration-200",
