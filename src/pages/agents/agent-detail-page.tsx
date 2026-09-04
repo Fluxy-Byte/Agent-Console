@@ -34,9 +34,6 @@ async function uploadRagBatch(agentId: string, batch: RagUploadBatch): Promise<v
 const EMPTY_FORM: FormState = {
   name: "Assistente Virtual",
   isActive: true,
-  welcomeMessage:
-    "Olá! 😊 Seja muito bem-vindo(a) ao nosso atendimento. Eu sou o assistente virtual e estou aqui para te ajudar com informações, dúvidas ou o que você precisar. Caso seja necessário, também posso te encaminhar para um de nossos atendentes. Como posso te ajudar hoje?",
-  welcomeEnabled: true,
   processingMessage:
     "Só um momento, por favor. Estou analisando cuidadosamente sua mensagem para te dar a resposta mais completa e precisa possível. Já retorno com as informações!",
   transferMessage:
@@ -63,8 +60,6 @@ function toForm(agent: Agent): FormState {
   return {
     name: agent.name,
     isActive: agent.isActive,
-    welcomeMessage: agent.welcomeMessage,
-    welcomeEnabled: agent.welcomeEnabled,
     processingMessage: agent.processingMessage,
     transferMessage: agent.transferMessage,
     unsupportedFormatMessage: agent.unsupportedFormatMessage,

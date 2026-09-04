@@ -35,8 +35,6 @@ export interface Agent {
   organizationId: string;
   name: string;
   isActive: boolean;
-  welcomeMessage: string;
-  welcomeEnabled: boolean;
   processingMessage: string;
   transferMessage: string;
   unsupportedFormatMessage: string;

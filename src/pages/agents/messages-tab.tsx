@@ -107,14 +107,6 @@ export function MessagesTab({ form, set, disabled }: AgentFormTabProps) {
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <ToggleableMessageField
-            label="Mensagem de boas-vindas"
-            value={form.welcomeMessage}
-            enabled={form.welcomeEnabled}
-            onChangeValue={(v) => set("welcomeMessage", v)}
-            onChangeEnabled={(v) => set("welcomeEnabled", v)}
-            disabled={disabled}
-          />
-          <ToggleableMessageField
             label="Mensagem de fora de horário de atendimento humano"
             value={form.outOfHoursMessage}
             enabled={form.outOfHoursEnabled}

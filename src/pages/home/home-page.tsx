@@ -44,7 +44,7 @@ const MODULES: ModuleCard[] = [
     icon: Bot,
     title: "Agentes de IA",
     description:
-      "Crie agentes com personalidade própria para atender no WhatsApp: mensagens de boas-vindas, transbordo, fora de horário e encerramento, tudo configurável.",
+      "Crie agentes com personalidade própria para atender no WhatsApp: mensagens de transbordo, fora de horário e encerramento, tudo configurável.",
     to: "/agents",
     ctaLabel: "Ver agentes",
   },
