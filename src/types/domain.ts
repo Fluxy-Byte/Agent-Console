@@ -85,7 +85,9 @@ export interface WhatsappChannel {
   phoneNumberId: string;
   displayNumber: string;
   wabaId: string;
-  hasMetaAccessToken: boolean;
+  /// 3 primeiros + 3 últimos caracteres do token, com asteriscos fixos no
+  /// meio (ex: "AAA************BBB") — null quando nenhum token configurado.
+  metaAccessTokenPreview: string | null;
   createdAt: string;
   updatedAt: string;
   serviceIsland?: ServiceIsland | null;

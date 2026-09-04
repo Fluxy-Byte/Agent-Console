@@ -95,7 +95,11 @@ export function ChannelDataDialog({ channel, disabled, onSaved, trigger }: Chann
               id="wc-meta-access-token"
               type="password"
               disabled={disabled || saving}
-              placeholder={channel.hasMetaAccessToken ? "•••• configurado — digite para trocar" : "Nenhum token configurado"}
+              placeholder={
+                channel.metaAccessTokenPreview
+                  ? `${channel.metaAccessTokenPreview} — digite para trocar`
+                  : "Nenhum token configurado"
+              }
               value={metaAccessToken}
               onChange={(e) => setMetaAccessToken(e.target.value)}
             />

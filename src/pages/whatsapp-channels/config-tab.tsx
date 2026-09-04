@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { Bot, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { WhatsappChannel } from "@/types/domain";
-import { AgentPickerDialog } from "./agent-picker-dialog";
+import { AgentPicker } from "./agent-picker-dialog";
 import { ChannelDataDialog } from "./channel-data-dialog";
 
 interface ConfigTabProps {
@@ -27,21 +27,11 @@ export function ConfigTab({ channel, canWrite, onSaved }: ConfigTabProps) {
   return (
     <div className="flex flex-col gap-6">
       <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardHeader>
           <CardTitle>Agentes</CardTitle>
-          <AgentPickerDialog
-            channel={channel}
-            disabled={!canWrite}
-            onSaved={onSaved}
-            trigger={
-              <Button type="button" variant="outline" size="sm" disabled={!canWrite}>
-                <Bot className="size-4" /> Trocar agente
-              </Button>
-            }
-          />
         </CardHeader>
         <CardContent>
-          <InfoRow label="Agente atual" value={channel.agent?.name ?? "—"} />
+          <AgentPicker channel={channel} disabled={!canWrite} onSaved={onSaved} />
         </CardContent>
       </Card>
 
@@ -63,7 +53,7 @@ export function ConfigTab({ channel, canWrite, onSaved }: ConfigTabProps) {
           <InfoRow label="Phone Number ID" value={channel.phoneNumberId} />
           <InfoRow label="Número de exibição" value={channel.displayNumber} />
           <InfoRow label="WhatsApp Business Account ID" value={channel.wabaId} />
-          <InfoRow label="Token de acesso da Meta" value={channel.hasMetaAccessToken ? "Configurado" : "Não configurado"} />
+          <InfoRow label="Token de acesso da Meta" value={channel.metaAccessTokenPreview ?? "Não configurado"} />
         </CardContent>
       </Card>
 

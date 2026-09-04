@@ -33,7 +33,7 @@ export function WhatsappChannelDetailPage() {
         </TabsList>
 
         <TabsContent value="dashboard">
-          <DashboardTab channelId={channel.id} hasMetaAccessToken={channel.hasMetaAccessToken} />
+          <DashboardTab channelId={channel.id} hasMetaAccessToken={channel.metaAccessTokenPreview !== null} />
         </TabsContent>
 
         <TabsContent value="config">
