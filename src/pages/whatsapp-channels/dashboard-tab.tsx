@@ -1,11 +1,45 @@
+import { useState } from "react";
 import useSWR from "swr";
-import { BadgeCheck, BarChart3, Gauge, MessageSquare, Send, ShieldCheck, Wifi, type LucideIcon } from "lucide-react";
+import {
+  BadgeCheck,
+  BarChart3,
+  CheckCircle2,
+  Gauge,
+  Hourglass,
+  Megaphone,
+  MessageSquare,
+  Send,
+  ShieldCheck,
+  Tag,
+  Wallet,
+  Wifi,
+  type LucideIcon,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MetricCard } from "@/components/metric-card";
 import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { MonthlyConversations, MonthlyMessageVolume, WhatsappChannelStatus } from "@/types/domain";
+import type {
+  MonthlyConversations,
+  MonthlyMessageVolume,
+  TemplateCategory,
+  WhatsappChannelCampaignReport,
+  WhatsappChannelStatus,
+} from "@/types/domain";
 import { MonthlyConversationsChart } from "./monthly-conversations-chart";
 import { MonthlyMessageVolumeChart } from "./monthly-message-volume-chart";
+
+const CATEGORY_LABEL: Record<TemplateCategory, string> = {
+  MARKETING: "Marketing",
+  UTILITY: "Utilidade",
+  AUTHENTICATION: "Autenticação",
+};
+
+function categoryLabel(category: string | null): string {
+  if (!category) return "Sem categoria";
+  return CATEGORY_LABEL[category as TemplateCategory] ?? category;
+}
 
 type StatusSeverity = "success" | "warning" | "destructive" | "neutral";
 
@@ -118,6 +152,10 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
   );
   const { data: conversations } = useSWR<MonthlyConversations>(`/api/wc/${channelId}/conversations-by-month`);
   const { data: messageVolume } = useSWR<MonthlyMessageVolume>(`/api/wc/${channelId}/messages-by-month`);
+  const { data: campaignReport } = useSWR<WhatsappChannelCampaignReport>(`/api/wc/${channelId}/campaigns-report`);
+
+  const [campaignsModalOpen, setCampaignsModalOpen] = useState(false);
+  const [spendModalOpen, setSpendModalOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-6">
@@ -147,6 +185,85 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
           </CardContent>
         </Card>
       )}
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <MetricCard
+          icon={Megaphone}
+          iconClassName="bg-primary/15 text-primary"
+          label="Relatório de campanhas"
+          value={campaignReport?.totalCampaigns ?? "—"}
+          sublabel="Campanhas de disparo ativo realizadas"
+          onClick={() => setCampaignsModalOpen(true)}
+        />
+        <MetricCard
+          icon={Wallet}
+          iconClassName="bg-primary/15 text-primary"
+          label="Gastos"
+          value={campaignReport?.totalMessagesSent ?? "—"}
+          sublabel="Mensagens de campanha enviadas"
+          onClick={() => setSpendModalOpen(true)}
+        />
+      </div>
+
+      <Dialog open={campaignsModalOpen} onOpenChange={setCampaignsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Relatório de campanhas</DialogTitle>
+            <DialogDescription>Campanhas de disparo ativo realizadas por este canal.</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <MetricCard
+              icon={Megaphone}
+              iconClassName="bg-primary/15 text-primary"
+              label="Total"
+              value={campaignReport?.totalCampaigns ?? 0}
+              sublabel="Campanhas criadas"
+            />
+            <MetricCard
+              icon={CheckCircle2}
+              iconClassName="bg-success/15 text-success"
+              label="Concluídas"
+              value={campaignReport?.completedCampaigns ?? 0}
+              sublabel="Disparo finalizado"
+            />
+            <MetricCard
+              icon={Hourglass}
+              iconClassName="bg-warning/15 text-warning"
+              label="Em processamento"
+              value={campaignReport?.processingCampaigns ?? 0}
+              sublabel="Disparo em andamento"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={spendModalOpen} onOpenChange={setSpendModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Gastos</DialogTitle>
+            <DialogDescription>Mensagens de campanha enviadas por categoria de template.</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {campaignReport?.byCategory.map((row) => (
+              <MetricCard
+                key={row.category ?? "none"}
+                icon={Tag}
+                iconClassName="bg-primary/15 text-primary"
+                label={categoryLabel(row.category)}
+                value={row.messagesSent}
+                sublabel={`${row.campaignCount} campanha(s)`}
+              />
+            ))}
+            <MetricCard
+              icon={Send}
+              iconClassName="bg-primary/15 text-primary"
+              label="Volumetria total"
+              value={campaignReport?.totalMessagesSent ?? 0}
+              sublabel="Todas as categorias somadas"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {conversations && (
         <Card>

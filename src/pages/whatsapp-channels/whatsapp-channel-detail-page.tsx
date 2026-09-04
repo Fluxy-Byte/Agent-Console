@@ -4,7 +4,7 @@ import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
-import type { Agent, WhatsappChannel } from "@/types/domain";
+import type { WhatsappChannel } from "@/types/domain";
 import { ConfigTab } from "./config-tab";
 import { DashboardTab } from "./dashboard-tab";
 
@@ -14,7 +14,6 @@ export function WhatsappChannelDetailPage() {
   const canWrite = can(PermissionAction.WABAS_WRITE);
 
   const { data: channel, mutate } = useSWR<WhatsappChannel>(id ? `/api/wc/${id}` : null);
-  const { data: agents } = useSWR<Agent[]>(canWrite ? "/api/agents" : null);
 
   if (!channel) return <div className="p-6 text-sm text-muted-foreground">Carregando…</div>;
 
@@ -27,18 +26,18 @@ export function WhatsappChannelDetailPage() {
         <p className="text-muted-foreground mt-1 text-sm">Configurações e métricas do WhatsApp Channel.</p>
       </div>
 
-      <Tabs defaultValue="config">
+      <Tabs defaultValue="dashboard">
         <TabsList>
-          <TabsTrigger value="config">Configuração</TabsTrigger>
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="config">Configuração</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="config">
-          <ConfigTab channel={channel} agents={agents} canWrite={canWrite} onSaved={() => mutate()} />
-        </TabsContent>
 
         <TabsContent value="dashboard">
           <DashboardTab channelId={channel.id} hasMetaAccessToken={channel.hasMetaAccessToken} />
+        </TabsContent>
+
+        <TabsContent value="config">
+          <ConfigTab channel={channel} canWrite={canWrite} onSaved={() => mutate()} />
         </TabsContent>
       </Tabs>
     </div>
