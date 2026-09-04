@@ -115,11 +115,6 @@ export interface MonthlyMessageVolume {
 }
 
 export interface WhatsappChannelCampaignReport {
-  totalCampaigns: number;
-  completedCampaigns: number;
-  processingCampaigns: number;
-  /// Volumetria total (todas as categorias) — Campaign.totalSent somado.
-  totalMessagesSent: number;
   byCategory: { category: string | null; campaignCount: number; messagesSent: number }[];
 }
 
