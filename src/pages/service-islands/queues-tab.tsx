@@ -240,11 +240,13 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
               <TableRow>
                 {canManageQueues && (
                   <TableHead className="w-10">
-                    <Checkbox
-                      checked={allOnPageSelected}
-                      onCheckedChange={(checked) => toggleSelectAll(checked === true)}
-                      aria-label="Selecionar todas as filas desta página"
-                    />
+                    <div className="flex items-center justify-center">
+                      <Checkbox
+                        checked={allOnPageSelected}
+                        onCheckedChange={(checked) => toggleSelectAll(checked === true)}
+                        aria-label="Selecionar todas as filas desta página"
+                      />
+                    </div>
                   </TableHead>
                 )}
                 <TableHead className="text-left">Nome da fila</TableHead>
@@ -259,22 +261,26 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
                 <TableRow key={queue.id}>
                   {canManageQueues && (
                     <TableCell>
-                      <Checkbox
-                        checked={selectedIds.has(queue.id)}
-                        onCheckedChange={(checked) => toggleSelected(queue.id, checked === true)}
-                        aria-label={`Selecionar fila ${queue.name}`}
-                      />
+                      <div className="flex items-center justify-center">
+                        <Checkbox
+                          checked={selectedIds.has(queue.id)}
+                          onCheckedChange={(checked) => toggleSelected(queue.id, checked === true)}
+                          aria-label={`Selecionar fila ${queue.name}`}
+                        />
+                      </div>
                     </TableCell>
                   )}
                   <TableCell className="text-left font-medium">{queue.name}</TableCell>
                   <TableCell>
-                    <Badge
-                      className={
-                        queue.isActive ? "bg-primary/10 text-primary border-transparent" : "bg-muted text-muted-foreground border-transparent"
-                      }
-                    >
-                      {queue.isActive ? "Ativa" : "Inativa"}
-                    </Badge>
+                    <div className="flex items-center justify-center">
+                      <Badge
+                        className={
+                          queue.isActive ? "bg-primary/10 text-primary border-transparent" : "bg-muted text-muted-foreground border-transparent"
+                        }
+                      >
+                        {queue.isActive ? "Ativa" : "Inativa"}
+                      </Badge>
+                    </div>
                   </TableCell>
                   <TableCell>{queue.members?.length ?? 0}</TableCell>
                   <TableCell className="text-muted-foreground">
@@ -288,18 +294,20 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
                     )}
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="size-8">
-                          <MoreVertical className="size-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => navigate(`/service-island/${islandId}/queue/${queue.id}`)}>
-                          Editar
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center justify-center">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="icon" className="size-8">
+                            <MoreVertical className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => navigate(`/service-island/${islandId}/queue/${queue.id}`)}>
+                            Editar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

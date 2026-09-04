@@ -28,5 +28,5 @@ export function TableHead({ className, ...props }: React.ThHTMLAttributes<HTMLTa
 }
 
 export function TableCell({ className, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) {
-  return <td className={cn("px-2 py-2 text-center align-top", className)} {...props} />;
+  return <td className={cn("px-2 py-2 text-center align-middle", className)} {...props} />;
 }

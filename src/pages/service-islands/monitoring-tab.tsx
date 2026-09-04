@@ -203,54 +203,56 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
               </div>
             </div>
 
-            {attendantRows.length === 0 ? (
-              <p className="text-muted-foreground py-2 text-center text-sm">Nenhum atendente encontrado.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-left">Atendente</TableHead>
-                    <TableHead>Fila</TableHead>
-                    <TableHead>Tickets</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pagedAttendants.map((a) => (
-                    <TableRow key={a.userId}>
-                      <TableCell className="text-left align-middle">
-                        <div className="flex items-center justify-start gap-2">
-                          <div className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
-                            {a.name.charAt(0).toUpperCase()}
-                          </div>
-                          <span className="truncate font-medium">{a.name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground align-middle">{a.queueName}</TableCell>
-                      <TableCell className="text-muted-foreground align-middle">{a.ticketCount}</TableCell>
-                      <TableCell className="align-middle">
-                        <span className="inline-flex items-center gap-1.5">
-                          <span className={cn("size-1.5 rounded-full", STATUS_DOT[a.status])} />
-                          {STATUS_LABELS[a.status]}
-                        </span>
-                      </TableCell>
+            <div className="border-border overflow-hidden rounded-lg border">
+              {attendantRows.length === 0 ? (
+                <p className="text-muted-foreground p-6 text-center text-sm">Nenhum atendente encontrado.</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-left">Atendente</TableHead>
+                      <TableHead>Fila</TableHead>
+                      <TableHead>Tickets</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-            {attendantRows.length > 0 && (
-              <PaginationControls
-                page={attendantPageClamped}
-                pageSize={attendantPageSize}
-                total={attendantRows.length}
-                onPageChange={setAttendantPage}
-                onPageSizeChange={(size) => {
-                  setAttendantPageSize(size);
-                  setAttendantPage(1);
-                }}
-              />
-            )}
+                  </TableHeader>
+                  <TableBody>
+                    {pagedAttendants.map((a) => (
+                      <TableRow key={a.userId}>
+                        <TableCell className="text-left">
+                          <div className="flex items-center justify-start gap-2">
+                            <div className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
+                              {a.name.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="truncate font-medium">{a.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">{a.queueName}</TableCell>
+                        <TableCell className="text-muted-foreground">{a.ticketCount}</TableCell>
+                        <TableCell>
+                          <span className="inline-flex items-center justify-center gap-1.5">
+                            <span className={cn("size-1.5 rounded-full", STATUS_DOT[a.status])} />
+                            {STATUS_LABELS[a.status]}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+              {attendantRows.length > 0 && (
+                <PaginationControls
+                  page={attendantPageClamped}
+                  pageSize={attendantPageSize}
+                  total={attendantRows.length}
+                  onPageChange={setAttendantPage}
+                  onPageSizeChange={(size) => {
+                    setAttendantPageSize(size);
+                    setAttendantPage(1);
+                  }}
+                />
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
