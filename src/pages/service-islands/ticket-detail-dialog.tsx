@@ -1,7 +1,7 @@
 import { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { toast } from "sonner";
-import { Download, ExternalLink, RotateCcw } from "lucide-react";
+import { Download, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -112,16 +112,6 @@ export function TicketDetailDialog({ ticketId, onOpenChange }: TicketDetailDialo
                   <p className="text-sm font-medium">{ticket.target.name || "Sem nome"}</p>
                   <p className="text-muted-foreground text-xs">{ticket.target.waId ?? "Telefone não informado"}</p>
                   {ticket.target.email && <p className="text-muted-foreground text-xs">{ticket.target.email}</p>}
-                  {ticket.target.waId && (
-                    <a
-                      href={`https://wa.me/${ticket.target.waId.replace(/\D/g, "")}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-primary mt-2 inline-flex items-center gap-1 text-xs font-medium hover:underline"
-                    >
-                      Ver no WhatsApp <ExternalLink className="size-3" />
-                    </a>
-                  )}
                 </div>
 
                 <div className="flex flex-col gap-1.5 border-t pt-3 text-xs">

@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MetadataView } from "@/components/metadata-view";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
+import { PaginationControls } from "@/components/pagination-controls";
 import { cn } from "@/lib/utils";
 import { TicketDetailDialog } from "../service-islands/ticket-detail-dialog";
 import type { MessageDocument, MessageType, Target, TicketSummary } from "@/types/domain";
@@ -134,6 +135,8 @@ export function TargetDetailPage() {
   const { data: target } = useSWR<Target>(id ? `/api/targets/${id}` : null);
   const [messageType, setMessageType] = useState<MessageType | "">("");
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [ticketsPage, setTicketsPage] = useState(1);
+  const [ticketsPageSize, setTicketsPageSize] = useState(10);
 
   const historyParams = new URLSearchParams({ limit: "200" });
   if (messageType) historyParams.set("messageType", messageType);
@@ -142,6 +145,12 @@ export function TargetDetailPage() {
   );
 
   if (!target) return <div className="p-6 text-sm text-muted-foreground">Carregando…</div>;
+
+  const totalTickets = target.tickets?.length ?? 0;
+  const paginatedTickets = (target.tickets ?? []).slice(
+    (ticketsPage - 1) * ticketsPageSize,
+    ticketsPage * ticketsPageSize,
+  );
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -275,7 +284,7 @@ export function TargetDetailPage() {
               <CardTitle>Tickets de atendimento humano</CardTitle>
             </CardHeader>
             <CardContent>
-              {!target.tickets || target.tickets.length === 0 ? (
+              {totalTickets === 0 ? (
                 <p className="text-muted-foreground text-sm">Nenhum ticket para este contato ainda.</p>
               ) : (
                 <Table>
@@ -289,7 +298,7 @@ export function TargetDetailPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {target.tickets.map((ticket) => (
+                    {paginatedTickets.map((ticket) => (
                       <TableRow
                         key={ticket.id}
                         className="hover:bg-accent cursor-pointer"
@@ -308,6 +317,18 @@ export function TargetDetailPage() {
                 </Table>
               )}
             </CardContent>
+            {totalTickets > 0 && (
+              <PaginationControls
+                page={ticketsPage}
+                pageSize={ticketsPageSize}
+                total={totalTickets}
+                onPageChange={setTicketsPage}
+                onPageSizeChange={(size) => {
+                  setTicketsPageSize(size);
+                  setTicketsPage(1);
+                }}
+              />
+            )}
           </Card>
         </TabsContent>
       </Tabs>
