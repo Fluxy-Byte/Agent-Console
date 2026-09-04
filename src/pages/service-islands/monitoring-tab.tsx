@@ -218,7 +218,7 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
                 <TableBody>
                   {pagedAttendants.map((a) => (
                     <TableRow key={a.userId}>
-                      <TableCell className="text-left">
+                      <TableCell className="text-left align-middle">
                         <div className="flex items-center justify-start gap-2">
                           <div className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
                             {a.name.charAt(0).toUpperCase()}
@@ -226,9 +226,9 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
                           <span className="truncate font-medium">{a.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">{a.queueName}</TableCell>
-                      <TableCell className="text-muted-foreground">{a.ticketCount}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-muted-foreground align-middle">{a.queueName}</TableCell>
+                      <TableCell className="text-muted-foreground align-middle">{a.ticketCount}</TableCell>
+                      <TableCell className="align-middle">
                         <span className="inline-flex items-center gap-1.5">
                           <span className={cn("size-1.5 rounded-full", STATUS_DOT[a.status])} />
                           {STATUS_LABELS[a.status]}
