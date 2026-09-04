@@ -9,6 +9,7 @@ import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -560,12 +561,7 @@ export function CampaignNewPage() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="manual-phone">Telefone</Label>
-                  <Input
-                    id="manual-phone"
-                    value={manualPhone}
-                    onChange={(e) => setManualPhone(e.target.value)}
-                    placeholder="5511999999999"
-                  />
+                  <PhoneInput id="manual-phone" value={manualPhone} onChange={setManualPhone} />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="manual-name">Nome (opcional)</Label>

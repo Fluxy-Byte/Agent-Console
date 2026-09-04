@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { api, ApiError } from "@/lib/api";
 import type { WhatsappChannel } from "@/types/domain";
@@ -94,13 +95,7 @@ export function ContactFormDialog({ onCreated, trigger }: ContactFormDialogProps
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="contact-phone">Telefone</Label>
-            <Input
-              id="contact-phone"
-              required
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="5511999999999"
-            />
+            <PhoneInput id="contact-phone" value={phone} onChange={setPhone} />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="contact-name">Nome (opcional)</Label>
