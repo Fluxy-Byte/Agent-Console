@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { CheckCircle2, ListChecks, MoreVertical, Plus, Trash2, XCircle } from "lucide-react";
+import { CheckCircle2, ListChecks, Pencil, Plus, Trash2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -18,7 +18,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { MetricCard } from "@/components/metric-card";
 import { PaginationControls } from "@/components/pagination-controls";
@@ -295,18 +294,14 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline" size="icon" className="size-8">
-                            <MoreVertical className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => navigate(`/service-island/${islandId}/queue/${queue.id}`)}>
-                            Editar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="size-8"
+                        onClick={() => navigate(`/service-island/${islandId}/queue/${queue.id}`)}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>

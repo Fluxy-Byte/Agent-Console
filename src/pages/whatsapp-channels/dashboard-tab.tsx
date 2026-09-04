@@ -14,8 +14,8 @@ import { MonthlyConversationsChart } from "./monthly-conversations-chart";
 import { MonthlyMessageVolumeChart } from "./monthly-message-volume-chart";
 
 const CATEGORY_LABEL: Record<TemplateCategory, string> = {
-  MARKETING: "Marketing",
-  UTILITY: "Utilidade",
+  MARKETING: "Campanhas de Marketing",
+  UTILITY: "Campanhas de Utilidade",
   AUTHENTICATION: "Autenticação",
 };
 
@@ -198,7 +198,7 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <ValueTile icon={Send} label="Volumetria total (mês atual)" value={totalVolumeThisMonth} />
+            <ValueTile icon={Send} label="Volumetria total (mês atual)" value={`${totalVolumeThisMonth} mensagens`} />
             {campaignReport?.byCategory.map((row) => (
               <ValueTile key={row.category ?? "none"} icon={Tag} label={categoryLabel(row.category)} value={row.messagesSent} />
             ))}
