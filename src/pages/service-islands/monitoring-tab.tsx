@@ -75,7 +75,7 @@ function TicketList({ tickets, emptyLabel }: { tickets: IslandMonitoring["waitin
       {tickets.map((ticket) => (
         <div key={ticket.id} className="border-border flex items-center justify-between gap-3 rounded-md border px-3 py-2">
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium">{ticket.target.name || ticket.target.waId}</p>
+            <p className="truncate text-sm font-medium">{ticket.target.name || ticket.target.waId || "—"}</p>
             <p className="text-muted-foreground truncate text-xs">
               #{ticket.ticketNumber} · {ticket.queue.name}
               {ticket.assignedUser && ` · ${ticket.assignedUser.name}`}

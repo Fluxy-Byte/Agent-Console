@@ -301,7 +301,7 @@ export function TargetsListPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-center">{target.waId}</td>
+                    <td className="px-4 py-3 text-center">{target.waId ?? "—"}</td>
                     <td className="px-4 py-3 text-center">{target.whatsappChannel?.agent?.name ?? "—"}</td>
                     <td className="px-4 py-3 text-center">
                       <Badge variant={isActive ? "success" : "secondary"}>
@@ -315,7 +315,7 @@ export function TargetsListPage() {
                       <div className="flex items-center justify-center">
                         <BlockAgentsDialog
                           targetId={target.id}
-                          targetName={target.name || target.waId}
+                          targetName={target.name || target.waId || target.bsuid || "este contato"}
                           blockedAgentIds={target.blockedAgentIds}
                           disabled={!canWrite}
                           onSaved={() => mutate()}

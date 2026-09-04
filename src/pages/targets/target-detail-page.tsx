@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
-import { Calendar, LogIn, LogOut, Mail, MessageCircle } from "lucide-react";
+import { Calendar, IdCard, LogIn, LogOut, Mail, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -46,7 +46,7 @@ function resolveAttendantName(messageCreatedAt: string, tickets: TicketSummary[]
 function resolveSenderLabel(message: MessageDocument, target: Target, tickets: TicketSummary[]): string {
   switch (message.senderType) {
     case "CUSTOMER":
-      return target.name || target.waId;
+      return target.name || target.waId || "Cliente";
     case "AGENT_AI":
       return target.whatsappChannel?.agent?.name ?? "Agente de IA";
     case "ATTENDANT":
@@ -145,17 +145,20 @@ export function TargetDetailPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageBreadcrumb items={[{ label: "Contatos", to: "/targets" }, { label: target.name || target.waId }]} />
+      <PageBreadcrumb
+        items={[{ label: "Contatos", to: "/targets" }, { label: target.name || target.waId || "Contato" }]}
+      />
 
       <div>
         <div className="flex items-center gap-2">
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
-            {target.name || target.waId}
+            {target.name || target.waId || "Contato sem nome"}
           </h1>
           <Badge variant="outline">{STATUS_LABELS[target.status]}</Badge>
         </div>
         <p className="text-muted-foreground mt-1 text-sm">
-          {target.waId} {target.email && `· ${target.email}`} · Agente: {target.whatsappChannel?.agent?.name}
+          {target.waId ?? "Sem telefone"} {target.email && `· ${target.email}`} · Agente:{" "}
+          {target.whatsappChannel?.agent?.name}
         </p>
       </div>
 
@@ -196,9 +199,15 @@ export function TargetDetailPage() {
                   </div>
                   <div className="flex items-center justify-between gap-3 text-sm">
                     <span className="text-muted-foreground flex items-center gap-1.5">
-                      <MessageCircle className="size-4" /> BSUID
+                      <Phone className="size-4" /> Telefone
                     </span>
-                    <span className="font-medium">{target.waId}</span>
+                    <span className="font-medium">{target.waId ?? "Não informado"}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <IdCard className="size-4" /> BSUID
+                    </span>
+                    <span className="font-medium">{target.bsuid ?? "Ainda não recebido"}</span>
                   </div>
                 </CardContent>
               </Card>

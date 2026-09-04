@@ -97,7 +97,7 @@ export function HistoryTab({ island }: { island: ServiceIsland }) {
         return [
           `#${t.ticketNumber}`,
           t.target.name ?? "",
-          t.target.waId,
+          t.target.waId ?? "",
           t.queue.name,
           t.assignedUser?.name ?? "",
           t.closeTag?.name ?? "",
@@ -301,7 +301,7 @@ export function HistoryTab({ island }: { island: ServiceIsland }) {
                 return (
                   <TableRow key={ticket.id} className="hover:bg-accent cursor-pointer" onClick={() => setSelectedTicketId(ticket.id)}>
                     <TableCell className="text-left">#{ticket.ticketNumber}</TableCell>
-                    <TableCell>{ticket.target.name || ticket.target.waId}</TableCell>
+                    <TableCell>{ticket.target.name || ticket.target.waId || "—"}</TableCell>
                     <TableCell>{ticket.queue.name}</TableCell>
                     <TableCell>{ticket.assignedUser?.name ?? "—"}</TableCell>
                     <TableCell>

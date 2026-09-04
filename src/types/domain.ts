@@ -171,7 +171,13 @@ export interface Target {
   id: string;
   organizationId: string;
   whatsappChannelId: string;
-  waId: string;
+  /// Business-Scoped User ID (vínculo principal do contato desde abr/2026) —
+  /// null só quando o contato ainda não mandou mensagem de verdade pelo
+  /// WhatsApp (ex: cadastro manual).
+  bsuid: string | null;
+  /// Telefone — a Meta pode omitir quando o contato ativa @username e não
+  /// há troca recente de telefone.
+  waId: string | null;
   name: string | null;
   email: string | null;
   metadata: Record<string, unknown> | null;
@@ -190,7 +196,7 @@ export interface IslandTicket {
   ticketNumber: number;
   status: "WAITING" | "IN_PROGRESS" | "CLOSED";
   closeReason: TicketCloseReason | null;
-  target: { id: string; name: string | null; waId: string };
+  target: { id: string; name: string | null; waId: string | null };
   queue: { id: string; name: string };
   assignedUser: { id: string; name: string; email: string } | null;
   closeTag: { id: string; name: string } | null;
@@ -257,7 +263,7 @@ export interface TicketDetail {
   ticketNumber: number;
   status: "WAITING" | "IN_PROGRESS" | "CLOSED";
   closeReason: TicketCloseReason | null;
-  target: { id: string; name: string | null; waId: string; email: string | null; metadata: Record<string, unknown> | null };
+  target: { id: string; name: string | null; waId: string | null; email: string | null; metadata: Record<string, unknown> | null };
   queue: { id: string; name: string };
   assignedUser: { id: string; name: string; email: string } | null;
   closeTag: { id: string; name: string } | null;
