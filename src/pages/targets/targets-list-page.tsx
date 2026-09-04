@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { Clock, Contact, MessageCircle, Plus, SlidersHorizontal, UserCheck, UserRound, Users } from "lucide-react";
+import { Clock, Contact, MessageCircle, Plus, SlidersHorizontal, UserCheck, UserRound, Users, UsersRound } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -115,7 +115,7 @@ export function TargetsListPage() {
         )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <MetricCard
           icon={Users}
           iconClassName="bg-primary/10 text-primary"
@@ -131,11 +131,18 @@ export function TargetsListPage() {
           sublabel={`${activeRate.toFixed(0)}% do total`}
         />
         <MetricCard
+          icon={UsersRound}
+          iconClassName="bg-teal-500/10 text-teal-600 dark:text-teal-400"
+          label="Contatos que interagiram hoje"
+          value={stats ? formatNumber(stats.contactsInteractedToday) : "—"}
+          sublabel="Contatos distintos · últimas 24h"
+        />
+        <MetricCard
           icon={MessageCircle}
           iconClassName="bg-blue-500/10 text-blue-600 dark:text-blue-400"
           label="Interações hoje"
           value={stats ? formatNumber(stats.interactionsToday) : "—"}
-          sublabel="Últimas 24h"
+          sublabel="Mensagens trocadas · últimas 24h"
         />
         <MetricCard
           icon={Clock}

@@ -376,6 +376,9 @@ export interface TargetStats {
   total: number;
   active: number;
   interactionsToday: number;
+  /// Contatos distintos (não mensagens) com pelo menos uma interação nas
+  /// últimas 24h — diferente de interactionsToday, que soma cada mensagem.
+  contactsInteractedToday: number;
   lastInteractionAt: string | null;
   primaryAgentName: string | null;
 }
