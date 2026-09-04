@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
-import { Bot, Calendar, IdCard, LogIn, LogOut, Mail, Phone } from "lucide-react";
+import { Bot, Calendar, FileText, IdCard, LogIn, LogOut, Mail, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -123,6 +123,16 @@ function MessageBubble({ message, senderLabel }: { message: MessageDocument; sen
       </div>
       {message.messageType === "IMAGE" && message.mediaUrl ? (
         <img src={message.mediaUrl} alt={message.text || "Imagem"} className="max-w-full rounded-md" />
+      ) : message.messageType === "DOCUMENT" && message.mediaUrl ? (
+        <a
+          href={message.mediaUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="text-primary inline-flex items-center gap-1.5 font-medium hover:underline"
+        >
+          <FileText className="size-4 shrink-0" />
+          {message.text || "Documento"}
+        </a>
       ) : (
         message.text || message.mediaUrl || "(sem conteúdo)"
       )}
