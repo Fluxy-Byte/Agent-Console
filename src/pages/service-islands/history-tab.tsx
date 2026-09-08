@@ -156,8 +156,8 @@ export function HistoryTab({ island }: { island: ServiceIsland }) {
       </div>
 
       <Card className="p-4">
-        <div className="grid gap-3 lg:grid-cols-[1fr_160px_160px_150px_160px_220px_auto] lg:items-end">
-          <div className="flex flex-col gap-1.5">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="flex flex-col gap-1.5 sm:col-span-2 xl:col-span-1">
             <Label className="text-xs">Buscar</Label>
             <Input
               placeholder="Ticket, contato ou atendente..."
@@ -265,7 +265,7 @@ export function HistoryTab({ island }: { island: ServiceIsland }) {
               }}
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-end gap-2">
             <Button variant="outline" disabled={!hasFilters} onClick={resetFilters}>
               Limpar
             </Button>
