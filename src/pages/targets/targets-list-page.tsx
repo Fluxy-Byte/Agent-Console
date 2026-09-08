@@ -133,14 +133,14 @@ export function TargetsListPage() {
         <MetricCard
           icon={UsersRound}
           iconClassName="bg-teal-500/10 text-teal-600 dark:text-teal-400"
-          label="Contatos que interagiram hoje"
+          label="Interações (Contatos)"
           value={stats ? formatNumber(stats.contactsInteractedToday) : "—"}
           sublabel="Contatos distintos · últimas 24h"
         />
         <MetricCard
           icon={MessageCircle}
           iconClassName="bg-blue-500/10 text-blue-600 dark:text-blue-400"
-          label="Interações hoje"
+          label="Interações (Mensagens)"
           value={stats ? formatNumber(stats.interactionsToday) : "—"}
           sublabel="Mensagens trocadas · últimas 24h"
         />
