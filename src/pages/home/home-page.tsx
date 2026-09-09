@@ -162,7 +162,7 @@ export function HomePage() {
       <div className="mx-auto flex max-w-6xl flex-col gap-16 px-6 py-12">
         {/* Da primeira conversa ao aquecimento de leads */}
         <section className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-16">
-          <Card className="flex flex-col justify-start gap-4 p-6">
+          <div className="flex flex-col justify-start gap-4">
             <span className="text-primary text-xs font-semibold tracking-widest uppercase">Conheça mais</span>
             <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold sm:text-3xl">
               Da primeira conversa ao aquecimento de seus leads para gerar grandes resultados.
@@ -174,7 +174,7 @@ export function HomePage() {
             <a href="#contato" className={cn(buttonVariants({ size: "lg" }), "mt-auto w-fit")}>
               Saber mais
             </a>
-          </Card>
+          </div>
           <div className="flex justify-center lg:justify-end">
             <video
               src={conversaVideo}
@@ -182,7 +182,7 @@ export function HomePage() {
               loop
               muted
               playsInline
-              className="h-[320px] w-auto max-w-full rounded-2xl object-cover shadow-lg sm:h-[360px]"
+              className="h-[420px] w-auto max-w-full rounded-2xl object-cover shadow-lg sm:h-[480px] lg:h-[560px]"
             />
           </div>
         </section>
@@ -192,7 +192,7 @@ export function HomePage() {
           <Card className="flex items-center justify-center p-10">
             <img src={metaLogo} alt="Meta Business Partner" className="w-full max-w-xs" />
           </Card>
-          <Card className="flex flex-col justify-start gap-4 p-6">
+          <div className="flex flex-col justify-start gap-4">
             <span className="text-primary flex items-center gap-2 text-xs font-semibold tracking-widest uppercase">
               <ShieldCheck className="size-4" /> Segurança de ponta a ponta
             </span>
@@ -206,7 +206,7 @@ export function HomePage() {
             <Link to="/politica-de-privacidade" className={cn(buttonVariants({ size: "lg" }), "mt-auto w-fit")}>
               Saber mais sobre a política de segurança
             </Link>
-          </Card>
+          </div>
         </section>
 
         {/* Módulos / cada ponta da ferramenta */}
