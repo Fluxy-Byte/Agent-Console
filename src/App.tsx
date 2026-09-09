@@ -14,6 +14,7 @@ import { CampaignNewPage } from "@/pages/campaigns/campaign-new-page";
 import { CampaignsListPage } from "@/pages/campaigns/campaigns-list-page";
 import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 import { HomePage } from "@/pages/home/home-page";
+import { PrivacyPolicyPage } from "@/pages/legal/privacy-policy-page";
 import { ServiceIslandDetailPage } from "@/pages/service-islands/service-island-detail-page";
 import { ServiceIslandQueueDetailPage } from "@/pages/service-islands/service-island-queue-detail-page";
 import { ServiceIslandsListPage } from "@/pages/service-islands/service-islands-list-page";
@@ -62,6 +63,7 @@ export function App() {
         />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/" element={<HomePage />} />
+        <Route path="/politica-de-privacidade" element={<PrivacyPolicyPage />} />
 
         <Route element={<RequireAuth />}>
           <Route path="/business" element={<BusinessListPage />} />

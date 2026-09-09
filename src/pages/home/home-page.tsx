@@ -17,16 +17,18 @@ import {
   Network,
   PhoneCall,
   Plug,
+  ShieldCheck,
   Sparkles,
   Waypoints,
   Webhook,
 } from "lucide-react";
-import fluxyLogo from "@/assets/Logo.png";
 import heroImage from "@/assets/ApresentacaoInicial.jpg";
 import conversaVideo from "@/assets/VideoConversa.mp4";
+import metaLogo from "@/assets/Meta.png";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/utils";
 
 const PHONE_DISPLAY = "+55 34 9174-6481";
@@ -118,54 +120,6 @@ const INTEGRATIONS = [
   { icon: Plug, text: "Conexão direta com o WhatsApp Business Platform (WABA)" },
 ];
 
-function HomeHeader({ transparent }: { transparent: boolean }) {
-  const linkClass = cn(
-    "transition-colors",
-    transparent ? "text-white/90 hover:text-white" : "text-muted-foreground hover:text-foreground",
-  );
-
-  const navLinks = (
-    <>
-      <a href="#top" className={linkClass}>
-        Início
-      </a>
-      <a href="#cases" className={linkClass}>
-        Cases
-      </a>
-      <a href="#contato" className={linkClass}>
-        Contato
-      </a>
-      <Link to="/signin" className={linkClass}>
-        Portal
-      </Link>
-    </>
-  );
-
-  return (
-    <header
-      className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-colors",
-        transparent ? "bg-transparent" : "border-b bg-background/95 backdrop-blur",
-      )}
-    >
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
-        <a href="#top" className="flex items-center gap-2">
-          <img src={fluxyLogo} alt="Fluxy" className="h-8 w-auto rounded-md" />
-        </a>
-        <nav className="hidden items-center gap-8 text-sm font-medium sm:flex">{navLinks}</nav>
-      </div>
-      <nav
-        className={cn(
-          "flex items-center justify-center gap-6 px-6 py-2.5 text-sm font-medium sm:hidden",
-          !transparent && "border-t",
-        )}
-      >
-        {navLinks}
-      </nav>
-    </header>
-  );
-}
-
 export function HomePage() {
   const heroRef = useRef<HTMLDivElement>(null);
   const [pastHero, setPastHero] = useState(false);
@@ -182,7 +136,7 @@ export function HomePage() {
 
   return (
     <div className="bg-dot-grid min-h-screen">
-      <HomeHeader transparent={!pastHero} />
+      <SiteHeader transparent={!pastHero} />
 
       {/* Hero */}
       <section id="top" className="relative w-full scroll-mt-20">
@@ -207,8 +161,9 @@ export function HomePage() {
 
       <div className="mx-auto flex max-w-6xl flex-col gap-16 px-6 py-12">
         {/* Da primeira conversa ao aquecimento de leads */}
-        <section className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-          <div className="flex flex-col gap-4">
+        <section className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-16">
+          <Card className="flex flex-col justify-start gap-4 p-6">
+            <span className="text-primary text-xs font-semibold tracking-widest uppercase">Conheça mais</span>
             <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold sm:text-3xl">
               Da primeira conversa ao aquecimento de seus leads para gerar grandes resultados.
             </h2>
@@ -216,7 +171,10 @@ export function HomePage() {
               Veja como a Fluxy pode evoluir as conversas da sua empresa podendo aumentar o volume de vendas e
               atendimento da sua empresa.
             </p>
-          </div>
+            <a href="#contato" className={cn(buttonVariants({ size: "lg" }), "mt-auto w-fit")}>
+              Saber mais
+            </a>
+          </Card>
           <div className="flex justify-center lg:justify-end">
             <video
               src={conversaVideo}
@@ -224,9 +182,31 @@ export function HomePage() {
               loop
               muted
               playsInline
-              className="w-full max-w-md rounded-2xl shadow-lg"
+              className="h-[320px] w-auto max-w-full rounded-2xl object-cover shadow-lg sm:h-[360px]"
             />
           </div>
+        </section>
+
+        {/* Segurança e parceria com a Meta */}
+        <section className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-16">
+          <Card className="flex items-center justify-center p-10">
+            <img src={metaLogo} alt="Meta Business Partner" className="w-full max-w-xs" />
+          </Card>
+          <Card className="flex flex-col justify-start gap-4 p-6">
+            <span className="text-primary flex items-center gap-2 text-xs font-semibold tracking-widest uppercase">
+              <ShieldCheck className="size-4" /> Segurança de ponta a ponta
+            </span>
+            <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold sm:text-3xl">
+              O padrão de segurança modelado nas maiores empresas do mundo.
+            </h2>
+            <p className="text-muted-foreground text-base sm:text-lg">
+              Temos parceria com a Meta para utilização do canal oficial do WhatsApp, com mais de 20 mil mensagens
+              processadas por dia.
+            </p>
+            <Link to="/politica-de-privacidade" className={cn(buttonVariants({ size: "lg" }), "mt-auto w-fit")}>
+              Saber mais sobre a política de segurança
+            </Link>
+          </Card>
         </section>
 
         {/* Módulos / cada ponta da ferramenta */}
