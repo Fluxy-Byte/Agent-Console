@@ -1,5 +1,4 @@
 import { AccordionItem } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -13,8 +12,8 @@ function isExpandable(value: unknown): boolean {
 }
 
 /// Uma linha key:value — se o valor for expansível (object/array) vira um
-/// AccordionItem com a lista recursiva dentro; senão o valor vai num Badge.
-/// Mesmo padrão visual do Desk-Console (badge roxo pra key, branco pra value).
+/// AccordionItem com a lista recursiva dentro; senão vira título (chave) e
+/// valor embaixo. Mesmo padrão visual do Desk-Console.
 function MetadataEntry({ label, value }: { label: string; value: unknown }) {
   if (isExpandable(value)) {
     return (
@@ -25,16 +24,9 @@ function MetadataEntry({ label, value }: { label: string; value: unknown }) {
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <Badge variant="default" className="bg-primary/10 text-primary h-8 shrink-0">
-        {label}
-      </Badge>
-      <Badge
-        variant="outline"
-        className="h-8 min-w-0 max-w-full justify-start truncate border-neutral-200 bg-white text-neutral-900"
-      >
-        {String(value)}
-      </Badge>
+    <div className="flex flex-col gap-0.5">
+      <span className="text-muted-foreground text-xs">{label}</span>
+      <span className="truncate text-sm font-medium">{String(value)}</span>
     </div>
   );
 }
@@ -46,7 +38,7 @@ function MetadataValue({ value }: { value: unknown }) {
   if (Array.isArray(value)) {
     if (value.length === 0) return <span className="text-muted-foreground text-xs italic">lista vazia</span>;
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         {value.map((item, index) => (
           <MetadataEntry key={index} label={`#${index}`} value={item} />
         ))}
@@ -58,7 +50,7 @@ function MetadataValue({ value }: { value: unknown }) {
     const entries = Object.entries(value);
     if (entries.length === 0) return <span className="text-muted-foreground text-xs italic">vazio</span>;
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         {entries.map(([key, nested]) => (
           <MetadataEntry key={key} label={key} value={nested} />
         ))}
@@ -67,9 +59,9 @@ function MetadataValue({ value }: { value: unknown }) {
   }
 
   return (
-    <Badge variant="outline" className="h-8 max-w-full truncate border-neutral-200 bg-white text-neutral-900">
-      {String(value)}
-    </Badge>
+    <div className="flex flex-col gap-0.5">
+      <span className="truncate text-sm font-medium">{String(value)}</span>
+    </div>
   );
 }
 
@@ -87,9 +79,11 @@ export function MetadataView({ metadata }: MetadataViewProps) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      {entries.map(([key, value]) => (
-        <MetadataEntry key={key} label={key} value={value} />
+    <div className="flex flex-col gap-3">
+      {entries.map(([key, value], index) => (
+        <div key={key} className={index < entries.length - 1 ? "border-border/60 border-b pb-3" : ""}>
+          <MetadataEntry label={key} value={value} />
+        </div>
       ))}
     </div>
   );
