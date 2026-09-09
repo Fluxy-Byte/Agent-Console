@@ -161,12 +161,14 @@ export function HomePage() {
           <img src={heroImage} alt="Atendimento Fluxy" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/10" />
           <div className="absolute inset-0 flex items-center">
-            <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-8 px-6 lg:flex-row lg:items-center">
+            <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-5 px-6">
               <h1 className="font-[family-name:var(--font-display)] max-w-2xl text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
-                Conversas que geram grandes resultados para uma empresa. Inteligência que nunca para de evoluir no
-                mercado.
+                Conversas que geram grandes resultados para uma empresa.
               </h1>
-              <a href="#contato" className={cn(buttonVariants({ size: "lg" }), "shrink-0")}>
+              <p className="max-w-xl text-base text-white/85 sm:text-lg">
+                Inteligência que nunca para de evoluir no mercado.
+              </p>
+              <a href="#contato" className={cn(buttonVariants({ size: "lg" }))}>
                 <MessageCircle className="size-4" /> Falar com especialista
               </a>
             </div>
