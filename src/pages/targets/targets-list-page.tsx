@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { Clock, Contact, MessageCircle, Plus, SlidersHorizontal, UserCheck, UserRound, Users, UsersRound } from "lucide-react";
+import { Clock, Contact, MessageCircle, SlidersHorizontal, UserCheck, UserRound, Users, UsersRound } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,6 @@ import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
 import type { Agent, TargetListResult, TargetStats } from "@/types/domain";
 import { BlockAgentsDialog } from "./block-agents-dialog";
-import { ContactFormDialog } from "./contact-form-dialog";
 
 const ALL = "all";
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
@@ -93,26 +92,14 @@ export function TargetsListPage() {
     <div className="flex flex-col gap-6 p-6">
       <PageBreadcrumb items={[{ label: "Contatos", to: "/targets" }, { label: "Lista" }]} />
 
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
-            <Contact className="size-5" />
-          </div>
-          <div>
-            <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Contatos</h1>
-            <p className="text-muted-foreground mt-1 text-sm">Contatos cadastrados nos WhatsApp Channel desta empresa.</p>
-          </div>
+      <div className="flex items-start gap-3">
+        <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+          <Contact className="size-5" />
         </div>
-        {canWrite && (
-          <ContactFormDialog
-            onCreated={() => mutate()}
-            trigger={
-              <Button>
-                <Plus className="size-4" /> Novo contato
-              </Button>
-            }
-          />
-        )}
+        <div>
+          <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Contatos</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Contatos cadastrados nos WhatsApp Channel desta empresa.</p>
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -299,7 +286,7 @@ export function TargetsListPage() {
                       onClick={() => navigate(`/targets/${target.id}`)}
                     >
                       <div className="flex items-center justify-start gap-3">
-                        <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium">
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500 text-sm font-medium text-white">
                           {initial ?? <UserRound className="size-4" />}
                         </div>
                         <div>
