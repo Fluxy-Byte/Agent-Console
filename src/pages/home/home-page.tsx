@@ -21,6 +21,8 @@ import {
   Webhook,
 } from "lucide-react";
 import fluxyLogoInicial from "@/assets/LogoSemFundo.png";
+import heroImage from "@/assets/ApresentacaoInicial.jpg";
+import conversaVideo from "@/assets/VideoConversa.mp4";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -115,31 +117,89 @@ const INTEGRATIONS = [
   { icon: Plug, text: "Conexão direta com o WhatsApp Business Platform (WABA)" },
 ];
 
+function HomeHeader() {
+  const navLinks = (
+    <>
+      <a href="#top" className="text-muted-foreground hover:text-foreground transition-colors">
+        Início
+      </a>
+      <a href="#cases" className="text-muted-foreground hover:text-foreground transition-colors">
+        Cases
+      </a>
+      <a href="#contato" className="text-muted-foreground hover:text-foreground transition-colors">
+        Contato
+      </a>
+    </>
+  );
+
+  return (
+    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+        <a href="#top" className="flex items-center gap-2">
+          <img src={fluxyLogoInicial} alt="Fluxy" className="h-8 w-auto" />
+        </a>
+        <nav className="hidden items-center gap-8 text-sm font-medium sm:flex">{navLinks}</nav>
+        <Link to="/signin" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+          Portal
+        </Link>
+      </div>
+      <nav className="flex items-center justify-center gap-6 border-t px-6 py-2.5 text-sm font-medium sm:hidden">
+        {navLinks}
+      </nav>
+    </header>
+  );
+}
+
 export function HomePage() {
   return (
     <div className="bg-dot-grid min-h-screen">
+      <HomeHeader />
+
+      {/* Hero */}
+      <section id="top" className="relative w-full scroll-mt-20">
+        <div className="relative h-[520px] w-full overflow-hidden sm:h-[560px] lg:h-[620px]">
+          <img src={heroImage} alt="Atendimento Fluxy" className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/10" />
+          <div className="absolute inset-0 flex items-center">
+            <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-8 px-6 lg:flex-row lg:items-center">
+              <h1 className="font-[family-name:var(--font-display)] max-w-2xl text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
+                Conversas que geram grandes resultados para uma empresa. Inteligência que nunca para de evoluir no
+                mercado.
+              </h1>
+              <a href="#contato" className={cn(buttonVariants({ size: "lg" }), "shrink-0")}>
+                <MessageCircle className="size-4" /> Falar com especialista
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="mx-auto flex max-w-6xl flex-col gap-16 px-6 py-12">
-        {/* Hero */}
-        <section className="grid items-center gap-10 pt-6 lg:grid-cols-2 lg:gap-16">
-          <div className="flex flex-col items-start gap-6 text-left">
-            <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold sm:text-4xl lg:text-5xl">
-              Agentes de IA que <span className="text-primary">atendem, convertem e encantam</span> seus clientes.
-            </h1>
-            <p className="text-muted-foreground max-w-lg text-base sm:text-lg">
-              A plataforma completa para atender e converter seus clientes no WhatsApp com nossa tecnologia de
-              Inteligência artificial.
+        {/* Da primeira conversa ao aquecimento de leads */}
+        <section className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="flex flex-col gap-4">
+            <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold sm:text-3xl">
+              Da primeira conversa ao aquecimento de seus leads para gerar grandes resultados.
+            </h2>
+            <p className="text-muted-foreground text-base sm:text-lg">
+              Veja como a Fluxy pode evoluir as conversas da sua empresa podendo aumentar o volume de vendas e
+              atendimento da sua empresa.
             </p>
-            <a href={PHONE_WHATSAPP} target="_blank" rel="noreferrer" className={cn(buttonVariants({ size: "lg" }))}>
-              <MessageCircle className="size-4" /> Falar com vendedor
-            </a>
           </div>
           <div className="flex justify-center lg:justify-end">
-            <img src={fluxyLogoInicial} alt="Fluxy" className="w-full max-w-md" />
+            <video
+              src={conversaVideo}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full max-w-md rounded-2xl shadow-lg"
+            />
           </div>
         </section>
 
         {/* Módulos / cada ponta da ferramenta */}
-        <section className="flex flex-col gap-6">
+        <section id="cases" className="flex flex-col gap-6 scroll-mt-20">
           <div className="text-center">
             <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
               Conheça cada ponta da ferramenta
@@ -249,7 +309,7 @@ export function HomePage() {
         </section>
 
         {/* Contato */}
-        <section>
+        <section id="contato" className="scroll-mt-20">
           <Card className="border-primary/30 bg-primary/5">
             <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
               <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
