@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -20,7 +21,7 @@ import {
   Waypoints,
   Webhook,
 } from "lucide-react";
-import fluxyLogoInicial from "@/assets/LogoSemFundo.png";
+import fluxyLogo from "@/assets/Logo.png";
 import heroImage from "@/assets/ApresentacaoInicial.jpg";
 import conversaVideo from "@/assets/VideoConversa.mp4";
 import { Badge } from "@/components/ui/badge";
@@ -117,33 +118,48 @@ const INTEGRATIONS = [
   { icon: Plug, text: "Conexão direta com o WhatsApp Business Platform (WABA)" },
 ];
 
-function HomeHeader() {
+function HomeHeader({ transparent }: { transparent: boolean }) {
+  const linkClass = cn(
+    "transition-colors",
+    transparent ? "text-white/90 hover:text-white" : "text-muted-foreground hover:text-foreground",
+  );
+
   const navLinks = (
     <>
-      <a href="#top" className="text-muted-foreground hover:text-foreground transition-colors">
+      <a href="#top" className={linkClass}>
         Início
       </a>
-      <a href="#cases" className="text-muted-foreground hover:text-foreground transition-colors">
+      <a href="#cases" className={linkClass}>
         Cases
       </a>
-      <a href="#contato" className="text-muted-foreground hover:text-foreground transition-colors">
+      <a href="#contato" className={linkClass}>
         Contato
       </a>
+      <Link to="/signin" className={linkClass}>
+        Portal
+      </Link>
     </>
   );
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
+    <header
+      className={cn(
+        "fixed inset-x-0 top-0 z-50 transition-colors",
+        transparent ? "bg-transparent" : "border-b bg-background/95 backdrop-blur",
+      )}
+    >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
         <a href="#top" className="flex items-center gap-2">
-          <img src={fluxyLogoInicial} alt="Fluxy" className="h-8 w-auto" />
+          <img src={fluxyLogo} alt="Fluxy" className="h-8 w-auto rounded-md" />
         </a>
         <nav className="hidden items-center gap-8 text-sm font-medium sm:flex">{navLinks}</nav>
-        <Link to="/signin" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-          Portal
-        </Link>
       </div>
-      <nav className="flex items-center justify-center gap-6 border-t px-6 py-2.5 text-sm font-medium sm:hidden">
+      <nav
+        className={cn(
+          "flex items-center justify-center gap-6 px-6 py-2.5 text-sm font-medium sm:hidden",
+          !transparent && "border-t",
+        )}
+      >
         {navLinks}
       </nav>
     </header>
@@ -151,13 +167,26 @@ function HomeHeader() {
 }
 
 export function HomePage() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [pastHero, setPastHero] = useState(false);
+
+  useEffect(() => {
+    function handleScroll() {
+      const heroHeight = heroRef.current?.offsetHeight ?? 0;
+      setPastHero(window.scrollY >= heroHeight - 1);
+    }
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="bg-dot-grid min-h-screen">
-      <HomeHeader />
+      <HomeHeader transparent={!pastHero} />
 
       {/* Hero */}
       <section id="top" className="relative w-full scroll-mt-20">
-        <div className="relative h-[520px] w-full overflow-hidden sm:h-[560px] lg:h-[620px]">
+        <div ref={heroRef} className="relative h-[520px] w-full overflow-hidden sm:h-[560px] lg:h-[620px]">
           <img src={heroImage} alt="Atendimento Fluxy" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/10" />
           <div className="absolute inset-0 flex items-center">
