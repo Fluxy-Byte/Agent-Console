@@ -20,7 +20,7 @@ import {
   Waypoints,
   Webhook,
 } from "lucide-react";
-import fluxyLogo from "@/assets/Logo.png";
+import fluxyLogoInicial from "@/assets/LogoSemFundo.png";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -120,24 +120,21 @@ export function HomePage() {
     <div className="bg-dot-grid min-h-screen">
       <div className="mx-auto flex max-w-6xl flex-col gap-16 px-6 py-12">
         {/* Hero */}
-        <section className="flex flex-col items-center gap-6 text-center">
-          <img src={fluxyLogo} alt="Fluxy" className="size-16 rounded-2xl shadow-sm" />
-          <div className="flex flex-col gap-3">
-            <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold sm:text-4xl">
-              Fluxy Agents
+        <section className="grid items-center gap-10 pt-6 lg:grid-cols-2 lg:gap-16">
+          <div className="flex flex-col items-start gap-6 text-left">
+            <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold sm:text-4xl lg:text-5xl">
+              Agentes de IA que <span className="text-primary">atendem, convertem e encantam</span> seus clientes.
             </h1>
-            <p className="text-muted-foreground mx-auto max-w-2xl text-base sm:text-lg">
-              A plataforma completa para atender, converter e encantar clientes no WhatsApp com Inteligência
-              Artificial — do primeiro contato ao atendimento humano no Fluxy Desk.
+            <p className="text-muted-foreground max-w-lg text-base sm:text-lg">
+              A plataforma completa para atender e converter seus clientes no WhatsApp com nossa tecnologia de
+              Inteligência artificial.
             </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link to="/targets" className={cn(buttonVariants({ size: "lg" }))}>
-              Ir para o painel <ArrowRight className="size-4" />
-            </Link>
-            <a href={PHONE_WHATSAPP} target="_blank" rel="noreferrer" className={cn(buttonVariants({ size: "lg", variant: "outline" }))}>
-              <MessageCircle className="size-4" /> Fale com um de nossos vendedores
+            <a href={PHONE_WHATSAPP} target="_blank" rel="noreferrer" className={cn(buttonVariants({ size: "lg" }))}>
+              <MessageCircle className="size-4" /> Falar com vendedor
             </a>
+          </div>
+          <div className="flex justify-center lg:justify-end">
+            <img src={fluxyLogoInicial} alt="Fluxy" className="w-full max-w-md" />
           </div>
         </section>
 
