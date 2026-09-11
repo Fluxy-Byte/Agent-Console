@@ -7,10 +7,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // lineicons-react@2.0.0 declara "module": "dist/index.es.js" no
-      // package.json, mas só publica o build CJS (dist/index.js) — sem esse
-      // alias o Rollup falha em resolver o pacote no build de produção.
-      "lineicons-react": path.resolve(__dirname, "./node_modules/lineicons-react/dist/index.js"),
     },
   },
   server: {

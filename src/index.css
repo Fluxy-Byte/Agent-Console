@@ -153,11 +153,3 @@
 .bg-sidebar-gradient {
   background: linear-gradient(180deg, var(--color-sidebar) 0%, color-mix(in oklch, var(--color-sidebar), var(--color-primary) 4%) 100%);
 }
-
-/* Ícones do lineicons-react vêm com fill fixo em cada <path> (não usam
-   currentColor como o Lucide) — essa regra força herdar a cor do texto, pra
-   className="text-primary" etc. continuar colorindo o ícone normalmente.
-   Toda importação de ícone do lineicons-react deve levar essa classe. */
-.li-icon path {
-  fill: currentColor;
-}
