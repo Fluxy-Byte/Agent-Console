@@ -11,20 +11,33 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { MessagesSeries, SeriesRange } from "@/types/domain";
-import { formatBucketLabel, formatBucketTick, RANGE_OPTIONS } from "./chart-range-utils";
+import type { MessagesSeries, SeriesPeriod } from "@/types/domain";
+import { buildYearOptions, formatBucketLabel, formatBucketTick, formatPeriodLabel } from "./chart-range-utils";
 
 const chartConfig = {
   sent: { label: "Enviadas", color: "var(--chart-1)" },
   received: { label: "Recebidas", color: "var(--chart-2)" },
 } satisfies ChartConfig;
 
+/// Opções do Select: mês atual primeiro, depois os anos disponíveis
+/// (do mais recente pro mais antigo, a partir de 2024).
+const PERIOD_OPTIONS: SeriesPeriod[] = ["current-month", ...buildYearOptions()];
+
+function periodToParam(period: SeriesPeriod): string {
+  return String(period);
+}
+
+function parsePeriod(value: string): SeriesPeriod {
+  return value === "current-month" ? "current-month" : Number(value);
+}
+
 /// "Fluxo de mensagens" — Bar Chart - Multiple do shadcn. Diferente de
 /// conversas, cada mensagem individual conta (uma mesma conversa pode ter
-/// várias); duas séries lado a lado (enviadas/recebidas).
+/// várias); duas séries lado a lado (enviadas/recebidas). Só é possível ver
+/// o mês atual ou um ano inteiro (a partir de 2024).
 export function MessagesFlowChart({ channelId }: { channelId: string }) {
-  const [range, setRange] = useState<SeriesRange>("3m");
-  const { data } = useSWR<MessagesSeries>(`/api/wc/${channelId}/messages-series?range=${range}`);
+  const [period, setPeriod] = useState<SeriesPeriod>("current-month");
+  const { data } = useSWR<MessagesSeries>(`/api/wc/${channelId}/messages-series?period=${periodToParam(period)}`);
 
   return (
     <Card className="pt-0">
@@ -35,14 +48,14 @@ export function MessagesFlowChart({ channelId }: { channelId: string }) {
             Volumetria de mensagens trocadas — diferente de conversas, uma mesma conversa pode ter várias mensagens.
           </p>
         </div>
-        <Select value={range} onValueChange={(value) => setRange(value as SeriesRange)}>
+        <Select value={periodToParam(period)} onValueChange={(value) => setPeriod(parsePeriod(value))}>
           <SelectTrigger className="w-full sm:ml-auto sm:w-[180px]" aria-label="Selecionar período">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {RANGE_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
+            {PERIOD_OPTIONS.map((option) => (
+              <SelectItem key={periodToParam(option)} value={periodToParam(option)}>
+                {formatPeriodLabel(option)}
               </SelectItem>
             ))}
           </SelectContent>

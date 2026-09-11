@@ -143,13 +143,13 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
   );
   const { data: campaignReport } = useSWR<WhatsappChannelCampaignReport>(`/api/wc/${channelId}/campaigns-report`);
 
-  /// Volumetria total = mensagens trocadas nos últimos 30 dias (enviadas +
+  /// Volumetria total = mensagens trocadas no mês atual (enviadas +
   /// recebidas) — não é soma de Campaign.totalSent, isso conta só disparo
-  /// ativo e ignora o que o cliente manda de volta. Range fixo em "1m",
-  /// independente do filtro que o usuário escolher no gráfico "Fluxo de
-  /// mensagens" abaixo.
-  const { data: messagesLast30Days } = useSWR<MessagesSeries>(`/api/wc/${channelId}/messages-series?range=1m`);
-  const totalVolumeLast30Days = messagesLast30Days?.points.reduce((sum, p) => sum + p.sent + p.received, 0) ?? 0;
+  /// ativo e ignora o que o cliente manda de volta. Período fixo em
+  /// "current-month", independente do filtro que o usuário escolher no
+  /// gráfico "Fluxo de mensagens" abaixo.
+  const { data: messagesThisMonth } = useSWR<MessagesSeries>(`/api/wc/${channelId}/messages-series?period=current-month`);
+  const totalVolumeThisMonth = messagesThisMonth?.points.reduce((sum, p) => sum + p.sent + p.received, 0) ?? 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -186,13 +186,12 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
             <CardIcon icon={Wallet} /> Gastos
           </CardTitle>
           <p className="text-muted-foreground text-sm">
-            Volumetria de mensagens trocadas nos últimos 30 dias e mensagens de campanha enviadas por categoria de
-            template.
+            Volumetria de mensagens trocadas no mês atual e mensagens de campanha enviadas por categoria de template.
           </p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <ValueTile icon={Send} label="Volumetria total (últimos 30 dias)" value={`${totalVolumeLast30Days} mensagens`} />
+            <ValueTile icon={Send} label="Volumetria total (mês atual)" value={`${totalVolumeThisMonth} mensagens`} />
             {campaignReport?.byCategory.map((row) => (
               <ValueTile key={row.category ?? "none"} icon={Tag} label={categoryLabel(row.category)} value={row.messagesSent} />
             ))}

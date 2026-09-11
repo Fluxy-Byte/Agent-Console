@@ -4,20 +4,22 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { ConversationsSeries, SeriesRange } from "@/types/domain";
-import { formatBucketLabel, formatBucketTick, RANGE_OPTIONS } from "./chart-range-utils";
+import type { ConversationsSeries } from "@/types/domain";
+import { buildYearOptions, formatBucketLabel, formatBucketTick } from "./chart-range-utils";
 
 const chartConfig = {
   count: { label: "Conversas", color: "var(--chart-1)" },
 } satisfies ChartConfig;
 
+const YEAR_OPTIONS = buildYearOptions();
+
 /// "Fluxo de conversas" — Bar Chart do shadcn. Uma conversa é uma janela de
-/// atendimento aberta por um contato (MessagingSession); troca de range
-/// refaz o fetch no Agent-Api (granularidade diária ou mensal conforme o
-/// período, ver whatsapp-channel-service.ts#resolveSeriesRange).
+/// atendimento aberta por um contato (MessagingSession). Só é possível ver
+/// ano a ano (Jan-Dez, a partir de 2024) — sem opção de mês/dias, diferente
+/// do gráfico de mensagens.
 export function ConversationsFlowChart({ channelId }: { channelId: string }) {
-  const [range, setRange] = useState<SeriesRange>("3m");
-  const { data } = useSWR<ConversationsSeries>(`/api/wc/${channelId}/conversations-series?range=${range}`);
+  const [year, setYear] = useState<number>(YEAR_OPTIONS[0]);
+  const { data } = useSWR<ConversationsSeries>(`/api/wc/${channelId}/conversations-series?period=${year}`);
 
   return (
     <Card className="pt-0">
@@ -26,14 +28,14 @@ export function ConversationsFlowChart({ channelId }: { channelId: string }) {
           <CardTitle>Fluxo de conversas (Contato)</CardTitle>
           <p className="text-muted-foreground text-sm">Janelas de conversa abertas por contatos deste canal.</p>
         </div>
-        <Select value={range} onValueChange={(value) => setRange(value as SeriesRange)}>
-          <SelectTrigger className="w-full sm:ml-auto sm:w-[180px]" aria-label="Selecionar período">
+        <Select value={String(year)} onValueChange={(value) => setYear(Number(value))}>
+          <SelectTrigger className="w-full sm:ml-auto sm:w-[180px]" aria-label="Selecionar ano">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {RANGE_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
+            {YEAR_OPTIONS.map((option) => (
+              <SelectItem key={option} value={String(option)}>
+                {option}
               </SelectItem>
             ))}
           </SelectContent>

@@ -1,14 +1,18 @@
-import type { SeriesRange } from "@/types/domain";
+import { MIN_SERIES_YEAR, type SeriesPeriod } from "@/types/domain";
 
-/// Opções do filtro de período dos gráficos "Fluxo de conversas"/"Fluxo de
-/// mensagens" (Area Chart - Interactive) — da janela mais longa pra mais
-/// curta, mesma ordem do Select.
-export const RANGE_OPTIONS: { value: SeriesRange; label: string }[] = [
-  { value: "years", label: "Últimos anos" },
-  { value: "3m", label: "Últimos 3 meses" },
-  { value: "1m", label: "Último mês" },
-  { value: "7d", label: "Últimos 7 dias" },
-];
+/// Anos disponíveis no filtro — de MIN_SERIES_YEAR até o ano corrente, do
+/// mais recente pro mais antigo (ordem do Select).
+export function buildYearOptions(): number[] {
+  const currentYear = new Date().getFullYear();
+  const years: number[] = [];
+  for (let year = currentYear; year >= MIN_SERIES_YEAR; year--) years.push(year);
+  return years;
+}
+
+/// Rótulo de uma opção do Select de período.
+export function formatPeriodLabel(period: SeriesPeriod): string {
+  return period === "current-month" ? "Mês atual" : String(period);
+}
 
 const MONTH_LABELS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 

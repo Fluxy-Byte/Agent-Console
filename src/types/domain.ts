@@ -112,19 +112,23 @@ export interface WhatsappChannelStatus {
   throughput?: { level?: string };
 }
 
-/// Ranges do filtro dos gráficos "Fluxo de conversas"/"Fluxo de mensagens" —
-/// "years" vem com granularidade mensal (date = "YYYY-MM"), os demais com
-/// granularidade diária (date = "YYYY-MM-DD").
-export type SeriesRange = "years" | "3m" | "1m" | "7d";
+/// Primeiro ano disponível no filtro dos gráficos "Fluxo de
+/// conversas"/"Fluxo de mensagens" — nunca existe dado de antes disso.
+export const MIN_SERIES_YEAR = 2024;
+
+/// Período dos gráficos — um ano específico (granularidade mensal,
+/// date = "YYYY-MM") ou "current-month" (granularidade diária,
+/// date = "YYYY-MM-DD"; só o gráfico de mensagens oferece essa opção).
+export type SeriesPeriod = "current-month" | number;
 
 export interface ConversationsSeries {
-  range: SeriesRange;
+  period: SeriesPeriod;
   granularity: "day" | "month";
   points: { date: string; count: number }[];
 }
 
 export interface MessagesSeries {
-  range: SeriesRange;
+  period: SeriesPeriod;
   granularity: "day" | "month";
   points: { date: string; sent: number; received: number }[];
 }
