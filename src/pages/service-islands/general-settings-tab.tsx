@@ -100,22 +100,21 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-between">
-        <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold">Tags de fechamento</h2>
-        {canManageTags && (
-          <TagFormDialog
-            serviceIslandId={island.id}
-            onSaved={() => mutateTags()}
-            trigger={
-              <Button size="sm">
-                <Plus className="size-4" /> Nova tag
-              </Button>
-            }
-          />
-        )}
-      </div>
-
       <Card className="overflow-hidden p-0">
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle>Tags de fechamento</CardTitle>
+          {canManageTags && (
+            <TagFormDialog
+              serviceIslandId={island.id}
+              onSaved={() => mutateTags()}
+              trigger={
+                <Button size="sm">
+                  <Plus className="size-4" /> Nova tag
+                </Button>
+              }
+            />
+          )}
+        </CardHeader>
         <CardContent className="flex flex-col gap-2 p-4">
           {tags?.items.map((tag) => (
             <div key={tag.id} className="flex items-center justify-between gap-2 rounded-md border px-3 py-2">

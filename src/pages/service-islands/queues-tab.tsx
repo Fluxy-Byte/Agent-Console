@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { MetricCard } from "@/components/metric-card";
@@ -232,6 +232,9 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
       <RealtimeQueuesCard islandId={islandId} />
 
       <Card className="overflow-hidden p-0">
+        <CardHeader>
+          <CardTitle>Filas cadastradas</CardTitle>
+        </CardHeader>
         {!queues || queues.items.length === 0 ? (
           <div className="text-muted-foreground p-6 text-sm">
             {!queues ? "Carregando…" : "Nenhuma fila encontrada com os filtros atuais."}
