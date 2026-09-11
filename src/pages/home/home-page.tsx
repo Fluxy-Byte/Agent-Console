@@ -16,12 +16,12 @@ import {
   Megaphone,
   MessageCircle,
   MessageSquareText,
-  MonitorMac,
   Network,
   PhoneCall,
   Plug,
   ShieldCheck,
   Sparkles,
+  Ticket,
   Waypoints,
   Webhook,
 } from "@/lib/icons";
@@ -108,7 +108,7 @@ const MODULES: ModuleCard[] = [
     ctaLabel: "Ver canais",
   },
   {
-    icon: MonitorMac,
+    icon: Ticket,
     title: "Ilhas de Atendimento",
     description: "Organize filas de atendimento humano, monitore em tempo real e consulte o histórico completo de conversas.",
     to: "/service-island",
