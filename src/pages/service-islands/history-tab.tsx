@@ -3,7 +3,7 @@ import useSWR from "swr";
 import { CheckCircle2, Download, ListChecks, Loader2, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DateRange } from "@/components/calendar";
 import { DateRangePicker } from "@/components/date-range-picker";
 import { Input } from "@/components/ui/input";
@@ -277,6 +277,9 @@ export function HistoryTab({ island }: { island: ServiceIsland }) {
       </Card>
 
       <Card className="overflow-hidden p-0">
+        <CardHeader>
+          <CardTitle>Tickets</CardTitle>
+        </CardHeader>
         {!tickets || tickets.items.length === 0 ? (
           <div className="text-muted-foreground p-6 text-sm">
             {!tickets ? "Carregando…" : "Nenhum ticket encontrado com os filtros atuais."}
