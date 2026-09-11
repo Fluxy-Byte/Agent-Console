@@ -1,4 +1,4 @@
-import { Bot, Contact, KeyRound, Megaphone, MessageCircleMore, Network } from "lucide-react";
+import { Bot, KeyRound, Megaphone, MessageCircle, Ticket, UserGroup } from "lucide-react";
 import { PermissionAction } from "@/domain/permission-action";
 
 export interface NavItem {
@@ -17,7 +17,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Operações",
     items: [
-      { label: "Contatos", to: "/targets", icon: Contact, action: PermissionAction.CONTACTS_VIEW },
+      { label: "Contatos", to: "/targets", icon: UserGroup, action: PermissionAction.CONTACTS_VIEW },
       { label: "Campanhas", to: "/campaigns", icon: Megaphone, action: PermissionAction.CAMPAIGNS_VIEW },
     ],
   },
@@ -25,8 +25,8 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Configurações para WhatsApp",
     items: [
       { label: "Agentes", to: "/agents", icon: Bot, action: PermissionAction.AGENTS_VIEW },
-      { label: "WhatsApp Channel", to: "/wc", icon: MessageCircleMore, action: PermissionAction.WABAS_VIEW },
-      { label: "Ilhas de Atendimento", to: "/service-island", icon: Network, action: PermissionAction.SERVICE_ISLANDS_VIEW },
+      { label: "WhatsApp Channel", to: "/wc", icon: MessageCircle, action: PermissionAction.WABAS_VIEW },
+      { label: "Ilhas de Atendimento", to: "/service-island", icon: Ticket, action: PermissionAction.SERVICE_ISLANDS_VIEW },
     ],
   },
   {
