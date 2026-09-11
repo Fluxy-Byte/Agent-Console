@@ -95,8 +95,8 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
             <Headphones className="size-5" />
           </div>
           <div>
+            <CardTitle className="text-sm font-semibold">Tickets em atendimento</CardTitle>
             <p className="text-xl font-semibold">{data.inProgressTickets.length}</p>
-            <CardTitle className="text-muted-foreground text-xs font-normal">Tickets em atendimento</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -122,8 +122,8 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
             <Hourglass className="size-5" />
           </div>
           <div>
+            <CardTitle className="text-sm font-semibold">Tickets aguardando</CardTitle>
             <p className="text-xl font-semibold">{data.waitingTickets.length}</p>
-            <CardTitle className="text-muted-foreground text-xs font-normal">Tickets aguardando</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
