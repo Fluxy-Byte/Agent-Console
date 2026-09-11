@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { Building2, Plus, Ticket } from "lucide-react";
+import { Building2, Plus, Ticket } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {

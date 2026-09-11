@@ -12,14 +12,19 @@ export function senderLabel(message: MessageDocument, attendantName?: string): s
 export function MessageBubble({
   message,
   attendantName,
+  senderLabelOverride,
 }: {
   message: MessageDocument;
   attendantName?: string;
+  /** Substitui o rótulo de remetente calculado por `senderLabel` — útil quando quem
+   * chama já sabe resolver o remetente com mais precisão (ex.: nome do agente de IA,
+   * ou o atendente histórico de cada mensagem numa conversa com vários tickets). */
+  senderLabelOverride?: string | null;
 }) {
   const isCustomer = message.senderType === "CUSTOMER";
   const createdAt = new Date(message.createdAt);
   const dateTime = `${createdAt.toLocaleDateString("pt-BR")} às ${createdAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
-  const sender = senderLabel(message, attendantName);
+  const sender = senderLabelOverride !== undefined ? senderLabelOverride : senderLabel(message, attendantName);
 
   return (
     <div className={`flex flex-col gap-1 ${isCustomer ? "items-start" : "items-end"}`}>

@@ -2,7 +2,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { toast } from "sonner";
-import { ArrowLeft, Clock, Search } from "lucide-react";
+import { ArrowLeft, Clock, Search } from "@/lib/icons";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";

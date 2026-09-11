@@ -1,4 +1,4 @@
-import { Bot, Contact, KeyRound, Megaphone, MessageCircleMore, Network } from "lucide-react";
+import { Bot, Contact, KeyRound, Megaphone, MessageCircleMore, Network } from "@/lib/icons";
 import { PermissionAction } from "@/domain/permission-action";
 
 export interface NavItem {

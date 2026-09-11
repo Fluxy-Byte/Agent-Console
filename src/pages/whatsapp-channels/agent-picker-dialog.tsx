@@ -1,7 +1,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
-import { Bot } from "lucide-react";
+import { Bot, ListChecks, Pencil } from "@/lib/icons";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,9 +13,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { api, ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { Agent, WhatsappChannel } from "@/types/domain";
+import { DefaultQueueDialog } from "./default-queue-dialog";
 
 interface AgentPickerProps {
   channel: WhatsappChannel;
@@ -32,6 +35,8 @@ export function AgentPicker({ channel, disabled, onSaved }: AgentPickerProps) {
 
   const [pendingAgent, setPendingAgent] = useState<Agent | null>(null);
   const [saving, setSaving] = useState(false);
+  const [openAgentSaving, setOpenAgentSaving] = useState(false);
+  const [queueDialogOpen, setQueueDialogOpen] = useState(false);
 
   async function confirmChange() {
     if (!pendingAgent) return;
@@ -45,6 +50,22 @@ export function AgentPicker({ channel, disabled, onSaved }: AgentPickerProps) {
       toast.error(err instanceof ApiError ? err.message : "Não foi possível trocar o agente.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  /// Liga/desliga o roteamento pro agente de IA deste canal (openAgent). Só
+  /// pode virar true com um agente vinculado — o Agent-Api também valida
+  /// isso, aqui só evita a chamada óbvia que já sabemos que vai falhar.
+  async function handleToggleOpenAgent(checked: boolean) {
+    setOpenAgentSaving(true);
+    try {
+      await api.put(`/api/wc/${channel.id}`, { openAgent: checked });
+      onSaved();
+      toast.success(checked ? "Agente ativado para este canal." : "Agente desativado para este canal.");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Não foi possível alterar o agente ativo.");
+    } finally {
+      setOpenAgentSaving(false);
     }
   }
 
@@ -79,6 +100,43 @@ export function AgentPicker({ channel, disabled, onSaved }: AgentPickerProps) {
         )}
         {!agents && <p className="text-muted-foreground py-2 text-center text-sm">Carregando agentes…</p>}
       </div>
+
+      <div className="border-border mt-4 flex flex-col gap-3 rounded-lg border p-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium">Agente ativo para este canal</p>
+            <p className="text-muted-foreground text-xs">
+              {channel.openAgent
+                ? "Mensagens recebidas vão pro agente de IA selecionado acima."
+                : "Mensagens recebidas vão direto pro atendimento humano."}
+            </p>
+            {!channel.openAgent && !channel.agentId && (
+              <p className="text-muted-foreground text-xs">Selecione um agente acima para poder ativar.</p>
+            )}
+          </div>
+          <Switch
+            checked={channel.openAgent}
+            disabled={disabled || openAgentSaving || (!channel.openAgent && !channel.agentId)}
+            onCheckedChange={handleToggleOpenAgent}
+          />
+        </div>
+
+        {!channel.openAgent && (
+          <div className="border-border flex items-center justify-between gap-3 border-t pt-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <ListChecks className="text-muted-foreground size-4 shrink-0" />
+              <p className="text-muted-foreground truncate text-xs">
+                {channel.idServiceIslandDefault ? "Fila de encaminhamento selecionada" : "Nenhuma fila selecionada"}
+              </p>
+            </div>
+            <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => setQueueDialogOpen(true)}>
+              <Pencil className="size-3.5" /> Escolher fila
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <DefaultQueueDialog channel={channel} open={queueDialogOpen} onOpenChange={setQueueDialogOpen} onSaved={onSaved} />
 
       <AlertDialog open={pendingAgent !== null} onOpenChange={(v) => !v && setPendingAgent(null)}>
         <AlertDialogContent>

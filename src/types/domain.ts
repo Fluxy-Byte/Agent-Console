@@ -79,7 +79,15 @@ export interface RagDocument {
 export interface WhatsappChannel {
   id: string;
   organizationId: string;
-  agentId: string;
+  /// Opcional: um canal pode não ter nenhum agente de IA vinculado (só
+  /// atendimento humano).
+  agentId: string | null;
+  /// Se true, mensagens deste canal vão pro agente de IA (agentId). Se
+  /// false, vão direto pro atendimento humano na fila idServiceIslandDefault.
+  openAgent: boolean;
+  /// Apesar do nome, é o id de uma Queue (fila) — a fila que recebe o
+  /// atendimento quando openAgent=false.
+  idServiceIslandDefault: string | null;
   phoneNumberId: string;
   displayNumber: string;
   wabaId: string;
@@ -89,7 +97,7 @@ export interface WhatsappChannel {
   createdAt: string;
   updatedAt: string;
   serviceIsland?: ServiceIsland | null;
-  agent?: Agent;
+  agent?: Agent | null;
 }
 
 export interface WhatsappChannelStatus {
@@ -104,14 +112,21 @@ export interface WhatsappChannelStatus {
   throughput?: { level?: string };
 }
 
-export interface MonthlyConversations {
-  year: number;
-  months: { month: number; count: number }[];
+/// Ranges do filtro dos gráficos "Fluxo de conversas"/"Fluxo de mensagens" —
+/// "years" vem com granularidade mensal (date = "YYYY-MM"), os demais com
+/// granularidade diária (date = "YYYY-MM-DD").
+export type SeriesRange = "years" | "3m" | "1m" | "7d";
+
+export interface ConversationsSeries {
+  range: SeriesRange;
+  granularity: "day" | "month";
+  points: { date: string; count: number }[];
 }
 
-export interface MonthlyMessageVolume {
-  year: number;
-  months: { month: number; sent: number; received: number }[];
+export interface MessagesSeries {
+  range: SeriesRange;
+  granularity: "day" | "month";
+  points: { date: string; sent: number; received: number }[];
 }
 
 export interface WhatsappChannelCampaignReport {
@@ -155,6 +170,9 @@ export interface Queue {
   businessHoursStart: string | null;
   businessHoursEnd: string | null;
   businessDays: number[];
+  /// true só na fila "Default" criada automaticamente com a ilha — nunca
+  /// pode ser excluída (ver Agent-Api/queue-service.ts).
+  isDefault: boolean;
   createdAt: string;
   updatedAt: string;
   // Só vem preenchido em endpoints que fazem include explícito dos membros

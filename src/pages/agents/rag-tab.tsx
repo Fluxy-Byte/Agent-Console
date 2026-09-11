@@ -1,4 +1,4 @@
-import { FileText, Plus } from "lucide-react";
+import { FileText, Plus } from "@/lib/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

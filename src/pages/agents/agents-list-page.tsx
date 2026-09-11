@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import { toast } from "sonner";
-import { Bot, Plus, Trash2 } from "lucide-react";
+import { Bot, Plus, Trash2 } from "@/lib/icons";
 import {
   AlertDialog,
   AlertDialogAction,

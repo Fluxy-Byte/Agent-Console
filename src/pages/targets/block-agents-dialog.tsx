@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
-import { Lock } from "lucide-react";
+import { Lock } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {

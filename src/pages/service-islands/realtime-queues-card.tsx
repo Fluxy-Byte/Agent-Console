@@ -1,6 +1,6 @@
 import { useState } from "react";
 import useSWR from "swr";
-import { Send } from "lucide-react";
+import { Send } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { IslandMonitoring } from "@/types/domain";

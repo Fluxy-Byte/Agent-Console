@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, MessageCircle, ShieldCheck } from "lucide-react";
+import { ArrowLeft, MessageCircle, ShieldCheck } from "@/lib/icons";
 import capaImage from "@/assets/Capa.jpg";
 import heroImage from "@/assets/ApresentacaoInicial.jpg";
 import { SiteHeader } from "@/components/site-header";

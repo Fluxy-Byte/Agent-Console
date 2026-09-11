@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import fluxyLogo from "@/assets/Logo.png";
+import fluxyLogoTransparent from "@/assets/LogoSemFundo.png";
 import { cn } from "@/lib/utils";
 
 export function SiteHeader({ transparent = false }: { transparent?: boolean }) {
@@ -32,9 +33,13 @@ export function SiteHeader({ transparent = false }: { transparent?: boolean }) {
         transparent ? "bg-transparent" : "border-b bg-background/95 backdrop-blur",
       )}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 py-4">
         <a href="/#top" className="flex items-center gap-2">
-          <img src={fluxyLogo} alt="Fluxy" className="h-8 w-auto rounded-md" />
+          <img
+            src={transparent ? fluxyLogoTransparent : fluxyLogo}
+            alt="Fluxy"
+            className="h-8 w-8 rounded object-cover"
+          />
         </a>
         <nav className="hidden items-center gap-8 text-sm font-medium sm:flex">{navLinks}</nav>
       </div>

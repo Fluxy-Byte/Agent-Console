@@ -7,6 +7,8 @@ import {
   BrainCircuit,
   Building2,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Contact,
   FileSpreadsheet,
@@ -21,10 +23,13 @@ import {
   Sparkles,
   Waypoints,
   Webhook,
-} from "lucide-react";
+} from "@/lib/icons";
 import heroImage from "@/assets/ApresentacaoInicial.jpg";
-import conversaVideo from "@/assets/VideoConversa.mp4";
-import metaLogo from "@/assets/Meta.png";
+import conversaImage from "@/assets/Conversa.png";
+import metaLogo from "@/assets/LogoMetaOficalSemFundo.png";
+import identidadeAgenteImage from "@/assets/IndentidadeAgente.png";
+import mensagensAgenteImage from "@/assets/MensagensAgente.png";
+import ragAgenteImage from "@/assets/RagAgente.png";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +40,12 @@ const PHONE_DISPLAY = "+55 34 9174-6481";
 const PHONE_TEL = "+553491746481";
 const PHONE_WHATSAPP = "https://wa.me/553491746481";
 
+interface ModuleCarouselSlide {
+  image: string;
+  title: string;
+  description: string;
+}
+
 interface ModuleCard {
   icon: typeof Bot;
   title: string;
@@ -42,6 +53,7 @@ interface ModuleCard {
   to?: string;
   ctaLabel?: string;
   badge?: string;
+  carousel?: ModuleCarouselSlide[];
 }
 
 const MODULES: ModuleCard[] = [
@@ -52,6 +64,26 @@ const MODULES: ModuleCard[] = [
       "Crie agentes com personalidade própria para atender no WhatsApp: mensagens de transbordo, fora de horário e encerramento, tudo configurável.",
     to: "/agents",
     ctaLabel: "Ver agentes",
+    carousel: [
+      {
+        image: identidadeAgenteImage,
+        title: "Identidade do agente",
+        description:
+          "Defina o nome, ative ou desative o agente e escreva a personalidade que guia todas as respostas: tom de voz, regras do que pode ou não falar e o contexto do seu negócio. Tudo isso entra automaticamente no prompt usado pela IA para gerar cada resposta.",
+      },
+      {
+        image: mensagensAgenteImage,
+        title: "Mensagens obrigatórias e opcionais",
+        description:
+          "As mensagens obrigatórias — processando, transbordo para humano, formato não suportado e número bloqueado — garantem que o cliente nunca fique sem retorno. As opcionais, como o aviso de fora do horário de atendimento, você ativa ou desativa quando quiser. Todos os textos são livres para editar.",
+      },
+      {
+        image: ragAgenteImage,
+        title: "RAG — Base de conhecimento",
+        description:
+          "Basta ativar o RAG e anexar os documentos da sua empresa: o agente passa a consultar esse material automaticamente para responder com precisão sobre o seu negócio. Sem código e sem configuração complexa — é só anexar o arquivo e o agente já aprende.",
+      },
+    ],
   },
   {
     icon: Contact,
@@ -120,9 +152,61 @@ const INTEGRATIONS = [
   { icon: Plug, text: "Conexão direta com o WhatsApp Business Platform (WABA)" },
 ];
 
+function ModuleCarousel({ slides }: { slides: ModuleCarouselSlide[] }) {
+  const [index, setIndex] = useState(0);
+  const slide = slides[index];
+
+  function goTo(next: number) {
+    setIndex((next + slides.length) % slides.length);
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="bg-muted relative overflow-hidden border">
+        <img src={slide.image} alt={slide.title} className="w-full object-cover" />
+        <button
+          type="button"
+          onClick={() => goTo(index - 1)}
+          aria-label="Slide anterior"
+          className="absolute top-1/2 left-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
+        >
+          <ChevronLeft className="size-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => goTo(index + 1)}
+          aria-label="Próximo slide"
+          className="absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
+        >
+          <ChevronRight className="size-4" />
+        </button>
+      </div>
+
+      <div>
+        <p className="text-sm font-semibold">{slide.title}</p>
+        <p className="text-muted-foreground text-sm">{slide.description}</p>
+      </div>
+
+      <div className="flex items-center justify-center gap-1.5">
+        {slides.map((s, i) => (
+          <button
+            key={s.image}
+            type="button"
+            onClick={() => setIndex(i)}
+            aria-label={`Ir para slide ${i + 1}`}
+            className={cn("h-1.5 rounded-full transition-all", i === index ? "bg-primary w-6" : "bg-muted-foreground/30 w-1.5")}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function HomePage() {
   const heroRef = useRef<HTMLDivElement>(null);
   const [pastHero, setPastHero] = useState(false);
+  const [activeModule, setActiveModule] = useState(0);
+  const selectedModule = MODULES[activeModule];
 
   useEffect(() => {
     function handleScroll() {
@@ -144,7 +228,7 @@ export function HomePage() {
           <img src={heroImage} alt="Atendimento Fluxy" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/10" />
           <div className="absolute inset-0 flex items-center">
-            <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-5 px-6">
+            <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-5">
               <h1 className="font-[family-name:var(--font-display)] max-w-2xl text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
                 Conversas que geram grandes resultados para uma empresa.
               </h1>
@@ -159,7 +243,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <div className="mx-auto flex max-w-6xl flex-col gap-16 px-6 py-12">
+      <div className="mx-auto flex max-w-6xl flex-col gap-24 py-28">
         {/* Da primeira conversa ao aquecimento de leads */}
         <section className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-16">
           <div className="flex flex-col justify-start gap-4">
@@ -171,27 +255,24 @@ export function HomePage() {
               Veja como a Fluxy pode evoluir as conversas da sua empresa podendo aumentar o volume de vendas e
               atendimento da sua empresa.
             </p>
-            <a href="#contato" className={cn(buttonVariants({ size: "lg" }), "mt-auto w-fit")}>
+            <a href="#contato" className={cn(buttonVariants({ size: "lg" }), "w-fit")}>
               Saber mais
             </a>
           </div>
-          <div className="flex justify-center lg:justify-end">
-            <video
-              src={conversaVideo}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="h-[420px] w-auto max-w-full rounded-2xl object-cover shadow-lg sm:h-[480px] lg:h-[560px]"
+          <div className="flex items-center justify-center">
+            <img
+              src={conversaImage}
+              alt="Conversa da Fluxy no WhatsApp"
+              className="h-[420px] w-auto max-w-full object-cover sm:h-[480px] lg:h-[560px]"
             />
           </div>
         </section>
 
         {/* Segurança e parceria com a Meta */}
-        <section className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-16">
-          <Card className="flex items-center justify-center p-10">
-            <img src={metaLogo} alt="Meta Business Partner" className="w-full max-w-xs" />
-          </Card>
+        <section className="grid items-stretch gap-6 py-28 lg:min-h-[420px] lg:grid-cols-2 lg:gap-16">
+          <div className="flex items-center justify-center">
+            <img src={metaLogo} alt="Meta Business Partner" className="w-full" />
+          </div>
           <div className="flex flex-col justify-start gap-4">
             <span className="text-primary flex items-center gap-2 text-xs font-semibold tracking-widest uppercase">
               <ShieldCheck className="size-4" /> Segurança de ponta a ponta
@@ -203,7 +284,7 @@ export function HomePage() {
               Temos parceria com a Meta para utilização do canal oficial do WhatsApp, com mais de 20 mil mensagens
               processadas por dia.
             </p>
-            <Link to="/politica-de-privacidade" className={cn(buttonVariants({ size: "lg" }), "mt-auto w-fit")}>
+            <Link to="/politica-de-privacidade" className={cn(buttonVariants({ size: "lg" }), "w-fit")}>
               Saber mais sobre a política de segurança
             </Link>
           </div>
@@ -213,38 +294,67 @@ export function HomePage() {
         <section id="cases" className="flex flex-col gap-6 scroll-mt-20">
           <div className="text-center">
             <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
-              Conheça cada ponta da ferramenta
+              Soluções completas para todas as jornadas
             </h2>
             <p className="text-muted-foreground mt-1 text-sm">
               Um único ecossistema para automatizar, atender e acompanhar toda a jornada do seu cliente.
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {MODULES.map((module) => (
-              <Card key={module.title} className="flex flex-col">
-                <CardHeader className="flex-row items-start gap-3 space-y-0">
-                  <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
-                    <module.icon className="size-5" />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <CardTitle className="text-base">{module.title}</CardTitle>
-                    {module.badge && (
-                      <Badge variant="secondary" className="w-fit">
-                        {module.badge}
-                      </Badge>
+          <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+            <div className="flex flex-col gap-2">
+              {MODULES.map((module, index) => {
+                const isActive = index === activeModule;
+                return (
+                  <button
+                    key={module.title}
+                    type="button"
+                    onClick={() => setActiveModule(index)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-none border p-4 text-left transition-colors",
+                      isActive ? "border-primary bg-primary/5" : "border-transparent hover:bg-muted",
                     )}
-                  </div>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col gap-3">
-                  <p className="text-muted-foreground text-sm">{module.description}</p>
-                  {module.to && (
-                    <Link to={module.to} className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "mt-auto w-fit")}>
-                      {module.ctaLabel} <ArrowRight className="size-4" />
-                    </Link>
+                  >
+                    <div
+                      className={cn(
+                        "flex size-10 shrink-0 items-center justify-center rounded-lg",
+                        isActive ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary",
+                      )}
+                    >
+                      <module.icon className="size-5" />
+                    </div>
+                    <span className="text-sm font-medium">{module.title}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <Card className="flex flex-col rounded-none">
+              <CardHeader className="flex-row items-start gap-3 space-y-0">
+                <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                  <selectedModule.icon className="size-5" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <CardTitle className="text-base">{selectedModule.title}</CardTitle>
+                  {selectedModule.badge && (
+                    <Badge variant="secondary" className="w-fit">
+                      {selectedModule.badge}
+                    </Badge>
                   )}
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              </CardHeader>
+              <CardContent className="flex flex-1 flex-col gap-3">
+                <p className="text-muted-foreground text-sm">{selectedModule.description}</p>
+                {selectedModule.carousel && <ModuleCarousel key={selectedModule.title} slides={selectedModule.carousel} />}
+                {selectedModule.to && (
+                  <Link
+                    to={selectedModule.to}
+                    className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "mt-auto w-fit")}
+                  >
+                    {selectedModule.ctaLabel} <ArrowRight className="size-4" />
+                  </Link>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </section>
 

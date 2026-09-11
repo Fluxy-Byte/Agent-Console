@@ -1,11 +1,12 @@
 import { useState, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
-import { Bot, Calendar, FileText, IdCard, LogIn, LogOut, Mail, Phone } from "lucide-react";
+import { Bot, Calendar, IdCard, LogIn, LogOut, Mail, Phone } from "@/lib/icons";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MessageBubble } from "@/components/message-bubble";
 import { MetadataView } from "@/components/metadata-view";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { PaginationControls } from "@/components/pagination-controls";
@@ -67,7 +68,11 @@ function buildTimeline(history: MessageDocument[], tickets: TicketSummary[], tar
   const entries: TimelineEntry[] = history.map((message) => ({
     createdAt: message.createdAt,
     node: (
-      <MessageBubble key={message._id} message={message} senderLabel={resolveSenderLabel(message, target, tickets)} />
+      <MessageBubble
+        key={message._id}
+        message={message}
+        senderLabelOverride={resolveSenderLabel(message, target, tickets)}
+      />
     ),
   }));
 
@@ -97,45 +102,6 @@ function TicketDivider({ ticketNumber, label }: { ticketNumber: number; label: "
         Ticket #{ticketNumber} · {label}
       </Badge>
       <div className="border-border h-px flex-1 border-t" />
-    </div>
-  );
-}
-
-function MessageBubble({ message, senderLabel }: { message: MessageDocument; senderLabel: string }) {
-  const isCampaign = message.senderType === "CAMPAIGN";
-
-  return (
-    <div
-      className={cn(
-        "max-w-[80%] rounded-lg px-3 py-2 text-sm",
-        message.direction === "INBOUND" ? "bg-muted self-start" : "bg-primary/10 self-end",
-      )}
-    >
-      <div className="mb-1 flex items-center gap-1.5">
-        <p className="text-muted-foreground text-xs">
-          {senderLabel} · {new Date(message.createdAt).toLocaleString("pt-BR")}
-        </p>
-        {isCampaign && (
-          <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
-            Disparo ativo
-          </Badge>
-        )}
-      </div>
-      {message.messageType === "IMAGE" && message.mediaUrl ? (
-        <img src={message.mediaUrl} alt={message.text || "Imagem"} className="max-w-full rounded-md" />
-      ) : message.messageType === "DOCUMENT" && message.mediaUrl ? (
-        <a
-          href={message.mediaUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="text-primary inline-flex items-center gap-1.5 font-medium hover:underline"
-        >
-          <FileText className="size-4 shrink-0" />
-          {message.text || "Documento"}
-        </a>
-      ) : (
-        message.text || message.mediaUrl || "(sem conteúdo)"
-      )}
     </div>
   );
 }

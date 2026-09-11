@@ -1,6 +1,6 @@
 import { useState } from "react";
 import useSWR from "swr";
-import { Headphones, Hourglass, Search } from "lucide-react";
+import { Headphones, Hourglass, Search } from "@/lib/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

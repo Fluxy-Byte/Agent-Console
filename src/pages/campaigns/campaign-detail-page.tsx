@@ -5,13 +5,13 @@ import {
   ArrowLeft,
   Calendar,
   CheckCircle2,
-  type LucideIcon,
+  type IconComponent,
   Megaphone,
   Send,
   User,
   Users,
   XCircle,
-} from "lucide-react";
+} from "@/lib/icons";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ const STATUS_BADGE: Record<string, { label: string; variant: "success" | "destru
   FAILED: { label: "Falha", variant: "destructive" },
 };
 
-const STATUS_ICON: Record<string, { icon: LucideIcon; className: string }> = {
+const STATUS_ICON: Record<string, { icon: IconComponent; className: string }> = {
   SENT: { icon: CheckCircle2, className: "bg-success/15 text-success" },
   DELIVERED: { icon: CheckCircle2, className: "bg-success/15 text-success" },
   READ: { icon: CheckCircle2, className: "bg-success/15 text-success" },
@@ -51,7 +51,7 @@ function formatVariables(variables: CampaignTargetItem["variables"]): string {
 
 type MetricKey = "contacts" | "sent" | "failures" | null;
 
-const METRIC_DIALOG_META: Record<Exclude<MetricKey, null>, { title: string; icon: LucideIcon; iconClassName: string }> = {
+const METRIC_DIALOG_META: Record<Exclude<MetricKey, null>, { title: string; icon: IconComponent; iconClassName: string }> = {
   contacts: { title: "Contatos", icon: Users, iconClassName: "bg-primary/15 text-primary" },
   sent: { title: "Enviados", icon: Send, iconClassName: "bg-success/15 text-success" },
   failures: { title: "Falhas", icon: XCircle, iconClassName: "bg-destructive/15 text-destructive" },

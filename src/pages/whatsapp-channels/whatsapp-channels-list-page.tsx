@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { MessageSquare, Plus, Search, X } from "lucide-react";
+import { MessageSquare, Plus, Search, X } from "@/lib/icons";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
@@ -94,7 +94,7 @@ export function WhatsappChannelsListPage() {
     setRegistering(true);
     try {
       const result = await api.post<{ created: unknown[]; skipped: unknown[] }>("/api/wc/bulk", {
-        agentId: lookupAgentId,
+        agentId: lookupAgentId || undefined,
         wabaId: lookupWabaId,
         metaAccessToken: lookupMetaAccessToken,
         phoneNumbers: toRegister.map((r) => ({ phoneNumberId: r.phoneNumberId, displayNumber: r.displayNumber })),
@@ -119,7 +119,9 @@ export function WhatsappChannelsListPage() {
     setError(null);
     setSaving(true);
     try {
-      await api.post("/api/wc", { agentId, phoneNumberId, displayNumber, wabaId, metaAccessToken });
+      // Agente é opcional: sem seleção, o canal nasce só com atendimento
+      // humano (openAgent=false, resolvido pelo Agent-Api).
+      await api.post("/api/wc", { agentId: agentId || undefined, phoneNumberId, displayNumber, wabaId, metaAccessToken });
       await mutate();
       setOpen(false);
       setAgentId("");
@@ -170,10 +172,10 @@ export function WhatsappChannelsListPage() {
 
                 <form className="flex flex-col gap-4" onSubmit={handleSearch}>
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="lookup-agent">Agente</Label>
+                    <Label htmlFor="lookup-agent">Agente (opcional)</Label>
                     <Select value={lookupAgentId} onValueChange={setLookupAgentId}>
                       <SelectTrigger id="lookup-agent" className="w-full">
-                        <SelectValue placeholder="Selecione um agente" />
+                        <SelectValue placeholder="Nenhum — só atendimento humano" />
                       </SelectTrigger>
                       <SelectContent>
                         {agents?.map((a) => (
@@ -183,6 +185,9 @@ export function WhatsappChannelsListPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                    <p className="text-muted-foreground text-xs">
+                      Sem agente selecionado, os canais cadastrados nascem direcionando direto pro atendimento humano.
+                    </p>
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="lookup-waba-id">WhatsApp Business Account ID</Label>
@@ -203,7 +208,7 @@ export function WhatsappChannelsListPage() {
                         value={lookupMetaAccessToken}
                         onChange={(e) => setLookupMetaAccessToken(e.target.value)}
                       />
-                      <Button type="submit" disabled={searching || !lookupAgentId}>
+                      <Button type="submit" disabled={searching}>
                         {searching ? "Buscando…" : "Procurar"}
                       </Button>
                     </div>
@@ -265,10 +270,10 @@ export function WhatsappChannelsListPage() {
                 </DialogHeader>
                 <form className="flex flex-col gap-4" onSubmit={handleCreate}>
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="wc-agent">Agente</Label>
+                    <Label htmlFor="wc-agent">Agente (opcional)</Label>
                     <Select value={agentId} onValueChange={setAgentId}>
                       <SelectTrigger id="wc-agent" className="w-full">
-                        <SelectValue placeholder="Selecione um agente" />
+                        <SelectValue placeholder="Nenhum — só atendimento humano" />
                       </SelectTrigger>
                       <SelectContent>
                         {agents?.map((a) => (
@@ -278,6 +283,9 @@ export function WhatsappChannelsListPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                    <p className="text-muted-foreground text-xs">
+                      Sem agente selecionado, o canal nasce direcionando direto pro atendimento humano.
+                    </p>
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="wc-phone-number-id">Phone Number ID</Label>
@@ -312,7 +320,7 @@ export function WhatsappChannelsListPage() {
                     />
                   </div>
                   {error && <p className="text-destructive text-sm">{error}</p>}
-                  <Button type="submit" disabled={saving || !agentId}>
+                  <Button type="submit" disabled={saving}>
                     {saving ? "Criando…" : "Criar canal"}
                   </Button>
                 </form>

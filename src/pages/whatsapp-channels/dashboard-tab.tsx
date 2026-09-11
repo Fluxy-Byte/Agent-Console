@@ -1,17 +1,11 @@
 import useSWR from "swr";
-import { BadgeCheck, BarChart3, Gauge, MessageSquare, Send, ShieldCheck, Tag, Wallet, Wifi, type LucideIcon } from "lucide-react";
+import { BadgeCheck, Gauge, Send, ShieldCheck, Tag, Wallet, Wifi, type IconComponent } from "@/lib/icons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type {
-  MonthlyConversations,
-  MonthlyMessageVolume,
-  TemplateCategory,
-  WhatsappChannelCampaignReport,
-  WhatsappChannelStatus,
-} from "@/types/domain";
-import { MonthlyConversationsChart } from "./monthly-conversations-chart";
-import { MonthlyMessageVolumeChart } from "./monthly-message-volume-chart";
+import type { MessagesSeries, TemplateCategory, WhatsappChannelCampaignReport, WhatsappChannelStatus } from "@/types/domain";
+import { ConversationsFlowChart } from "./conversations-flow-chart";
+import { MessagesFlowChart } from "./messages-flow-chart";
 
 const CATEGORY_LABEL: Record<TemplateCategory, string> = {
   MARKETING: "Campanhas de Marketing",
@@ -91,7 +85,7 @@ function translateStatusValue(value: string): string {
   return STATUS_VALUE_LABEL[value] ?? value.replaceAll("_", " ");
 }
 
-const STATUS_FIELD_META: Record<string, { label: string; icon: LucideIcon }> = {
+const STATUS_FIELD_META: Record<string, { label: string; icon: IconComponent }> = {
   status: { label: "Status da conexão", icon: Wifi },
   quality_rating: { label: "Qualidade", icon: Gauge },
   name_status: { label: "Nome do perfil", icon: BadgeCheck },
@@ -99,7 +93,7 @@ const STATUS_FIELD_META: Record<string, { label: string; icon: LucideIcon }> = {
   messaging_limit_tier: { label: "Limite de envio", icon: Send },
 };
 
-function StatusTile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
+function StatusTile({ icon: Icon, label, value }: { icon: IconComponent; label: string; value: string }) {
   const severity = statusSeverity(value);
   return (
     <div className="border-border bg-card flex items-center gap-3 rounded-xl border p-4">
@@ -116,7 +110,7 @@ function StatusTile({ icon: Icon, label, value }: { icon: LucideIcon; label: str
   );
 }
 
-function ValueTile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string | number }) {
+function ValueTile({ icon: Icon, label, value }: { icon: IconComponent; label: string; value: string | number }) {
   return (
     <div className="border-border bg-card flex items-center gap-3 rounded-xl border p-4">
       <div className="bg-primary/15 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">
@@ -130,7 +124,7 @@ function ValueTile({ icon: Icon, label, value }: { icon: LucideIcon; label: stri
   );
 }
 
-function CardIcon({ icon: Icon }: { icon: LucideIcon }) {
+function CardIcon({ icon: Icon }: { icon: IconComponent }) {
   return (
     <div className="bg-primary/15 text-primary flex size-7 items-center justify-center rounded-lg">
       <Icon className="size-4" />
@@ -147,16 +141,15 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
   const { data: status, error: statusError } = useSWR<WhatsappChannelStatus>(
     hasMetaAccessToken ? `/api/wc/${channelId}/status` : null,
   );
-  const { data: conversations } = useSWR<MonthlyConversations>(`/api/wc/${channelId}/conversations-by-month`);
-  const { data: messageVolume } = useSWR<MonthlyMessageVolume>(`/api/wc/${channelId}/messages-by-month`);
   const { data: campaignReport } = useSWR<WhatsappChannelCampaignReport>(`/api/wc/${channelId}/campaigns-report`);
 
-  /// Volumetria total = mensagens trocadas no mês atual (enviadas +
+  /// Volumetria total = mensagens trocadas nos últimos 30 dias (enviadas +
   /// recebidas) — não é soma de Campaign.totalSent, isso conta só disparo
-  /// ativo e ignora o que o cliente manda de volta.
-  const currentMonth = new Date().getMonth() + 1;
-  const currentMonthVolume = messageVolume?.months.find((m) => m.month === currentMonth);
-  const totalVolumeThisMonth = currentMonthVolume ? currentMonthVolume.sent + currentMonthVolume.received : 0;
+  /// ativo e ignora o que o cliente manda de volta. Range fixo em "1m",
+  /// independente do filtro que o usuário escolher no gráfico "Fluxo de
+  /// mensagens" abaixo.
+  const { data: messagesLast30Days } = useSWR<MessagesSeries>(`/api/wc/${channelId}/messages-series?range=1m`);
+  const totalVolumeLast30Days = messagesLast30Days?.points.reduce((sum, p) => sum + p.sent + p.received, 0) ?? 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -193,12 +186,13 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
             <CardIcon icon={Wallet} /> Gastos
           </CardTitle>
           <p className="text-muted-foreground text-sm">
-            Volumetria de mensagens trocadas no mês atual e mensagens de campanha enviadas por categoria de template.
+            Volumetria de mensagens trocadas nos últimos 30 dias e mensagens de campanha enviadas por categoria de
+            template.
           </p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <ValueTile icon={Send} label="Volumetria total (mês atual)" value={`${totalVolumeThisMonth} mensagens`} />
+            <ValueTile icon={Send} label="Volumetria total (últimos 30 dias)" value={`${totalVolumeLast30Days} mensagens`} />
             {campaignReport?.byCategory.map((row) => (
               <ValueTile key={row.category ?? "none"} icon={Tag} label={categoryLabel(row.category)} value={row.messagesSent} />
             ))}
@@ -206,34 +200,8 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
         </CardContent>
       </Card>
 
-      {conversations && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CardIcon icon={BarChart3} /> Conversas por mês em {conversations.year}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <MonthlyConversationsChart data={conversations} />
-          </CardContent>
-        </Card>
-      )}
-
-      {messageVolume && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CardIcon icon={MessageSquare} /> Mensagens por mês em {messageVolume.year}
-            </CardTitle>
-            <p className="text-muted-foreground text-sm">
-              Volumetria de mensagens trocadas — diferente de conversas, uma mesma conversa pode ter várias mensagens.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <MonthlyMessageVolumeChart data={messageVolume} />
-          </CardContent>
-        </Card>
-      )}
+      <ConversationsFlowChart channelId={channelId} />
+      <MessagesFlowChart channelId={channelId} />
     </div>
   );
 }

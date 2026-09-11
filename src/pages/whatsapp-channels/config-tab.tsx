@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Pencil } from "lucide-react";
+import { Pencil } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { WhatsappChannel } from "@/types/domain";

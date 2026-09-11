@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { Waypoints } from "lucide-react";
+import { Waypoints } from "@/lib/icons";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ServiceIsland } from "@/types/domain";

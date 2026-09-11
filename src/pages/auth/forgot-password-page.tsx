@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, MailCheck } from "lucide-react";
+import { ArrowLeft, MailCheck } from "@/lib/icons";
 import { AuthLayout } from "@/components/auth-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

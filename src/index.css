@@ -30,6 +30,9 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -73,6 +76,12 @@
   --input: oklch(0.9 0.01 286);
   --ring: oklch(0.54 0.25 286);
 
+  /* Cores dos gráficos (Area Chart - Interactive): chart-1 segue a marca
+     (roxo primário, adapta sozinho no dark via var(--primary)); chart-2 é um
+     azul fixo pra segunda série (ex: mensagens recebidas). */
+  --chart-1: var(--primary);
+  --chart-2: oklch(0.62 0.19 260);
+
   --sidebar: oklch(0.99 0.003 286);
   --sidebar-foreground: oklch(0.18 0.02 286);
   --sidebar-primary: oklch(0.54 0.25 286);
@@ -108,6 +117,8 @@
   --input: oklch(0.3 0.02 286);
   --ring: oklch(0.7 0.22 295);
 
+  --chart-2: oklch(0.72 0.16 260);
+
   --sidebar: oklch(0.19 0.018 286);
   --sidebar-foreground: oklch(0.96 0.005 286);
   --sidebar-primary: oklch(0.7 0.22 295);
@@ -141,4 +152,12 @@
 
 .bg-sidebar-gradient {
   background: linear-gradient(180deg, var(--color-sidebar) 0%, color-mix(in oklch, var(--color-sidebar), var(--color-primary) 4%) 100%);
+}
+
+/* Ícones do lineicons-react vêm com fill fixo em cada <path> (não usam
+   currentColor como o Lucide) — essa regra força herdar a cor do texto, pra
+   className="text-primary" etc. continuar colorindo o ícone normalmente.
+   Toda importação de ícone do lineicons-react deve levar essa classe. */
+.li-icon path {
+  fill: currentColor;
 }
