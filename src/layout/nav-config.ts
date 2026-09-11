@@ -1,4 +1,4 @@
-import { Bot, Contact, KeyRound, Megaphone, MessageCircleMore, Network } from "@/lib/icons";
+import { Bot, Contact, KeyRound, Megaphone, Network, Whatsapp } from "@/lib/icons";
 import { PermissionAction } from "@/domain/permission-action";
 
 export interface NavItem {
@@ -25,7 +25,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Configurações para WhatsApp",
     items: [
       { label: "Agentes", to: "/agents", icon: Bot, action: PermissionAction.AGENTS_VIEW },
-      { label: "WhatsApp Channel", to: "/wc", icon: MessageCircleMore, action: PermissionAction.WABAS_VIEW },
+      { label: "WhatsApp Channel", to: "/wc", icon: Whatsapp, action: PermissionAction.WABAS_VIEW },
       { label: "Ilhas de Atendimento", to: "/service-island", icon: Network, action: PermissionAction.SERVICE_ISLANDS_VIEW },
     ],
   },
