@@ -599,8 +599,22 @@ function IconWhatsapp(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+function IconMonitorMac(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="1em" height="1em" {...props}>
+      <path
+        fill="currentColor"
+        d="M2 5.701a2.25 2.25 0 0 1 2.25-2.25h15.5A2.25 2.25 0 0 1 22 5.701V15.287a2.25 2.25 0 0 1-2.25 2.25h-5.5v1.512h1a.75.75 0 0 1 0 1.5h-6.5a.75.75 0 0 1 0-1.5h1v-1.512h-5.5A2.25 2.25 0 0 1 2 15.287V5.7ZM12.75 19.05v-1.512h-1.5v1.512h1.5Zm1.5-3.012h5.5a.75.75 0 0 0 .75-.75V13.45h-17v1.836c0 .414.336.75.75.75h5.5v-.01h1.5v.01h1.5v-.01h1.5v.01ZM20.5 5.7a.75.75 0 0 0-.75-.75H4.25a.75.75 0 0 0-.75.75v6.25h17v-6.25Z"
+      />
+    </svg>
+  );
+}
+
 // ---- aliases com o nome que o lucide-react usava ----
 
+/// Ícone do monitor de tela (MonitorMac) — usado pra representar as Ilhas de
+/// Atendimento (monitoramento em tempo real).
+export const MonitorMac = IconMonitorMac;
 /// Sem triângulo de alerta no plano gratuito — usa o círculo de informação.
 export const AlertTriangle = IconInfo;
 /// Logo do WhatsApp — usado especificamente no menu de "WhatsApp Channel".

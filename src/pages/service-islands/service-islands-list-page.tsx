@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { Waypoints } from "@/lib/icons";
+import { MonitorMac } from "@/lib/icons";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ServiceIsland } from "@/types/domain";
@@ -29,7 +29,7 @@ export function ServiceIslandsListPage() {
           >
             <CardHeader className="flex-row items-center gap-3 space-y-0">
               <div className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-lg">
-                <Waypoints className="size-5" />
+                <MonitorMac className="size-5" />
               </div>
               <div className="min-w-0">
                 <CardTitle className="truncate text-base">{island.name}</CardTitle>
