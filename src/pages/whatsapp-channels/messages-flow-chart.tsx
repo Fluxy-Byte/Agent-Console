@@ -1,6 +1,6 @@
 import { useState } from "react";
 import useSWR from "swr";
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChartContainer,
@@ -19,9 +19,9 @@ const chartConfig = {
   received: { label: "Recebidas", color: "var(--chart-2)" },
 } satisfies ChartConfig;
 
-/// "Fluxo de mensagens" — Area Chart - Interactive do shadcn. Diferente de
+/// "Fluxo de mensagens" — Bar Chart - Multiple do shadcn. Diferente de
 /// conversas, cada mensagem individual conta (uma mesma conversa pode ter
-/// várias); duas séries empilhadas (enviadas/recebidas).
+/// várias); duas séries lado a lado (enviadas/recebidas).
 export function MessagesFlowChart({ channelId }: { channelId: string }) {
   const [range, setRange] = useState<SeriesRange>("3m");
   const { data } = useSWR<MessagesSeries>(`/api/wc/${channelId}/messages-series?range=${range}`);
@@ -53,17 +53,7 @@ export function MessagesFlowChart({ channelId }: { channelId: string }) {
           <p className="text-muted-foreground py-10 text-center text-sm">Carregando…</p>
         ) : (
           <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
-            <AreaChart data={data.points}>
-              <defs>
-                <linearGradient id="fillSent" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-sent)" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="var(--color-sent)" stopOpacity={0.1} />
-                </linearGradient>
-                <linearGradient id="fillReceived" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-received)" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="var(--color-received)" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
+            <BarChart data={data.points}>
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="date"
@@ -75,7 +65,7 @@ export function MessagesFlowChart({ channelId }: { channelId: string }) {
               />
               {/* Domínio sempre começando em 0 e com teto mínimo 1 — sem isso,
                   quando todos os pontos são 0 (ou quase), o recharts calcula
-                  um domínio degenerado (min === max) e desenha a linha no
+                  um domínio degenerado (min === max) e desenha a barra no
                   meio do gráfico em vez de rente à base, sobrepondo as datas. */}
               <YAxis hide domain={[0, (dataMax: number) => Math.max(dataMax, 1)]} />
               <ChartTooltip
@@ -84,10 +74,10 @@ export function MessagesFlowChart({ channelId }: { channelId: string }) {
                   <ChartTooltipContent labelFormatter={(value) => formatBucketLabel(value as string, data.granularity)} indicator="dot" />
                 }
               />
-              <Area dataKey="received" type="natural" fill="url(#fillReceived)" stroke="var(--color-received)" stackId="a" />
-              <Area dataKey="sent" type="natural" fill="url(#fillSent)" stroke="var(--color-sent)" stackId="a" />
+              <Bar dataKey="sent" fill="var(--color-sent)" radius={4} />
+              <Bar dataKey="received" fill="var(--color-received)" radius={4} />
               <ChartLegend content={<ChartLegendContent />} />
-            </AreaChart>
+            </BarChart>
           </ChartContainer>
         )}
       </CardContent>

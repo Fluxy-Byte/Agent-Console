@@ -1,6 +1,6 @@
 import { useState } from "react";
 import useSWR from "swr";
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,10 +11,10 @@ const chartConfig = {
   count: { label: "Conversas", color: "var(--chart-1)" },
 } satisfies ChartConfig;
 
-/// "Fluxo de conversas" — Area Chart - Interactive do shadcn. Uma conversa é
-/// uma janela de atendimento aberta por um contato (MessagingSession); troca
-/// de range refaz o fetch no Agent-Api (granularidade diária ou mensal
-/// conforme o período, ver whatsapp-channel-service.ts#resolveSeriesRange).
+/// "Fluxo de conversas" — Bar Chart do shadcn. Uma conversa é uma janela de
+/// atendimento aberta por um contato (MessagingSession); troca de range
+/// refaz o fetch no Agent-Api (granularidade diária ou mensal conforme o
+/// período, ver whatsapp-channel-service.ts#resolveSeriesRange).
 export function ConversationsFlowChart({ channelId }: { channelId: string }) {
   const [range, setRange] = useState<SeriesRange>("3m");
   const { data } = useSWR<ConversationsSeries>(`/api/wc/${channelId}/conversations-series?range=${range}`);
@@ -44,13 +44,7 @@ export function ConversationsFlowChart({ channelId }: { channelId: string }) {
           <p className="text-muted-foreground py-10 text-center text-sm">Carregando…</p>
         ) : (
           <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
-            <AreaChart data={data.points}>
-              <defs>
-                <linearGradient id="fillConversations" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="var(--color-count)" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
+            <BarChart data={data.points}>
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="date"
@@ -62,7 +56,7 @@ export function ConversationsFlowChart({ channelId }: { channelId: string }) {
               />
               {/* Domínio sempre começando em 0 e com teto mínimo 1 — sem isso,
                   quando todos os pontos são 0 (ou quase), o recharts calcula
-                  um domínio degenerado (min === max) e desenha a linha no
+                  um domínio degenerado (min === max) e desenha a barra no
                   meio do gráfico em vez de rente à base, sobrepondo as datas. */}
               <YAxis hide domain={[0, (dataMax: number) => Math.max(dataMax, 1)]} />
               <ChartTooltip
@@ -71,8 +65,8 @@ export function ConversationsFlowChart({ channelId }: { channelId: string }) {
                   <ChartTooltipContent labelFormatter={(value) => formatBucketLabel(value as string, data.granularity)} indicator="dot" />
                 }
               />
-              <Area dataKey="count" type="natural" fill="url(#fillConversations)" stroke="var(--color-count)" />
-            </AreaChart>
+              <Bar dataKey="count" fill="var(--color-count)" radius={4} />
+            </BarChart>
           </ChartContainer>
         )}
       </CardContent>
