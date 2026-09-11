@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Upload, X } from "@/lib/icons";
+import { Plus, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

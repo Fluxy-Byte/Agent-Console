@@ -1,5 +1,5 @@
 import { useState, type InputHTMLAttributes } from "react";
-import { Eye, EyeOff } from "@/lib/icons";
+import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "./input";
 

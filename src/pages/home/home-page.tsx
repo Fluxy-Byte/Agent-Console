@@ -21,10 +21,9 @@ import {
   Plug,
   ShieldCheck,
   Sparkles,
-  Ticket,
   Waypoints,
   Webhook,
-} from "@/lib/icons";
+} from "lucide-react";
 import heroImage from "@/assets/ApresentacaoInicial.jpg";
 import conversaImage from "@/assets/Conversa.png";
 import metaLogo from "@/assets/LogoMetaOficalSemFundo.png";
@@ -108,7 +107,7 @@ const MODULES: ModuleCard[] = [
     ctaLabel: "Ver canais",
   },
   {
-    icon: Ticket,
+    icon: Waypoints,
     title: "Ilhas de Atendimento",
     description: "Organize filas de atendimento humano, monitore em tempo real e consulte o histórico completo de conversas.",
     to: "/service-island",

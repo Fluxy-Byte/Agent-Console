@@ -1,6 +1,6 @@
 import { useState } from "react";
 import useSWR from "swr";
-import { CheckCircle2, Download, ListChecks, Loader2, XCircle } from "@/lib/icons";
+import { CheckCircle2, Download, ListChecks, Loader2, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

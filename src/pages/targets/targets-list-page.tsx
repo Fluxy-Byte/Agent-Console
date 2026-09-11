@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { Clock, Contact, MessageCircle, SlidersHorizontal, UserCheck, UserRound, Users, UsersRound } from "@/lib/icons";
+import { Clock, Contact, MessageCircle, SlidersHorizontal, UserCheck, UserRound, Users, UsersRound } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";

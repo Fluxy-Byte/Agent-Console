@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronDown } from "@/lib/icons";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Accordion({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {

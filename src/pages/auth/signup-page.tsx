@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { CheckCircle2, Circle } from "@/lib/icons";
+import { CheckCircle2, Circle } from "lucide-react";
 import fluxyLogo from "@/assets/Logo.png";
 import { AuthLayout } from "@/components/auth-layout";
 import { Button } from "@/components/ui/button";

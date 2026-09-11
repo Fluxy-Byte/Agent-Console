@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { ChevronsLeft, ChevronsRight, LogOut } from "@/lib/icons";
+import { ChevronsLeft, ChevronsRight, LogOut } from "lucide-react";
 import fluxyLogo from "@/assets/Logo.png";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";

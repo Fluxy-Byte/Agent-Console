@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Bot, MessageSquare, ShieldCheck, Zap } from "@/lib/icons";
+import { Bot, MessageSquare, ShieldCheck, Zap } from "lucide-react";
 import fluxyLogo from "@/assets/Logo.png";
 
 const FEATURES = [

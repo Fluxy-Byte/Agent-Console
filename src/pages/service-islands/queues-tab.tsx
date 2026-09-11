@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { CheckCircle2, ListChecks, Pencil, Plus, Trash2, XCircle } from "@/lib/icons";
+import { CheckCircle2, ListChecks, Pencil, Plus, Trash2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,

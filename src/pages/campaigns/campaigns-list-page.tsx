@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { AlertTriangle, CheckCircle2, MoreVertical, Plus, Send, Users } from "@/lib/icons";
+import { AlertTriangle, CheckCircle2, MoreVertical, Plus, Send, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

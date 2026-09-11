@@ -1,6 +1,6 @@
 import { Fragment, type ComponentProps } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight } from "@/lib/icons";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Breadcrumb({ className, ...props }: ComponentProps<"nav">) {

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import Papa from "papaparse";
 import { toast } from "sonner";
-import { ArrowLeft, CheckCircle2, Download, FileSpreadsheet, XCircle } from "@/lib/icons";
+import { ArrowLeft, CheckCircle2, Download, FileSpreadsheet, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";

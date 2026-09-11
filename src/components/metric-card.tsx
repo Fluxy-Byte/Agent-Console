@@ -1,8 +1,8 @@
-import { ChevronRight, type IconComponent } from "@/lib/icons";
+import { ChevronRight, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MetricCardProps {
-  icon: IconComponent;
+  icon: LucideIcon;
   iconClassName?: string;
   label: string;
   value: string | number;

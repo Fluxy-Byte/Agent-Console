@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
-import { Check, Copy, KeyRound, Ticket } from "@/lib/icons";
+import { Check, Copy, KeyRound, Ticket } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";

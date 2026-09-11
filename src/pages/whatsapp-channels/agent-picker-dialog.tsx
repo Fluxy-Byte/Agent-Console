@@ -1,7 +1,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
-import { Bot, ListChecks, Pencil } from "@/lib/icons";
+import { Bot, ListChecks, Pencil } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,

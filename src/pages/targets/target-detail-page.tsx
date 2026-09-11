@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
-import { Bot, Calendar, IdCard, LogIn, LogOut, Mail, Phone } from "@/lib/icons";
+import { Bot, Calendar, IdCard, LogIn, LogOut, Mail, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";

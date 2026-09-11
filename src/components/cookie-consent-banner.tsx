@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Cookie } from "@/lib/icons";
+import { Cookie } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "fluxy-cookie-consent";

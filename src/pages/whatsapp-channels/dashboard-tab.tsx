@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { BadgeCheck, Gauge, Send, ShieldCheck, Tag, Wallet, Wifi, type IconComponent } from "@/lib/icons";
+import { BadgeCheck, Gauge, Send, ShieldCheck, Tag, Wallet, Wifi, type LucideIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -85,7 +85,7 @@ function translateStatusValue(value: string): string {
   return STATUS_VALUE_LABEL[value] ?? value.replaceAll("_", " ");
 }
 
-const STATUS_FIELD_META: Record<string, { label: string; icon: IconComponent }> = {
+const STATUS_FIELD_META: Record<string, { label: string; icon: LucideIcon }> = {
   status: { label: "Status da conexão", icon: Wifi },
   quality_rating: { label: "Qualidade", icon: Gauge },
   name_status: { label: "Nome do perfil", icon: BadgeCheck },
@@ -93,7 +93,7 @@ const STATUS_FIELD_META: Record<string, { label: string; icon: IconComponent }> 
   messaging_limit_tier: { label: "Limite de envio", icon: Send },
 };
 
-function StatusTile({ icon: Icon, label, value }: { icon: IconComponent; label: string; value: string }) {
+function StatusTile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   const severity = statusSeverity(value);
   return (
     <div className="border-border bg-card flex items-center gap-3 rounded-xl border p-4">
@@ -110,7 +110,7 @@ function StatusTile({ icon: Icon, label, value }: { icon: IconComponent; label: 
   );
 }
 
-function ValueTile({ icon: Icon, label, value }: { icon: IconComponent; label: string; value: string | number }) {
+function ValueTile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string | number }) {
   return (
     <div className="border-border bg-card flex items-center gap-3 rounded-xl border p-4">
       <div className="bg-primary/15 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">
@@ -124,7 +124,7 @@ function ValueTile({ icon: Icon, label, value }: { icon: IconComponent; label: s
   );
 }
 
-function CardIcon({ icon: Icon }: { icon: IconComponent }) {
+function CardIcon({ icon: Icon }: { icon: LucideIcon }) {
   return (
     <div className="bg-primary/15 text-primary flex size-7 items-center justify-center rounded-lg">
       <Icon className="size-4" />
