@@ -1,4 +1,4 @@
-import { BrainCircuit, KeyRound, Megaphone, Network, Ticket, UserGroup } from "lucide-react";
+import { BrainCircuit, Headset, KeyRound, Megaphone, Network, UserGroup } from "lucide-react";
 import { PermissionAction } from "@/domain/permission-action";
 
 export interface NavItem {
@@ -26,7 +26,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Agentes", to: "/agents", icon: BrainCircuit, action: PermissionAction.AGENTS_VIEW },
       { label: "Channels", to: "/wc", icon: Network, action: PermissionAction.WABAS_VIEW },
-      { label: "Ilhas de Atendimento", to: "/service-island", icon: Ticket, action: PermissionAction.SERVICE_ISLANDS_VIEW },
+      { label: "Ilhas de Atendimento", to: "/service-island", icon: Headset, action: PermissionAction.SERVICE_ISLANDS_VIEW },
     ],
   },
   {
