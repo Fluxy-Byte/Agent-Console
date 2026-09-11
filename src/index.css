@@ -77,10 +77,11 @@
   --ring: oklch(0.54 0.25 286);
 
   /* Cores dos gráficos (Area Chart - Interactive): chart-1 segue a marca
-     (roxo primário, adapta sozinho no dark via var(--primary)); chart-2 é um
-     azul fixo pra segunda série (ex: mensagens recebidas). */
+     (roxo primário) e chart-2 reaproveita o verde de --success — combina
+     com o roxo e já é usado no resto da UI. Ambos resolvidos via var(),
+     então adaptam sozinhos no dark sem precisar redeclarar lá embaixo. */
   --chart-1: var(--primary);
-  --chart-2: oklch(0.62 0.19 260);
+  --chart-2: var(--success);
 
   --sidebar: oklch(0.99 0.003 286);
   --sidebar-foreground: oklch(0.18 0.02 286);
@@ -116,8 +117,6 @@
   --border: oklch(0.3 0.02 286);
   --input: oklch(0.3 0.02 286);
   --ring: oklch(0.7 0.22 295);
-
-  --chart-2: oklch(0.72 0.16 260);
 
   --sidebar: oklch(0.19 0.018 286);
   --sidebar-foreground: oklch(0.96 0.005 286);
