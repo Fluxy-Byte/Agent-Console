@@ -1,6 +1,6 @@
 import { useState } from "react";
 import useSWR from "swr";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -60,6 +60,11 @@ export function ConversationsFlowChart({ channelId }: { channelId: string }) {
                 minTickGap={32}
                 tickFormatter={(value: string) => formatBucketTick(value, data.granularity)}
               />
+              {/* Domínio sempre começando em 0 e com teto mínimo 1 — sem isso,
+                  quando todos os pontos são 0 (ou quase), o recharts calcula
+                  um domínio degenerado (min === max) e desenha a linha no
+                  meio do gráfico em vez de rente à base, sobrepondo as datas. */}
+              <YAxis hide domain={[0, (dataMax: number) => Math.max(dataMax, 1)]} />
               <ChartTooltip
                 cursor={false}
                 content={
