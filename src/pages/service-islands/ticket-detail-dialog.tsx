@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Download, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MessageBubble } from "@/components/message-bubble";
 import { formatDuration } from "@/lib/format-duration";
 import { api, ApiError } from "@/lib/api";
@@ -104,6 +104,9 @@ export function TicketDetailDialog({ ticketId, onOpenChange }: TicketDetailDialo
                 </DialogTitle>
                 <Badge variant={displayTicketStatus(ticket).variant}>{displayTicketStatus(ticket).label}</Badge>
               </div>
+              <DialogDescription>
+                Histórico de conversa com {ticket.target.name || ticket.target.waId || "o contato"}.
+              </DialogDescription>
             </DialogHeader>
 
             <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[260px_1fr_280px]">
