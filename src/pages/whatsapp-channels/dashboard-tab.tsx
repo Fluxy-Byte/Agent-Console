@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { BadgeCheck, Gauge, Send, ShieldCheck, Tag, Wallet, Wifi, type LucideIcon } from "lucide-react";
+import { BadgeCheck, Gauge, MessageCircle, Send, ShieldCheck, Tag, Wallet, Wifi, type LucideIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -191,7 +191,7 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <ValueTile icon={Send} label="Volumetria total (mês atual)" value={`${totalVolumeThisMonth} mensagens`} />
+            <ValueTile icon={MessageCircle} label="Volumetria total (mês atual)" value={`${totalVolumeThisMonth} mensagens`} />
             {campaignReport?.byCategory.map((row) => (
               <ValueTile key={row.category ?? "none"} icon={Tag} label={categoryLabel(row.category)} value={row.messagesSent} />
             ))}
