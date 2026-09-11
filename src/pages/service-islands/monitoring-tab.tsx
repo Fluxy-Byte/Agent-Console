@@ -90,16 +90,16 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
   return (
     <div className="flex flex-col gap-6">
       <Card className="overflow-hidden p-0">
-        <CardHeader className="flex-row items-center gap-3 space-y-0">
-          <div className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-lg">
-            <Headphones className="size-5" />
-          </div>
-          <div>
-            <CardTitle className="text-sm font-semibold">Tickets em atendimento</CardTitle>
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold">Tickets em atendimento</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-lg">
+              <Headphones className="size-5" />
+            </div>
             <p className="text-xl font-semibold">{data.inProgressTickets.length}</p>
           </div>
-        </CardHeader>
-        <CardContent>
           <TicketList tickets={pagedInProgress} emptyLabel="Nenhum ticket em atendimento no momento." />
         </CardContent>
         {data.inProgressTickets.length > 0 && (
@@ -117,16 +117,16 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
       </Card>
 
       <Card className="overflow-hidden p-0">
-        <CardHeader className="flex-row items-center gap-3 space-y-0">
-          <div className="bg-warning/15 text-warning flex size-10 items-center justify-center rounded-lg">
-            <Hourglass className="size-5" />
-          </div>
-          <div>
-            <CardTitle className="text-sm font-semibold">Tickets aguardando</CardTitle>
+        <CardHeader>
+          <CardTitle className="text-sm font-semibold">Tickets aguardando</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-warning/15 text-warning flex size-10 items-center justify-center rounded-lg">
+              <Hourglass className="size-5" />
+            </div>
             <p className="text-xl font-semibold">{data.waitingTickets.length}</p>
           </div>
-        </CardHeader>
-        <CardContent>
           <TicketList tickets={pagedWaiting} emptyLabel="Nenhum ticket aguardando no momento." />
         </CardContent>
         {data.waitingTickets.length > 0 && (
