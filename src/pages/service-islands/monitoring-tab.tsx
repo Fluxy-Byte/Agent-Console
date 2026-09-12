@@ -1,43 +1,182 @@
 import { useState } from "react";
 import useSWR from "swr";
-import { Headphones, Hourglass, Search } from "lucide-react";
+import { Activity, Award, Clock, Gauge, Hash, Headphones, Hourglass, ListChecks, Search, Send, Ticket, Timer, Users, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/pagination-controls";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatDuration } from "@/lib/format-duration";
 import { cn } from "@/lib/utils";
-import type { AttendantSummary, IslandMonitoring } from "@/types/domain";
+import type { AttendantSummary, IslandMonitoring, IslandTicket } from "@/types/domain";
+import { RealtimeQueuesCard } from "./realtime-queues-card";
 
 const MONITORING_REFRESH_MS = 8000;
 
 const STATUS_LABELS: Record<AttendantSummary["status"], string> = { ONLINE: "Online", PAUSED: "Em pausa", OFFLINE: "Offline" };
 const STATUS_DOT: Record<AttendantSummary["status"], string> = {
-  ONLINE: "bg-emerald-500",
-  PAUSED: "bg-amber-500",
+  ONLINE: "bg-success",
+  PAUSED: "bg-warning",
   OFFLINE: "bg-muted-foreground",
 };
 
-function TicketList({ tickets, emptyLabel }: { tickets: IslandMonitoring["waitingTickets"]; emptyLabel: string }) {
+function ticketInitial(ticket: IslandMonitoring["waitingTickets"][number]): string {
+  return (ticket.target.name || ticket.target.waId || "?").charAt(0).toUpperCase();
+}
+
+function ticketDisplayName(ticket: IslandTicket): string {
+  return ticket.target.name || ticket.target.waId || "—";
+}
+
+/// Média de tempo de atendimento AINDA EM ANDAMENTO — não confundir com
+/// handlingDurationMs (que só existe pra ticket já fechado). Aqui é sempre
+/// "agora - assignedAt" de cada ticket em atendimento, recalculada a cada
+/// refresh dos dados.
+function avgHandlingDuration(tickets: IslandTicket[]): number | null {
+  const withAssignedAt = tickets.filter((t) => t.assignedAt);
+  if (withAssignedAt.length === 0) return null;
+
+  const totalMs = withAssignedAt.reduce((sum, t) => sum + (Date.now() - new Date(t.assignedAt!).getTime()), 0);
+  return totalMs / withAssignedAt.length;
+}
+
+/// Média de tempo de espera AINDA EM ABERTO — "agora - createdAt" de cada
+/// ticket aguardando (waitDurationMs não serve aqui, só existe depois que o
+/// ticket é atribuído a um atendente).
+function avgWaitDuration(tickets: IslandTicket[]): number | null {
+  if (tickets.length === 0) return null;
+
+  const totalMs = tickets.reduce((sum, t) => sum + (Date.now() - new Date(t.createdAt).getTime()), 0);
+  return totalMs / tickets.length;
+}
+
+/// Entre os tickets aguardando, o "último que entrou" é o de createdAt mais
+/// recente — aqui assignedAt sempre é null (ainda não foram atendidos).
+function lastCreatedTicket(tickets: IslandTicket[]): IslandTicket | null {
+  return tickets.reduce<IslandTicket | null>((latest, ticket) => {
+    if (!latest || new Date(ticket.createdAt) > new Date(latest.createdAt)) return ticket;
+    return latest;
+  }, null);
+}
+
+function InfoTile({ icon: Icon, label, value }: { icon: typeof Ticket; label: string; value: string }) {
+  return (
+    <div className="border-border bg-card flex items-center gap-3 rounded-lg border p-3">
+      <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-full">
+        <Icon className="size-4" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-muted-foreground text-xs">{label}</p>
+        <p className="truncate text-sm font-semibold">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+
+function InProgressTicketsTable({ tickets, emptyLabel }: { tickets: IslandTicket[]; emptyLabel: string }) {
   if (tickets.length === 0) {
     return <p className="text-muted-foreground text-sm">{emptyLabel}</p>;
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      {tickets.map((ticket) => (
-        <div key={ticket.id} className="border-border flex items-center justify-between gap-3 rounded-md border px-3 py-2">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium">{ticket.target.name || ticket.target.waId || "—"}</p>
-            <p className="text-muted-foreground truncate text-xs">
-              #{ticket.ticketNumber} · {ticket.queue.name}
-              {ticket.assignedUser && ` · ${ticket.assignedUser.name}`}
-            </p>
-          </div>
-          <Badge variant="outline">{ticket.status === "WAITING" ? "Aguardando" : "Em andamento"}</Badge>
-        </div>
-      ))}
+    <div className="border-border overflow-hidden rounded-lg border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-left">Contato</TableHead>
+            <TableHead>Ticket</TableHead>
+            <TableHead>Fila</TableHead>
+            <TableHead>Tempo de espera na fila</TableHead>
+            <TableHead>Atendente</TableHead>
+            <TableHead>Tempo de atendimento</TableHead>
+            <TableHead>Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {tickets.map((ticket) => {
+            const elapsedMs = ticket.assignedAt ? Date.now() - new Date(ticket.assignedAt).getTime() : null;
+
+            return (
+              <TableRow key={ticket.id}>
+                <TableCell className="text-left">
+                  <div className="flex items-center justify-start gap-2">
+                    <div className="bg-primary/15 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
+                      {ticketInitial(ticket)}
+                    </div>
+                    <span className="truncate font-medium">{ticketDisplayName(ticket)}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-muted-foreground">#{ticket.ticketNumber}</TableCell>
+                <TableCell className="text-muted-foreground">{ticket.queue.name}</TableCell>
+                <TableCell className="text-muted-foreground">{formatDuration(ticket.waitDurationMs)}</TableCell>
+                <TableCell className="text-muted-foreground">{ticket.assignedUser?.name ?? "—"}</TableCell>
+                <TableCell className="text-muted-foreground">{formatDuration(elapsedMs)}</TableCell>
+                <TableCell>
+                  <span className="inline-flex items-center justify-center gap-1.5">
+                    <span className="relative flex size-2">
+                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-400 opacity-75" />
+                      <span className="relative inline-flex size-2 rounded-full bg-green-500" />
+                    </span>
+                    Em atendimento
+                  </span>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function WaitingTicketsTable({ tickets, emptyLabel }: { tickets: IslandTicket[]; emptyLabel: string }) {
+  if (tickets.length === 0) {
+    return <p className="text-muted-foreground text-sm">{emptyLabel}</p>;
+  }
+
+  return (
+    <div className="border-border overflow-hidden rounded-lg border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-left">Contato</TableHead>
+            <TableHead>Ticket</TableHead>
+            <TableHead>Fila</TableHead>
+            <TableHead>Tempo de espera</TableHead>
+            <TableHead>Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {tickets.map((ticket) => {
+            const elapsedMs = Date.now() - new Date(ticket.createdAt).getTime();
+
+            return (
+              <TableRow key={ticket.id}>
+                <TableCell className="text-left">
+                  <div className="flex items-center justify-start gap-2">
+                    <div className="bg-primary/15 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
+                      {ticketInitial(ticket)}
+                    </div>
+                    <span className="truncate font-medium">{ticketDisplayName(ticket)}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-muted-foreground">#{ticket.ticketNumber}</TableCell>
+                <TableCell className="text-muted-foreground">{ticket.queue.name}</TableCell>
+                <TableCell className="text-muted-foreground">{formatDuration(elapsedMs)}</TableCell>
+                <TableCell>
+                  <span className="inline-flex items-center justify-center gap-1.5">
+                    <span className="bg-warning size-1.5 rounded-full" />
+                    Aguardando
+                  </span>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
     </div>
   );
 }
@@ -57,6 +196,23 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
   const [attendantPageSize, setAttendantPageSize] = useState(10);
 
   if (!data) return <p className="text-muted-foreground p-4 text-sm">Carregando…</p>;
+
+  const avgHandlingMs = avgHandlingDuration(data.inProgressTickets);
+  const lastWaitingTicket = lastCreatedTicket(data.waitingTickets);
+  const avgWaitMs = avgWaitDuration(data.waitingTickets);
+  const busiestQueue = data.queues.reduce<IslandMonitoring["queues"][number] | null>(
+    (busiest, q) => (!busiest || q.waitingCount > busiest.waitingCount ? q : busiest),
+    null,
+  );
+
+  const avgTicketsPerAttendant =
+    data.attendants.total > 0
+      ? Math.round(data.attendants.list.reduce((sum, a) => sum + a.ticketCount, 0) / data.attendants.total)
+      : 0;
+  const busiestAttendant = data.attendants.list.reduce<AttendantSummary | null>(
+    (busiest, a) => (!busiest || a.ticketCount > busiest.ticketCount ? a : busiest),
+    null,
+  );
 
   const attendantRows = data.attendants.list
     .filter((a) => showAll || a.status === "ONLINE")
@@ -88,19 +244,62 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
   );
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card className="overflow-hidden p-0">
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold">Tickets em atendimento</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-lg">
+    <div className="border-border bg-card overflow-hidden rounded-xl border">
+      <Tabs defaultValue="in-progress" className="gap-0">
+        <TabsList className="border-border h-auto w-full justify-start gap-1 rounded-none border-b bg-transparent p-2">
+          <TabsTrigger
+            value="in-progress"
+            className="flex-none px-3 py-1.5 data-[state=active]:bg-success data-[state=active]:text-success-foreground"
+          >
+            <Headphones /> Em andamento
+          </TabsTrigger>
+          <TabsTrigger
+            value="waiting"
+            className="flex-none px-3 py-1.5 data-[state=active]:bg-success data-[state=active]:text-success-foreground"
+          >
+            <Hourglass /> Aguardando atendimento
+          </TabsTrigger>
+          <TabsTrigger
+            value="attendants"
+            className="flex-none px-3 py-1.5 data-[state=active]:bg-success data-[state=active]:text-success-foreground"
+          >
+            <Activity /> Atendentes
+          </TabsTrigger>
+          <TabsTrigger
+            value="queues"
+            className="flex-none px-3 py-1.5 data-[state=active]:bg-success data-[state=active]:text-success-foreground"
+          >
+            <Send /> Filas
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="in-progress">
+        <CardHeader className="flex-row items-start justify-between space-y-0">
+          <div className="flex items-start gap-3">
+            <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
               <Headphones className="size-5" />
             </div>
-            <p className="text-xl font-semibold">{data.inProgressTickets.length}</p>
+            <div>
+              <CardTitle className="text-base">Tickets em atendimento</CardTitle>
+              <p className="text-muted-foreground mt-1 text-xs">Tickets sendo conduzidos agora por um atendente humano.</p>
+            </div>
           </div>
-          <TicketList tickets={pagedInProgress} emptyLabel="Nenhum ticket em atendimento no momento." />
+          <Badge className="bg-primary/10 text-primary gap-1.5 border-transparent">
+            <Zap className="size-3.5" /> Em andamento
+          </Badge>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <InfoTile icon={Ticket} label="Quantidade de tickets" value={String(data.inProgressTickets.length)} />
+            <InfoTile icon={Timer} label="Média de tempo de atendimento" value={formatDuration(avgHandlingMs)} />
+            <InfoTile icon={Gauge} label="Média de tickets por atendente" value={String(avgTicketsPerAttendant)} />
+            <InfoTile
+              icon={Award}
+              label="Atendente com mais tickets em atendimento"
+              value={busiestAttendant ? busiestAttendant.name : "Nenhum"}
+            />
+          </div>
+          <InProgressTicketsTable tickets={pagedInProgress} emptyLabel="Nenhum ticket em atendimento no momento." />
         </CardContent>
         {data.inProgressTickets.length > 0 && (
           <PaginationControls
@@ -114,20 +313,33 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
             }}
           />
         )}
-      </Card>
+        </TabsContent>
 
-      <Card className="overflow-hidden p-0">
+        <TabsContent value="waiting">
         <CardHeader>
-          <CardTitle className="text-sm font-semibold">Tickets aguardando</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
           <div className="flex items-center gap-3">
-            <div className="bg-warning/15 text-warning flex size-10 items-center justify-center rounded-lg">
+            <div className="bg-warning/15 text-warning flex size-10 shrink-0 items-center justify-center rounded-lg">
               <Hourglass className="size-5" />
             </div>
-            <p className="text-xl font-semibold">{data.waitingTickets.length}</p>
+            <CardTitle className="text-base">Tickets aguardando</CardTitle>
           </div>
-          <TicketList tickets={pagedWaiting} emptyLabel="Nenhum ticket aguardando no momento." />
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <InfoTile icon={Ticket} label="Quantidade de tickets" value={String(data.waitingTickets.length)} />
+            <InfoTile
+              icon={Hash}
+              label="Último ticket que entrou na fila"
+              value={lastWaitingTicket ? `#${lastWaitingTicket.ticketNumber} · ${ticketDisplayName(lastWaitingTicket)}` : "Nenhum"}
+            />
+            <InfoTile
+              icon={ListChecks}
+              label="Fila com mais tickets"
+              value={busiestQueue && busiestQueue.waitingCount > 0 ? busiestQueue.queueName : "Nenhuma"}
+            />
+            <InfoTile icon={Clock} label="Tempo médio de espera" value={formatDuration(avgWaitMs)} />
+          </div>
+          <WaitingTicketsTable tickets={pagedWaiting} emptyLabel="Nenhum ticket aguardando no momento." />
         </CardContent>
         {data.waitingTickets.length > 0 && (
           <PaginationControls
@@ -141,29 +353,40 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
             }}
           />
         )}
-      </Card>
+        </TabsContent>
 
-      <Card>
+        <TabsContent value="attendants">
         <CardHeader>
-          <CardTitle className="text-base">Status dos atendentes</CardTitle>
+          <div className="flex items-start gap-3">
+            <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+              <Activity className="size-5" />
+            </div>
+            <div>
+              <CardTitle>Status dos atendentes</CardTitle>
+              <p className="text-muted-foreground mt-1 text-sm">Acompanhe a disponibilidade e o status da sua equipe.</p>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-success/10 rounded-lg p-3 text-center">
+            <div className="bg-success/10 flex flex-col items-center gap-1 rounded-lg p-3 text-center">
+              <span className="bg-success size-1.5 rounded-full" />
               <p className="text-success text-xl font-semibold">{data.attendants.online}</p>
               <p className="text-muted-foreground text-xs">Online</p>
               <p className="text-muted-foreground text-[11px]">
                 {data.attendants.total > 0 ? Math.round((data.attendants.online / data.attendants.total) * 100) : 0}% do total
               </p>
             </div>
-            <div className="bg-warning/10 rounded-lg p-3 text-center">
+            <div className="bg-warning/10 flex flex-col items-center gap-1 rounded-lg p-3 text-center">
+              <span className="bg-warning size-1.5 rounded-full" />
               <p className="text-warning text-xl font-semibold">{data.attendants.paused}</p>
               <p className="text-muted-foreground text-xs">Em pausa</p>
               <p className="text-muted-foreground text-[11px]">
                 {data.attendants.total > 0 ? Math.round((data.attendants.paused / data.attendants.total) * 100) : 0}% do total
               </p>
             </div>
-            <div className="bg-muted rounded-lg p-3 text-center">
+            <div className="bg-muted flex flex-col items-center gap-1 rounded-lg p-3 text-center">
+              <span className="bg-muted-foreground size-1.5 rounded-full" />
               <p className="text-xl font-semibold">{data.attendants.offline}</p>
               <p className="text-muted-foreground text-xs">Offline</p>
               <p className="text-muted-foreground text-[11px]">
@@ -173,20 +396,28 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm font-medium">
-              {showAll ? `Atendentes (${data.attendants.total})` : `Atendentes online (${data.attendants.online})`}
-            </p>
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-full">
+                <Users className="size-4" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Lista de atendentes dessa ilha</p>
+                <p className="text-muted-foreground text-xs">
+                  {attendantRows.length} {attendantRows.length === 1 ? "atendente encontrado" : "atendentes encontrados"}
+                </p>
+              </div>
+            </div>
             <div className="flex items-center gap-2">
-              <div className="relative w-44">
+              <div className="relative w-72">
                 <Search className="text-muted-foreground absolute top-1/2 left-2 size-3.5 -translate-y-1/2" />
                 <Input
                   placeholder="Buscar atendente..."
-                  className="h-8 pl-7 text-xs"
+                  className="pl-7 text-xs"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
-              <Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={() => setShowAll((v) => !v)}>
+              <Button type="button" variant="outline" onClick={() => setShowAll((v) => !v)}>
                 {showAll ? "Ver só online" : "Ver todos os atendentes"}
               </Button>
             </div>
@@ -216,7 +447,9 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
                           <span className="truncate font-medium">{a.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">{a.queueName}</TableCell>
+                      <TableCell>
+                        <Badge className="bg-primary/10 text-primary border-transparent">{a.queueName}</Badge>
+                      </TableCell>
                       <TableCell className="text-muted-foreground">{a.ticketCount}</TableCell>
                       <TableCell>
                         <span className="inline-flex items-center justify-center gap-1.5">
@@ -243,7 +476,12 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
             )}
           </div>
         </CardContent>
-      </Card>
+        </TabsContent>
+
+        <TabsContent value="queues">
+          <RealtimeQueuesCard islandId={islandId} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

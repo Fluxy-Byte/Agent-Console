@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Pencil } from "lucide-react";
+import { Bot, Building2, CalendarDays, Eye, Hash, Headset, IdCard, KeyRound, type LucideIcon, Pencil, Phone, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { WhatsappChannel } from "@/types/domain";
@@ -12,11 +12,16 @@ interface ConfigTabProps {
   onSaved: () => void;
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium">{value}</span>
+    <div className="border-border flex items-center gap-3 rounded-lg border p-3">
+      <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-full">
+        <Icon className="size-4" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-muted-foreground text-xs">{label}</p>
+        <p className="truncate text-sm font-medium">{value}</p>
+      </div>
     </div>
   );
 }
@@ -28,47 +33,99 @@ export function ConfigTab({ channel, canWrite, onSaved }: ConfigTabProps) {
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Agentes</CardTitle>
+          <div className="flex items-start gap-3">
+            <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+              <Bot className="size-5" />
+            </div>
+            <div>
+              <CardTitle>Agentes</CardTitle>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Ative ou pause o atendimento automático deste canal e escolha o agente de IA responsável por ele.
+              </p>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <AgentPicker channel={channel} disabled={!canWrite} onSaved={onSaved} />
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle>Dados do canal</CardTitle>
-          <ChannelDataDialog
-            channel={channel}
-            disabled={!canWrite}
-            onSaved={onSaved}
-            trigger={
-              <Button type="button" variant="outline" size="sm" disabled={!canWrite}>
-                <Pencil className="size-4" /> Editar
-              </Button>
-            }
-          />
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2">
-          <InfoRow label="Phone Number ID" value={channel.phoneNumberId} />
-          <InfoRow label="Número de exibição" value={channel.displayNumber} />
-          <InfoRow label="WhatsApp Business Account ID" value={channel.wabaId} />
-          <InfoRow label="Token de acesso da Meta" value={channel.metaAccessTokenPreview ?? "Não configurado"} />
-        </CardContent>
-      </Card>
-
-      {channel.serviceIsland && (
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Ilha de atendimento</CardTitle>
+            <div className="flex items-start gap-3">
+              <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                <IdCard className="size-5" />
+              </div>
+              <div>
+                <CardTitle>Dados do canal</CardTitle>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Identificadores do número na Meta e o token de acesso usado pra falar com a Graph API.
+                </p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <Button type="button" variant="outline" onClick={() => navigate(`/service-island/${channel.serviceIsland!.id}`)}>
-              Ver {channel.serviceIsland.name}
-            </Button>
+          <CardContent className="flex flex-col gap-3">
+            <div className="grid grid-cols-2 gap-3">
+              <InfoRow icon={Hash} label="Phone Number ID" value={channel.phoneNumberId} />
+              <InfoRow icon={Phone} label="Número de exibição" value={channel.displayNumber} />
+              <InfoRow icon={Building2} label="Id do Waba" value={channel.wabaId} />
+              <InfoRow icon={KeyRound} label="Token de acesso da Meta" value={channel.metaAccessTokenPreview ?? "Não configurado"} />
+            </div>
+            <ChannelDataDialog
+              channel={channel}
+              disabled={!canWrite}
+              onSaved={onSaved}
+              trigger={
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-primary/40 text-primary bg-primary/10 hover:bg-primary/15 w-full border-dashed"
+                  disabled={!canWrite}
+                >
+                  <Pencil className="size-4" /> Editar dados
+                </Button>
+              }
+            />
           </CardContent>
         </Card>
-      )}
+
+        {channel.serviceIsland && (
+          <Card className="h-auto self-start">
+            <CardHeader>
+              <div className="flex items-start gap-3">
+                <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                  <Headset className="size-5" />
+                </div>
+                <div>
+                  <CardTitle>Ilha de atendimento</CardTitle>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Fila de atendimento humano vinculada a este canal quando o agente de IA está desativado.
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <InfoRow icon={Tag} label="Nome da ilha" value={channel.serviceIsland.name} />
+                <InfoRow
+                  icon={CalendarDays}
+                  label="Criada em"
+                  value={new Date(channel.serviceIsland.createdAt).toLocaleDateString("pt-BR")}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="border-success text-success bg-success/10 hover:bg-success/15 w-full border-dashed"
+                onClick={() => navigate(`/service-island/${channel.serviceIsland!.id}`)}
+              >
+                <Eye className="size-4" /> Ver ilha de atendimento
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }

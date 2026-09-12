@@ -1,5 +1,6 @@
 import { useState } from "react";
 import useSWR from "swr";
+import { Users } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
@@ -22,11 +23,18 @@ export function ConversationsFlowChart({ channelId }: { channelId: string }) {
   const { data } = useSWR<ConversationsSeries>(`/api/wc/${channelId}/conversations-series?period=${year}`);
 
   return (
-    <Card className="pt-0">
+    <Card className="pt-0 shadow-xl">
       <CardHeader className="flex flex-col gap-3 space-y-0 border-b py-5 sm:flex-row sm:items-center">
-        <div className="grid flex-1 gap-1">
-          <CardTitle>Fluxo de conversas (Contato)</CardTitle>
-          <p className="text-muted-foreground text-sm">Janelas de conversa abertas por contatos deste canal.</p>
+        <div className="flex flex-1 items-start gap-3">
+          <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+            <Users className="size-5" />
+          </div>
+          <div className="grid gap-1">
+            <CardTitle>Métrica de janelas abertas nesse canal</CardTitle>
+            <p className="text-muted-foreground text-sm">
+              Quantidade de janelas de atendimento abertas por contatos deste canal ao longo do tempo.
+            </p>
+          </div>
         </div>
         <Select value={String(year)} onValueChange={(value) => setYear(Number(value))}>
           <SelectTrigger className="w-full sm:ml-auto sm:w-[180px]" aria-label="Selecionar ano">
@@ -67,7 +75,7 @@ export function ConversationsFlowChart({ channelId }: { channelId: string }) {
                   <ChartTooltipContent labelFormatter={(value) => formatBucketLabel(value as string, data.granularity)} indicator="dot" />
                 }
               />
-              <Bar dataKey="count" fill="var(--color-count)" radius={4} />
+              <Bar dataKey="count" fill="var(--color-count)" radius={4} maxBarSize={32} />
             </BarChart>
           </ChartContainer>
         )}

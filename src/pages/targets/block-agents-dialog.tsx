@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
-import { Lock } from "lucide-react";
+import { Lock, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -125,7 +125,7 @@ export function BlockAgentsDialog({ targetId, targetName, blockedAgentIds, disab
             Cancelar
           </Button>
           <Button type="button" onClick={handleSave} disabled={saving}>
-            {saving ? "Salvando…" : "Salvar"}
+            <Save className="size-4" /> {saving ? "Salvando…" : "Salvar"}
           </Button>
         </DialogFooter>
       </DialogContent>

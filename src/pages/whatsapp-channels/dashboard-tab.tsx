@@ -1,17 +1,58 @@
+import { useState } from "react";
 import useSWR from "swr";
-import { BadgeCheck, Gauge, MessagesCircle, Send, ShieldCheck, Tag, Wallet, Wifi, type LucideIcon } from "lucide-react";
+import {
+  BadgeCheck,
+  BadgeX,
+  Gauge,
+  MessagesCircle,
+  Send,
+  ShieldCheck,
+  ShieldX,
+  SignalHigh,
+  SignalLow,
+  SignalMedium,
+  SignalZero,
+  Tag,
+  TrendingUp,
+  Wallet,
+  Wifi,
+  WifiHigh,
+  WifiLow,
+  WifiOff,
+  type LucideIcon,
+} from "lucide-react";
+import { type DateRange } from "@/components/calendar";
+import { DateRangePicker } from "@/components/date-range-picker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { MessagesSeries, TemplateCategory, WhatsappChannelCampaignReport, WhatsappChannelStatus } from "@/types/domain";
+import type { TemplateCategory, WhatsappChannelCampaignReport, WhatsappChannelStatus } from "@/types/domain";
 import { ConversationsFlowChart } from "./conversations-flow-chart";
 import { MessagesFlowChart } from "./messages-flow-chart";
 
 const CATEGORY_LABEL: Record<TemplateCategory, string> = {
-  MARKETING: "Campanhas de Marketing",
-  UTILITY: "Campanhas de Utilidade",
+  MARKETING: "Disparo de Marketing",
+  UTILITY: "Disparos de Utilidade",
   AUTHENTICATION: "Autenticação",
 };
+
+/// Categorias sempre exibidas no card "Gastos", mesmo sem nenhum disparo no
+/// período — entram com 0 pra não sumir a linha. Outras categorias que
+/// aparecerem no relatório (ex: Autenticação) continuam sendo mostradas,
+/// só não têm uma linha "fantasma" quando vazias.
+const ALWAYS_VISIBLE_CATEGORIES: TemplateCategory[] = ["MARKETING", "UTILITY"];
+
+function mergeCampaignCategories(
+  byCategory: WhatsappChannelCampaignReport["byCategory"],
+): WhatsappChannelCampaignReport["byCategory"] {
+  const rows = new Map(byCategory.map((row) => [row.category, row]));
+  for (const category of ALWAYS_VISIBLE_CATEGORIES) {
+    if (!rows.has(category)) rows.set(category, { category, campaignCount: 0, messagesSent: 0 });
+  }
+  return ALWAYS_VISIBLE_CATEGORIES.map((category) => rows.get(category)!).concat(
+    byCategory.filter((row) => !ALWAYS_VISIBLE_CATEGORIES.includes(row.category as TemplateCategory)),
+  );
+}
 
 function categoryLabel(category: string | null): string {
   if (!category) return "Sem categoria";
@@ -79,17 +120,57 @@ const STATUS_VALUE_LABEL: Record<string, string> = {
   TIER_10K: "Até 10 mil conversas/dia",
   TIER_100K: "Até 100 mil conversas/dia",
   TIER_UNLIMITED: "Ilimitado",
+  STANDARD: "Padrão",
+  HIGH: "Alta",
 };
 
 function translateStatusValue(value: string): string {
   return STATUS_VALUE_LABEL[value] ?? value.replaceAll("_", " ");
 }
 
+const CONNECTION_STATUS_ICON: Record<string, LucideIcon> = {
+  CONNECTED: Wifi,
+  PENDING: WifiHigh,
+  RATE_LIMITED: WifiLow,
+  FLAGGED: WifiLow,
+  BANNED: WifiOff,
+};
+
+function connectionStatusIcon(value: string): LucideIcon {
+  return CONNECTION_STATUS_ICON[value] ?? Wifi;
+}
+
+const QUALITY_ICON: Record<string, LucideIcon> = {
+  GREEN: SignalHigh,
+  YELLOW: SignalMedium,
+  RED: SignalLow,
+  NA: SignalZero,
+};
+
+function qualityIcon(value: string): LucideIcon {
+  return QUALITY_ICON[value] ?? Gauge;
+}
+
+function verificationIcon(value: string): LucideIcon {
+  return value === "EXPIRED" ? ShieldX : ShieldCheck;
+}
+
+function nameStatusIcon(value: string): LucideIcon {
+  return value === "DECLINED" ? BadgeX : BadgeCheck;
+}
+
+const FIELD_ICON_RESOLVER: Record<string, (value: string) => LucideIcon> = {
+  status: connectionStatusIcon,
+  quality_rating: qualityIcon,
+  name_status: nameStatusIcon,
+  code_verification_status: verificationIcon,
+};
+
 const STATUS_FIELD_META: Record<string, { label: string; icon: LucideIcon }> = {
   status: { label: "Status da conexão", icon: Wifi },
   quality_rating: { label: "Qualidade", icon: Gauge },
   name_status: { label: "Nome do perfil", icon: BadgeCheck },
-  code_verification_status: { label: "Verificação", icon: ShieldCheck },
+  code_verification_status: { label: "Verificação do número", icon: ShieldCheck },
   messaging_limit_tier: { label: "Limite de envio", icon: Send },
 };
 
@@ -110,24 +191,83 @@ function StatusTile({ icon: Icon, label, value }: { icon: LucideIcon; label: str
   );
 }
 
-function ValueTile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string | number }) {
+function WhatsappUsageTile({ icon: Icon, value }: { icon: LucideIcon; value: number }) {
   return (
-    <div className="border-border bg-card flex items-center gap-3 rounded-xl border p-4">
-      <div className="bg-primary/15 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">
-        <Icon className="size-5" />
+    <div className="bg-primary/5 border-border flex items-start gap-3 rounded-xl border p-4">
+      <div className="bg-primary/15 text-primary flex size-9 shrink-0 items-center justify-center rounded-full">
+        <Icon className="size-4" />
       </div>
-      <div className="min-w-0">
-        <p className="text-muted-foreground text-xs">{label}</p>
-        <p className="text-foreground truncate text-base font-semibold">{value}</p>
+      <div className="flex flex-col gap-1">
+        <p className="text-muted-foreground text-sm">Uso do WhatsApp</p>
+        <p className="text-foreground text-2xl font-semibold">{value} mensagens</p>
       </div>
     </div>
   );
 }
 
-function CardIcon({ icon: Icon }: { icon: LucideIcon }) {
+function CampaignCountRow({ icon: Icon, label, count }: { icon: LucideIcon; label: string; count: number }) {
   return (
-    <div className="bg-primary/15 text-primary flex size-7 items-center justify-center rounded-lg">
-      <Icon className="size-4" />
+    <div className="border-border flex items-center gap-3 rounded-xl border p-3">
+      <div className="bg-primary/15 text-primary flex size-9 shrink-0 items-center justify-center rounded-full">
+        <Icon className="size-4" />
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium">{label}</p>
+        <p className="text-muted-foreground text-xs">{count} {count === 1 ? "campanha" : "campanhas"}</p>
+      </div>
+    </div>
+  );
+}
+
+function CategoryConsumption({ byCategory }: { byCategory: WhatsappChannelCampaignReport["byCategory"] }) {
+  const total = byCategory.reduce((sum, row) => sum + row.messagesSent, 0);
+  return (
+    <div className="border-border rounded-xl border p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <div className="bg-primary/15 text-primary flex size-9 shrink-0 items-center justify-center rounded-full">
+          <TrendingUp className="size-4" />
+        </div>
+        <p className="text-sm font-medium">Consumo por categoria</p>
+      </div>
+      <div className="flex flex-col gap-3">
+        {byCategory.map((row) => {
+          const pct = total > 0 ? Math.round((row.messagesSent / total) * 100) : 0;
+          return (
+            <div key={row.category ?? "none"} className="flex items-center gap-3 text-sm">
+              <span className="text-muted-foreground w-28 shrink-0 truncate">{categoryLabel(row.category)}</span>
+              <div className="bg-muted h-2 flex-1 overflow-hidden rounded-full">
+                <div className="bg-primary h-full rounded-full" style={{ width: `${pct}%` }} />
+              </div>
+              <span className="w-10 shrink-0 text-right font-medium">{pct}%</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CardTitleWithDescription({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+        <Icon className="size-5" />
+      </div>
+      <div>
+        <CardTitle>{title}</CardTitle>
+        <p className="text-muted-foreground mt-1 text-sm">{description}</p>
+        {children}
+      </div>
     </div>
   );
 }
@@ -137,28 +277,55 @@ interface DashboardTabProps {
   hasMetaAccessToken: boolean;
 }
 
+function startOfCurrentMonth(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
 export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProps) {
   const { data: status, error: statusError } = useSWR<WhatsappChannelStatus>(
     hasMetaAccessToken ? `/api/wc/${channelId}/status` : null,
   );
-  const { data: campaignReport } = useSWR<WhatsappChannelCampaignReport>(`/api/wc/${channelId}/campaigns-report`);
 
-  /// Volumetria total = mensagens trocadas no mês atual (enviadas +
-  /// recebidas) — não é soma de Campaign.totalSent, isso conta só disparo
-  /// ativo e ignora o que o cliente manda de volta. Período fixo em
-  /// "current-month", independente do filtro que o usuário escolher no
-  /// gráfico "Fluxo de mensagens" abaixo.
-  const { data: messagesThisMonth } = useSWR<MessagesSeries>(`/api/wc/${channelId}/messages-series?period=current-month`);
-  const totalVolumeThisMonth = messagesThisMonth?.points.reduce((sum, p) => sum + p.sent + p.received, 0) ?? 0;
+  /// Período do card "Gastos" — começa no mês atual, mas o usuário pode
+  /// trocar pelo DateRangePicker (bate no mesmo endpoint com
+  /// startDate/endDate em vez do histórico completo).
+  const [gastosRange, setGastosRange] = useState<DateRange>({ from: startOfCurrentMonth(), to: new Date() });
+  const gastosQuery =
+    gastosRange.from && gastosRange.to
+      ? `?startDate=${gastosRange.from.toISOString()}&endDate=${gastosRange.to.toISOString()}`
+      : "";
+  const { data: campaignReport } = useSWR<WhatsappChannelCampaignReport>(
+    `/api/wc/${channelId}/campaigns-report${gastosQuery}`,
+  );
 
   return (
     <div className="flex flex-col gap-6">
       {hasMetaAccessToken && (
-        <Card>
+        <Card className="shadow-xl">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CardIcon icon={ShieldCheck} /> Status do número na Meta
-            </CardTitle>
+            <CardTitleWithDescription
+              icon={ShieldCheck}
+              title="Status do número na Meta"
+              description="Conexão, qualidade, verificação do nome e limite de envio, consultados diretamente na Meta."
+            >
+              {status && (
+                <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm">
+                  {status.verified_name && (
+                    <div className="flex gap-1">
+                      <dt className="text-muted-foreground">Nome:</dt>
+                      <dd className="font-medium">{status.verified_name}</dd>
+                    </div>
+                  )}
+                  {status.throughput?.level && (
+                    <div className="flex gap-1">
+                      <dt className="text-muted-foreground">Capacidade de disparos ativos:</dt>
+                      <dd className="font-medium">{translateStatusValue(status.throughput.level)}</dd>
+                    </div>
+                  )}
+                </dl>
+              )}
+            </CardTitleWithDescription>
           </CardHeader>
           <CardContent>
             {!status && !statusError && <p className="text-muted-foreground text-sm">Consultando a Meta…</p>}
@@ -168,11 +335,12 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
               </p>
             )}
             {status && (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {Object.entries(STATUS_FIELD_META).map(([field, meta]) => {
                   const value = status[field as keyof WhatsappChannelStatus] as string | undefined;
                   if (!value) return null;
-                  return <StatusTile key={field} icon={meta.icon} label={meta.label} value={value} />;
+                  const icon = FIELD_ICON_RESOLVER[field]?.(value) ?? meta.icon;
+                  return <StatusTile key={field} icon={icon} label={meta.label} value={value} />;
                 })}
               </div>
             )}
@@ -180,21 +348,31 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CardIcon icon={Wallet} /> Gastos
-          </CardTitle>
-          <p className="text-muted-foreground text-sm">
-            Volumetria de mensagens trocadas no mês atual e mensagens de campanha enviadas por categoria de template.
-          </p>
+      <Card className="shadow-xl">
+        <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-start sm:justify-between">
+          <CardTitleWithDescription
+            icon={Wallet}
+            title="Gastos"
+            description="Volumetria de mensagens trocadas no período selecionado e mensagens de campanha enviadas por categoria de template."
+          />
+          <DateRangePicker value={gastosRange} onChange={setGastosRange} className="sm:w-[260px]" />
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <ValueTile icon={MessagesCircle} label="Volumetria total (mês atual)" value={`${totalVolumeThisMonth} mensagens`} />
-            {campaignReport?.byCategory.map((row) => (
-              <ValueTile key={row.category ?? "none"} icon={Tag} label={categoryLabel(row.category)} value={row.messagesSent} />
-            ))}
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+            <WhatsappUsageTile icon={MessagesCircle} value={campaignReport?.totalMessages ?? 0} />
+
+            <div className="flex flex-col gap-3">
+              {mergeCampaignCategories(campaignReport?.byCategory ?? []).map((row) => (
+                <CampaignCountRow
+                  key={row.category ?? "none"}
+                  icon={row.category === "MARKETING" ? Send : Tag}
+                  label={categoryLabel(row.category)}
+                  count={row.campaignCount}
+                />
+              ))}
+            </div>
+
+            <CategoryConsumption byCategory={mergeCampaignCategories(campaignReport?.byCategory ?? [])} />
           </div>
         </CardContent>
       </Card>

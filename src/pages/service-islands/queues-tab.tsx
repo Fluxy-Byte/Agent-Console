@@ -27,7 +27,6 @@ import { api, ApiError } from "@/lib/api";
 import { useAppSelector } from "@/store/hooks";
 import type { Member, QueueListResult, QueueStats } from "@/types/domain";
 import { QueueFormDialog } from "./queue-form-dialog";
-import { RealtimeQueuesCard } from "./realtime-queues-card";
 
 const ALL = "all";
 const DAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -228,8 +227,6 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
           sublabel="Fora de operação"
         />
       </div>
-
-      <RealtimeQueuesCard islandId={islandId} />
 
       <Card className="overflow-hidden p-0">
         <CardHeader>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import useSWR from "swr";
+import { MessagesCircle } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -40,13 +41,19 @@ export function MessagesFlowChart({ channelId }: { channelId: string }) {
   const { data } = useSWR<MessagesSeries>(`/api/wc/${channelId}/messages-series?period=${periodToParam(period)}`);
 
   return (
-    <Card className="pt-0">
+    <Card className="pt-0 shadow-xl">
       <CardHeader className="flex flex-col gap-3 space-y-0 border-b py-5 sm:flex-row sm:items-center">
-        <div className="grid flex-1 gap-1">
-          <CardTitle>Fluxo de mensagens (Cada mensagem)</CardTitle>
-          <p className="text-muted-foreground text-sm">
-            Volumetria de mensagens trocadas — diferente de conversas, uma mesma conversa pode ter várias mensagens.
-          </p>
+        <div className="flex flex-1 items-start gap-3">
+          <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+            <MessagesCircle className="size-5" />
+          </div>
+          <div className="grid gap-1">
+            <CardTitle>Métrica de mensagens trocadas nesse canal</CardTitle>
+            <p className="text-muted-foreground text-sm">
+              Quantidade de mensagens enviadas e recebidas neste canal. Cada mensagem é contada individualmente,
+              mesmo quando várias mensagens acontecem dentro da mesma conversa.
+            </p>
+          </div>
         </div>
         <Select value={periodToParam(period)} onValueChange={(value) => setPeriod(parsePeriod(value))}>
           <SelectTrigger className="w-full sm:ml-auto sm:w-[180px]" aria-label="Selecionar período">

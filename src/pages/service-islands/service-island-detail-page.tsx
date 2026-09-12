@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
+import { Activity, History, ListChecks, Settings } from "lucide-react";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCan } from "@/hooks/use-can";
@@ -7,7 +8,6 @@ import { PermissionAction } from "@/domain/permission-action";
 import type { ServiceIsland } from "@/types/domain";
 import { GeneralSettingsTab } from "./general-settings-tab";
 import { HistoryTab } from "./history-tab";
-import { IslandTab } from "./island-tab";
 import { MonitoringTab } from "./monitoring-tab";
 import { QueuesTab } from "./queues-tab";
 
@@ -27,18 +27,29 @@ export function ServiceIslandDetailPage() {
     <div className="flex flex-col gap-6 p-6">
       <PageBreadcrumb items={[{ label: "Ilhas de Atendimento", to: "/service-island" }, { label: island.name }]} />
 
-      <Tabs defaultValue="island">
-        <TabsList>
-          <TabsTrigger value="island">Ilha</TabsTrigger>
-          <TabsTrigger value="monitoring">Monitoramento</TabsTrigger>
-          <TabsTrigger value="history">Histórico</TabsTrigger>
-          <TabsTrigger value="queues">Filas</TabsTrigger>
-          <TabsTrigger value="settings">Configurações Gerais</TabsTrigger>
-        </TabsList>
+      <div>
+        <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">{island.name}</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Monitore o atendimento, acompanhe o histórico, gerencie as filas e configure as regras desta ilha de
+          atendimento.
+        </p>
+      </div>
 
-        <TabsContent value="island">
-          <IslandTab island={island} canWrite={canRenameIsland} onSaved={() => mutate()} />
-        </TabsContent>
+      <Tabs defaultValue="monitoring">
+        <TabsList>
+          <TabsTrigger value="monitoring">
+            <Activity /> Monitoramento
+          </TabsTrigger>
+          <TabsTrigger value="history">
+            <History /> Histórico
+          </TabsTrigger>
+          <TabsTrigger value="queues">
+            <ListChecks /> Filas
+          </TabsTrigger>
+          <TabsTrigger value="settings">
+            <Settings /> Configurações Gerais
+          </TabsTrigger>
+        </TabsList>
 
         <TabsContent value="monitoring">
           <MonitoringTab islandId={island.id} />

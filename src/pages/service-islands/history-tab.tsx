@@ -1,9 +1,9 @@
 import { useState } from "react";
 import useSWR from "swr";
-import { CheckCircle2, Download, ListChecks, Loader2, XCircle } from "lucide-react";
+import { CheckCircle2, Download, History, ListChecks, Loader2, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DateRange } from "@/components/calendar";
 import { DateRangePicker } from "@/components/date-range-picker";
 import { Input } from "@/components/ui/input";
@@ -276,10 +276,20 @@ export function HistoryTab({ island }: { island: ServiceIsland }) {
         </div>
       </Card>
 
-      <Card className="overflow-hidden p-0">
+      <Card>
         <CardHeader>
-          <CardTitle>Tickets</CardTitle>
+          <div className="flex items-start gap-3">
+            <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+              <History className="size-5" />
+            </div>
+            <div>
+              <CardTitle>Tickets</CardTitle>
+              <p className="text-muted-foreground mt-1 text-sm">Histórico de tickets desta ilha, filtrado conforme os campos acima.</p>
+            </div>
+          </div>
         </CardHeader>
+        <CardContent>
+        <div className="border-border overflow-hidden rounded-lg border">
         {!tickets || tickets.items.length === 0 ? (
           <div className="text-muted-foreground p-6 text-sm">
             {!tickets ? "Carregando…" : "Nenhum ticket encontrado com os filtros atuais."}
@@ -289,7 +299,7 @@ export function HistoryTab({ island }: { island: ServiceIsland }) {
             <TableHeader>
               <TableRow>
                 <TableHead className="text-left">Ticket</TableHead>
-                <TableHead>Contato</TableHead>
+                <TableHead className="text-left">Contato</TableHead>
                 <TableHead>Fila</TableHead>
                 <TableHead>Atendente</TableHead>
                 <TableHead>Status</TableHead>
@@ -304,7 +314,14 @@ export function HistoryTab({ island }: { island: ServiceIsland }) {
                 return (
                   <TableRow key={ticket.id} className="hover:bg-accent cursor-pointer" onClick={() => setSelectedTicketId(ticket.id)}>
                     <TableCell className="text-left">#{ticket.ticketNumber}</TableCell>
-                    <TableCell>{ticket.target.name || ticket.target.waId || "—"}</TableCell>
+                    <TableCell className="text-left">
+                      <div className="flex items-center gap-2">
+                        <div className="bg-primary/15 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
+                          {(ticket.target.name || ticket.target.waId || "?").charAt(0).toUpperCase()}
+                        </div>
+                        <span className="truncate font-medium">{ticket.target.name || ticket.target.waId || "—"}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>{ticket.queue.name}</TableCell>
                     <TableCell>{ticket.assignedUser?.name ?? "—"}</TableCell>
                     <TableCell>
@@ -334,6 +351,8 @@ export function HistoryTab({ island }: { island: ServiceIsland }) {
             }}
           />
         )}
+        </div>
+        </CardContent>
       </Card>
 
       <TicketDetailDialog ticketId={selectedTicketId} onOpenChange={(open) => !open && setSelectedTicketId(null)} />

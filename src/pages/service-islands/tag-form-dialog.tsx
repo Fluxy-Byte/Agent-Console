@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useState } from "react";
+import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -69,7 +70,7 @@ export function TagFormDialog({ serviceIslandId, tag, onSaved, trigger }: TagFor
           {error && <p className="text-destructive text-sm">{error}</p>}
 
           <Button type="submit" disabled={saving}>
-            {saving ? "Salvando…" : tag ? "Salvar alterações" : "Criar tag"}
+            <Save className="size-4" /> {saving ? "Salvando…" : tag ? "Salvar alterações" : "Criar tag"}
           </Button>
         </form>
       </DialogContent>

@@ -1,3 +1,4 @@
+import { MessageSquareDashed, MessageSquareText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -15,12 +16,13 @@ function RequiredMessageField(props: {
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label>
+      <Label className="font-bold">
         {props.label} <span className="text-destructive">*</span>
       </Label>
       <p className="text-muted-foreground text-xs">{props.helper}</p>
       <Textarea
         required
+        className="min-h-24"
         value={props.value}
         disabled={props.disabled}
         onChange={(e) => props.onChange(e.target.value)}
@@ -33,6 +35,7 @@ function RequiredMessageField(props: {
 /// nesse cenário (aviso explícito, regra do EscopoSaas).
 function ToggleableMessageField(props: {
   label: string;
+  helper: string;
   value: string;
   enabled: boolean;
   onChangeValue: (value: string) => void;
@@ -41,14 +44,19 @@ function ToggleableMessageField(props: {
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex items-center justify-between">
-        <Label>{props.label}</Label>
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground text-xs">{props.enabled ? "Ativado" : "Desativado"}</span>
-          <Switch checked={props.enabled} onCheckedChange={props.onChangeEnabled} disabled={props.disabled} />
-        </div>
+      <div className="flex items-center gap-2">
+        <Switch
+          checked={props.enabled}
+          onCheckedChange={props.onChangeEnabled}
+          disabled={props.disabled}
+          className="data-[state=checked]:bg-[#25D366]"
+        />
+        <span className="text-muted-foreground text-xs">{props.enabled ? "Ativado" : "Desativado"}</span>
       </div>
+      <Label className="font-bold">{props.label}</Label>
+      <p className="text-muted-foreground text-xs">{props.helper}</p>
       <Textarea
+        className="min-h-24"
         value={props.value}
         disabled={props.disabled || !props.enabled}
         onChange={(e) => props.onChangeValue(e.target.value)}
@@ -65,9 +73,19 @@ function ToggleableMessageField(props: {
 export function MessagesTab({ form, set, disabled }: AgentFormTabProps) {
   return (
     <div className="flex flex-col gap-6">
-      <Card>
+      <Card className="shadow-xl">
         <CardHeader>
-          <CardTitle>Mensagens obrigatórias</CardTitle>
+          <div className="flex items-start gap-3">
+            <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+              <MessageSquareText className="size-5" />
+            </div>
+            <div>
+              <CardTitle>Mensagens obrigatórias</CardTitle>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Sempre têm um texto configurado e são enviadas automaticamente pelo agente — sem opção de desativar.
+              </p>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <RequiredMessageField
@@ -101,13 +119,24 @@ export function MessagesTab({ form, set, disabled }: AgentFormTabProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="shadow-xl">
         <CardHeader>
-          <CardTitle>Mensagens opcionais</CardTitle>
+          <div className="flex items-start gap-3">
+            <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+              <MessageSquareDashed className="size-5" />
+            </div>
+            <div>
+              <CardTitle>Mensagens opcionais</CardTitle>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Cada uma tem um switch — quando desativada, a IA responde livremente nesse cenário.
+              </p>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <ToggleableMessageField
             label="Mensagem de fora de horário de atendimento humano"
+            helper="Enviada quando o cliente tenta falar com um atendente fora do horário de atendimento configurado."
             value={form.outOfHoursMessage}
             enabled={form.outOfHoursEnabled}
             onChangeValue={(v) => set("outOfHoursMessage", v)}
@@ -116,6 +145,7 @@ export function MessagesTab({ form, set, disabled }: AgentFormTabProps) {
           />
           <ToggleableMessageField
             label="Mensagem de finalização"
+            helper="Enviada quando o atendimento é encerrado com sucesso."
             value={form.closingMessage}
             enabled={form.closingEnabled}
             onChangeValue={(v) => set("closingMessage", v)}
@@ -124,6 +154,7 @@ export function MessagesTab({ form, set, disabled }: AgentFormTabProps) {
           />
           <ToggleableMessageField
             label="Mensagem de erro"
+            helper="Enviada quando algo dá errado ao processar a mensagem do cliente."
             value={form.errorMessage}
             enabled={form.errorEnabled}
             onChangeValue={(v) => set("errorMessage", v)}

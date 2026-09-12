@@ -125,7 +125,7 @@ export function AppShell() {
         </DropdownMenu>
       </aside>
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="bg-sidebar-gradient flex-1 overflow-y-auto">
         <Outlet />
       </main>
     </div>

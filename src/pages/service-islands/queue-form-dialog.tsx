@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useState } from "react";
+import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -168,7 +169,7 @@ export function QueueFormDialog({ serviceIslandId, queue, members, onSaved, trig
           {error && <p className="text-destructive text-sm">{error}</p>}
 
           <Button type="submit" disabled={saving}>
-            {saving ? "Salvando…" : queue ? "Salvar alterações" : "Criar fila"}
+            <Save className="size-4" /> {saving ? "Salvando…" : queue ? "Salvar alterações" : "Criar fila"}
           </Button>
         </form>
       </DialogContent>

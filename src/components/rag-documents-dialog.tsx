@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { Plus, Upload, X } from "lucide-react";
+import { Plus, Trash2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -13,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { cn } from "@/lib/utils";
 
 const ACCEPTED_EXTENSIONS = ".pdf,.txt,.docx";
 
@@ -42,6 +42,7 @@ export function RagDocumentsDialog({
   const [files, setFiles] = useState<File[]>([]);
   const [chunkSize, setChunkSize] = useState(defaultChunkSize);
   const [categories, setCategories] = useState<string[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
 
   function reset() {
     setFiles([]);
@@ -56,6 +57,12 @@ export function RagDocumentsDialog({
 
   function removeFile(index: number) {
     setFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function handleDrop(event: React.DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    setIsDragging(false);
+    handleFilesSelected(event.dataTransfer.files);
   }
 
   function addCategory() {
@@ -89,22 +96,36 @@ export function RagDocumentsDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Anexar documentos</DialogTitle>
-          <DialogDescription>
-            Envie PDF, TXT ou DOCX — o conteúdo é quebrado em pedaços (chunks) e indexado pra o agente consultar
-            nas respostas.
-          </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="rag-files">Arquivos</Label>
-            <Input
-              id="rag-files"
-              type="file"
-              multiple
-              accept={ACCEPTED_EXTENSIONS}
-              onChange={(e) => handleFilesSelected(e.target.files)}
-            />
+            <p className="text-muted-foreground text-xs">Documentos aceitos: PDF, TXT ou DOCX.</p>
+            <label
+              htmlFor="rag-files"
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              className={cn(
+                "border-primary/40 bg-primary/5 hover:bg-primary/10 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors",
+                isDragging && "border-primary bg-primary/10",
+              )}
+            >
+              <Upload className="text-primary size-6" />
+              <p className="text-muted-foreground text-sm">Clique para anexar ou arraste um arquivo.</p>
+              <input
+                id="rag-files"
+                type="file"
+                multiple
+                accept={ACCEPTED_EXTENSIONS}
+                onChange={(e) => handleFilesSelected(e.target.files)}
+                className="hidden"
+              />
+            </label>
             {files.length > 0 && (
               <ul className="mt-1 flex flex-col gap-1">
                 {files.map((file, index) => (
@@ -142,12 +163,18 @@ export function RagDocumentsDialog({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <Label>Categorias</Label>
-              <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={addCategory}>
-                <Plus className="size-3.5" /> Adicionar categoria
-              </Button>
-            </div>
+            <Label>Categorias</Label>
+            <p className="text-muted-foreground text-xs">
+              Use categorias pra organizar os documentos por assunto e ajudar o agente a encontrar o conteúdo certo.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-primary/40 bg-primary/5 hover:bg-primary/10 w-full gap-1.5 border-dashed"
+              onClick={addCategory}
+            >
+              <Plus className="size-4" /> Adicionar categoria
+            </Button>
             {categories.map((category, index) => (
               <div key={index} className="flex items-center gap-2">
                 <Input
@@ -158,10 +185,10 @@ export function RagDocumentsDialog({
                 <button
                   type="button"
                   onClick={() => removeCategory(index)}
-                  className="text-muted-foreground hover:text-destructive shrink-0"
+                  className="bg-destructive/10 text-destructive hover:bg-destructive/20 flex size-9 shrink-0 items-center justify-center rounded-md"
                   aria-label="Remover categoria"
                 >
-                  <X className="size-4" />
+                  <Trash2 className="size-4" />
                 </button>
               </div>
             ))}

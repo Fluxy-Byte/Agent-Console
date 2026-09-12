@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Save } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,7 +80,7 @@ export function ChannelDataDialog({ channel, disabled, onSaved, trigger }: Chann
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="wc-waba-id">WhatsApp Business Account ID</Label>
+              <Label htmlFor="wc-waba-id">Id do Waba</Label>
               <Input
                 id="wc-waba-id"
                 disabled={disabled || saving}
@@ -91,15 +92,12 @@ export function ChannelDataDialog({ channel, disabled, onSaved, trigger }: Chann
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="wc-meta-access-token">Token de acesso da Meta</Label>
+            <p className="text-muted-foreground text-xs">Deixe em branco para manter o token atual. Preencha só se quiser trocá-lo.</p>
             <Input
               id="wc-meta-access-token"
               type="password"
               disabled={disabled || saving}
-              placeholder={
-                channel.metaAccessTokenPreview
-                  ? `${channel.metaAccessTokenPreview} — digite para trocar`
-                  : "Nenhum token configurado"
-              }
+              placeholder={channel.metaAccessTokenPreview ?? "Nenhum token configurado"}
               value={metaAccessToken}
               onChange={(e) => setMetaAccessToken(e.target.value)}
             />
@@ -113,7 +111,7 @@ export function ChannelDataDialog({ channel, disabled, onSaved, trigger }: Chann
                 Cancelar
               </Button>
               <Button type="submit" disabled={saving}>
-                {saving ? "Salvando…" : "Salvar alterações"}
+                <Save className="size-4" /> {saving ? "Salvando…" : "Salvar alterações"}
               </Button>
             </DialogFooter>
           )}

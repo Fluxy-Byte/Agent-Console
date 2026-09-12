@@ -1,4 +1,4 @@
-import { FileText, Plus } from "lucide-react";
+import { FileText, Plus, Power, Shapes } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,29 +33,72 @@ export function RagTab({
   ragDocuments,
 }: RagTabProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Base de conhecimento (RAG)</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <Label>Ativar RAG</Label>
-            <p className="text-muted-foreground text-xs">
-              O agente consulta os documentos anexados abaixo pra responder com base neles.
-            </p>
+    <div className="flex flex-col gap-6">
+      <Card className="shadow-xl">
+        <CardHeader>
+          <div className="flex items-start gap-3">
+            <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+              <Power className="size-5" />
+            </div>
+            <div>
+              <CardTitle>Ativação do Rag</CardTitle>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Controle se o agente consulta a base de conhecimento antes de responder ao cliente.
+              </p>
+            </div>
           </div>
-          <Switch checked={form.ragEnabled} onCheckedChange={(v) => set("ragEnabled", v)} disabled={disabled} />
-        </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-3">
+            <Switch
+              checked={form.ragEnabled}
+              onCheckedChange={(v) => set("ragEnabled", v)}
+              disabled={disabled}
+              className="data-[state=checked]:bg-[#25D366]"
+            />
+            <div>
+              <Label className="font-bold">Ativar RAG</Label>
+              <p className="text-muted-foreground text-xs">
+                O agente consulta os documentos anexados abaixo pra responder com base neles.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        {form.ragEnabled && (
-          <div className="flex flex-col gap-3">
+      {form.ragEnabled && (
+        <Card className="shadow-xl">
+          <CardHeader>
+            <div className="flex items-start gap-3">
+              <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                <Shapes className="size-5" />
+              </div>
+              <div>
+                <CardTitle>Base de conhecimento</CardTitle>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Anexe os documentos que o agente vai consultar para responder ao cliente com base neles.
+                </p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label className="font-bold">Anexar documentos</Label>
+              <p className="text-muted-foreground text-xs">
+                O conteúdo é quebrado em pedaços (chunks) e indexado pra o agente consultar nas respostas.
+              </p>
+            </div>
             <RagDocumentsDialog
               defaultChunkSize={form.ragChunkSize}
               submitting={uploadingRag}
               onSubmit={onAttachDocuments}
               trigger={
-                <Button type="button" variant="outline" size="sm" disabled={disabled} className="w-fit gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={disabled}
+                  className="w-full gap-2 border-dashed border-[#25D366]/40 bg-[#25D366]/10 hover:bg-[#25D366]/20"
+                >
                   <Plus className="size-4" /> Anexar documentos
                 </Button>
               }
@@ -98,9 +141,9 @@ export function RagTab({
                 )}
               </div>
             )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }

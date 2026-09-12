@@ -134,6 +134,7 @@ export interface MessagesSeries {
 }
 
 export interface WhatsappChannelCampaignReport {
+  totalMessages: number;
   byCategory: { category: string | null; campaignCount: number; messagesSent: number }[];
 }
 
@@ -259,6 +260,23 @@ export interface QueueStats {
 
 export interface TicketCloseTagListResult {
   items: TicketCloseTag[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface PreConfiguredMessage {
+  id: string;
+  serviceIslandId: string;
+  name: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  queues: { id: string; name: string }[];
+}
+
+export interface PreConfiguredMessageListResult {
+  items: PreConfiguredMessage[];
   total: number;
   page: number;
   pageSize: number;

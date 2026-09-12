@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { toast } from "sonner";
+import { Database, MessageCircleMore, Save, User } from "lucide-react";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -196,9 +197,15 @@ export function AgentDetailPage() {
 
       <Tabs defaultValue="identity">
         <TabsList>
-          <TabsTrigger value="identity">Identidade</TabsTrigger>
-          <TabsTrigger value="messages">Mensagens</TabsTrigger>
-          <TabsTrigger value="rag">RAG</TabsTrigger>
+          <TabsTrigger value="identity">
+            <User /> Identidade
+          </TabsTrigger>
+          <TabsTrigger value="messages">
+            <MessageCircleMore /> Mensagens
+          </TabsTrigger>
+          <TabsTrigger value="rag">
+            <Database /> RAG
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="identity">
@@ -238,7 +245,7 @@ export function AgentDetailPage() {
       {canWrite && (
         <div className="flex justify-end gap-2">
           <Button type="submit" disabled={saving}>
-            {saving ? "Salvando…" : isNew ? "Criar agente" : "Salvar alterações"}
+            <Save className="size-4" /> {saving ? "Salvando…" : isNew ? "Criar agente" : "Salvar alterações"}
           </Button>
         </div>
       )}

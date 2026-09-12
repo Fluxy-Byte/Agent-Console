@@ -69,16 +69,65 @@ export function AgentPicker({ channel, disabled, onSaved }: AgentPickerProps) {
     }
   }
 
+  /// Só bloqueia TROCAR de agente com o atendimento desativado — a primeira
+  /// escolha (canal ainda sem agentId) continua liberada, senão um canal
+  /// novo nunca conseguiria satisfazer a condição pra ligar o Switch abaixo.
+  const agentListLocked = !channel.openAgent && !!channel.agentId;
+
   return (
     <>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <Switch
+            checked={channel.openAgent}
+            disabled={disabled || openAgentSaving || (!channel.openAgent && !channel.agentId)}
+            onCheckedChange={handleToggleOpenAgent}
+            className="data-[state=checked]:bg-success"
+          />
+          <div>
+            <p className="text-sm font-medium">Ativo para este canal</p>
+            <p className="text-muted-foreground text-xs">
+              {channel.openAgent
+                ? "Mensagens recebidas vão pro agente de IA selecionado abaixo."
+                : "Mensagens recebidas vão direto pro atendimento humano."}
+            </p>
+            {!channel.openAgent && !channel.agentId && (
+              <p className="text-muted-foreground text-xs">Selecione um agente abaixo para poder ativar.</p>
+            )}
+          </div>
+        </div>
+
+        {!channel.openAgent && (
+          <div className="border-border flex items-center justify-between gap-3 border-t pt-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <ListChecks className="text-muted-foreground size-4 shrink-0" />
+              <p className="text-muted-foreground truncate text-xs">
+                {channel.idServiceIslandDefault ? "Fila de encaminhamento selecionada" : "Nenhuma fila selecionada"}
+              </p>
+            </div>
+            <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => setQueueDialogOpen(true)}>
+              <Pencil className="size-3.5" /> Escolher fila
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4">
+        <p className="text-sm font-medium">Defina o agente que vai atender esse canal</p>
+        <p className="text-muted-foreground mt-1 text-xs">
+          Escolha qual agente de IA conduz as conversas quando o atendimento automático estiver ativo.
+          {agentListLocked && " Ative o atendimento acima para poder trocar de agente."}
+        </p>
+      </div>
+
+      <div className="mt-3 flex flex-col gap-2">
         {agents?.map((agent) => {
           const isCurrent = agent.id === channel.agentId;
           return (
             <button
               key={agent.id}
               type="button"
-              disabled={disabled || isCurrent}
+              disabled={disabled || isCurrent || agentListLocked}
               onClick={() => setPendingAgent(agent)}
               className={cn(
                 "border-border flex items-center gap-3 rounded-lg border p-3 text-left transition-colors",
@@ -99,41 +148,6 @@ export function AgentPicker({ channel, disabled, onSaved }: AgentPickerProps) {
           <p className="text-muted-foreground py-2 text-center text-sm">Nenhum agente cadastrado.</p>
         )}
         {!agents && <p className="text-muted-foreground py-2 text-center text-sm">Carregando agentes…</p>}
-      </div>
-
-      <div className="border-border mt-4 flex flex-col gap-3 rounded-lg border p-3">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-medium">Agente ativo para este canal</p>
-            <p className="text-muted-foreground text-xs">
-              {channel.openAgent
-                ? "Mensagens recebidas vão pro agente de IA selecionado acima."
-                : "Mensagens recebidas vão direto pro atendimento humano."}
-            </p>
-            {!channel.openAgent && !channel.agentId && (
-              <p className="text-muted-foreground text-xs">Selecione um agente acima para poder ativar.</p>
-            )}
-          </div>
-          <Switch
-            checked={channel.openAgent}
-            disabled={disabled || openAgentSaving || (!channel.openAgent && !channel.agentId)}
-            onCheckedChange={handleToggleOpenAgent}
-          />
-        </div>
-
-        {!channel.openAgent && (
-          <div className="border-border flex items-center justify-between gap-3 border-t pt-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <ListChecks className="text-muted-foreground size-4 shrink-0" />
-              <p className="text-muted-foreground truncate text-xs">
-                {channel.idServiceIslandDefault ? "Fila de encaminhamento selecionada" : "Nenhuma fila selecionada"}
-              </p>
-            </div>
-            <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => setQueueDialogOpen(true)}>
-              <Pencil className="size-3.5" /> Escolher fila
-            </Button>
-          </div>
-        )}
       </div>
 
       <DefaultQueueDialog channel={channel} open={queueDialogOpen} onOpenChange={setQueueDialogOpen} onSaved={onSaved} />

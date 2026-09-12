@@ -1,7 +1,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
-import { ListChecks } from "lucide-react";
+import { ListChecks, Save } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -107,7 +107,7 @@ export function DefaultQueueDialog({ channel, open, onOpenChange, onSaved }: Def
             Cancelar
           </Button>
           <Button type="button" disabled={saving || !selectedId} onClick={handleConfirm}>
-            {saving ? "Salvando…" : "Salvar fila"}
+            <Save className="size-4" /> {saving ? "Salvando…" : "Salvar fila"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,57 +1,15 @@
 import { useState } from "react";
 import useSWR from "swr";
-import { Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Radio, Send } from "lucide-react";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PaginationControls } from "@/components/pagination-controls";
+import { SortableTh } from "@/components/sortable-th";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { IslandMonitoring } from "@/types/domain";
 
 const MONITORING_REFRESH_MS = 8000;
-const ROWS_PER_PAGE = 10;
 
-/// Paginação compacta pra listas já carregadas por inteiro no client (não é
-/// paginação de servidor) — só liga/desliga Anterior/Próxima, sem seletor de
-/// tamanho de página, pra caber dentro de um card sem competir com o conteúdo.
-function MiniPagination({
-  page,
-  totalPages,
-  onChange,
-}: {
-  page: number;
-  totalPages: number;
-  onChange: (page: number) => void;
-}) {
-  if (totalPages <= 1) return null;
-
-  return (
-    <div className="flex items-center justify-between pt-1">
-      <span className="text-muted-foreground text-xs">
-        Página {page} de {totalPages}
-      </span>
-      <div className="flex gap-1.5">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-7 px-2 text-xs"
-          disabled={page <= 1}
-          onClick={() => onChange(page - 1)}
-        >
-          Anterior
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-7 px-2 text-xs"
-          disabled={page >= totalPages}
-          onClick={() => onChange(page + 1)}
-        >
-          Próxima
-        </Button>
-      </div>
-    </div>
-  );
-}
+type QueueSortField = "waitingCount" | "inProgressCount";
 
 /// Contagem de aguardando/em-atendimento por fila, atualizada a cada
 /// MONITORING_REFRESH_MS — vive na aba Filas, antes da listagem cadastral,
@@ -61,46 +19,104 @@ export function RealtimeQueuesCard({ islandId }: { islandId: string }) {
     refreshInterval: MONITORING_REFRESH_MS,
   });
   const [queuePage, setQueuePage] = useState(1);
+  const [queuePageSize, setQueuePageSize] = useState(10);
+  const [queueSort, setQueueSort] = useState<{ field: QueueSortField; dir: "asc" | "desc" } | null>(null);
+
+  function toggleQueueSort(field: QueueSortField) {
+    setQueueSort((prev) => (prev?.field === field ? { field, dir: prev.dir === "asc" ? "desc" : "asc" } : { field, dir: "desc" }));
+    setQueuePage(1);
+  }
 
   if (!data) return null;
+
+  const sortedQueues = queueSort
+    ? [...data.queues].sort((a, b) =>
+        queueSort.dir === "asc" ? a[queueSort.field] - b[queueSort.field] : b[queueSort.field] - a[queueSort.field],
+      )
+    : data.queues;
 
   // Lista já vem inteira da API (1 fetch só) — a paginação aqui é só de
   // exibição (slice no client), por isso a página é sempre "grampeada" no
   // total atual em vez de resetada por efeito.
-  const queueTotalPages = Math.max(1, Math.ceil(data.queues.length / ROWS_PER_PAGE));
+  const queueTotalPages = Math.max(1, Math.ceil(sortedQueues.length / queuePageSize));
   const queuePageClamped = Math.min(queuePage, queueTotalPages);
-  const pagedQueues = data.queues.slice((queuePageClamped - 1) * ROWS_PER_PAGE, queuePageClamped * ROWS_PER_PAGE);
+  const pagedQueues = sortedQueues.slice((queuePageClamped - 1) * queuePageSize, queuePageClamped * queuePageSize);
 
   return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-base">Atendimentos em tempo real</CardTitle>
-        <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
+    <>
+      <CardHeader className="flex-row items-start justify-between space-y-0">
+        <div className="flex items-start gap-3">
+          <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+            <Radio className="size-5" />
+          </div>
+          <div>
+            <CardTitle className="text-base">Atendimentos em tempo real</CardTitle>
+            <p className="text-muted-foreground mt-1 text-xs">
+              Quantidade de tickets aguardando e em atendimento por fila desta ilha, atualizada automaticamente.
+            </p>
+          </div>
+        </div>
+        <span className="text-muted-foreground flex shrink-0 items-center gap-1.5 text-xs">
           <span className="bg-success size-1.5 rounded-full" /> Atualizado agora
         </span>
       </CardHeader>
-      <CardContent className="flex flex-col gap-1">
-        {pagedQueues.map((q) => (
-          <div key={q.queueId} className="hover:bg-accent/50 flex items-center justify-between gap-3 rounded-md px-2 py-2">
-            <div className="flex min-w-0 items-center gap-2">
-              <div className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-md">
-                <Send className="size-3.5" />
-              </div>
-              <span className="truncate text-sm font-medium">{q.queueName}</span>
-            </div>
-            <div className="flex shrink-0 items-center gap-3 text-xs">
-              <span className="text-muted-foreground">
-                Aguardando <span className="text-foreground font-medium">{q.waitingCount}</span>
-              </span>
-              <span className="text-muted-foreground">
-                Em atendimento <span className="text-foreground font-medium">{q.inProgressCount}</span>
-              </span>
-            </div>
+      <CardContent>
+        {data.queues.length === 0 ? (
+          <p className="text-muted-foreground text-sm">Nenhuma fila cadastrada.</p>
+        ) : (
+          <div className="border-border overflow-hidden rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-left">Fila</TableHead>
+                  <TableHead>
+                    <SortableTh
+                      label="Aguardando"
+                      active={queueSort?.field === "waitingCount"}
+                      dir={queueSort?.field === "waitingCount" ? queueSort.dir : "desc"}
+                      onClick={() => toggleQueueSort("waitingCount")}
+                    />
+                  </TableHead>
+                  <TableHead>
+                    <SortableTh
+                      label="Em atendimento"
+                      active={queueSort?.field === "inProgressCount"}
+                      dir={queueSort?.field === "inProgressCount" ? queueSort.dir : "desc"}
+                      onClick={() => toggleQueueSort("inProgressCount")}
+                    />
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pagedQueues.map((q) => (
+                  <TableRow key={q.queueId}>
+                    <TableCell className="text-left">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <div className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-md">
+                          <Send className="size-3.5" />
+                        </div>
+                        <span className="truncate font-medium">{q.queueName}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{q.waitingCount}</TableCell>
+                    <TableCell className="text-muted-foreground">{q.inProgressCount}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <PaginationControls
+              page={queuePageClamped}
+              pageSize={queuePageSize}
+              total={data.queues.length}
+              onPageChange={setQueuePage}
+              onPageSizeChange={(size) => {
+                setQueuePageSize(size);
+                setQueuePage(1);
+              }}
+            />
           </div>
-        ))}
-        {data.queues.length === 0 && <p className="text-muted-foreground text-sm">Nenhuma fila cadastrada.</p>}
-        <MiniPagination page={queuePageClamped} totalPages={queueTotalPages} onChange={setQueuePage} />
+        )}
       </CardContent>
-    </Card>
+    </>
   );
 }
