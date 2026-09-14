@@ -1,8 +1,8 @@
-import { Megaphone, MessageCircleReply, Send, TriangleAlert } from "lucide-react";
+import { Send, TriangleAlert } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { CampaignMetrics } from "@/types/domain";
-import { formatNumber, formatPercent } from "./reports-page";
+import { formatNumber } from "./reports-page";
 
 interface ReachedContactsDialogProps {
   open: boolean;
@@ -12,11 +12,11 @@ interface ReachedContactsDialogProps {
 
 /// Modal "Contatos alcançados", aberto a partir do card de mesmo nome em
 /// Métricas de campanhas. Detalha a fração de contatos realmente alcançados
-/// sobre o total já processado por todas as campanhas, a taxa de resposta, e
-/// um saldo (alcançados - total processado) que mostra se o envio está
-/// saudável (perto de 0, verde) ou com muita falha (bem negativo, vermelho).
+/// sobre o total já processado por todas as campanhas, e um saldo (alcançados
+/// - total processado) que mostra se o envio está saudável (perto de 0,
+/// verde) ou com muita falha (bem negativo, vermelho).
 export function ReachedContactsDialog({ open, onOpenChange, metrics }: ReachedContactsDialogProps) {
-  const { totalCampaigns, reachedContacts, totalContacts, totalFailures, reachDelta, respondedDispatches, responseRate } = metrics;
+  const { reachedContacts, totalContacts, totalFailures, reachDelta } = metrics;
 
   const reachPct = totalContacts > 0 ? Math.round((reachedContacts / totalContacts) * 100) : 0;
   const isHealthy = reachDelta === 0;
@@ -27,8 +27,7 @@ export function ReachedContactsDialog({ open, onOpenChange, metrics }: ReachedCo
         <DialogHeader>
           <DialogTitle>Contatos alcançados</DialogTitle>
           <DialogDescription>
-            Quantos contatos as campanhas realmente alcançaram frente a tudo que já foi processado, e como está a
-            resposta desses contatos.
+            Quantos contatos as campanhas realmente alcançaram frente a tudo que já foi processado.
           </DialogDescription>
         </DialogHeader>
 
@@ -45,31 +44,6 @@ export function ReachedContactsDialog({ open, onOpenChange, metrics }: ReachedCo
               {reachPct}% de todos os contatos processados em campanhas foram efetivamente alcançados
               {totalFailures > 0 && ` — ${formatNumber(totalFailures)} falha(s) de envio`}.
             </p>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="border-border flex items-start gap-3 rounded-lg border p-3">
-              <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-                <Megaphone className="size-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-muted-foreground text-xs">Total de campanhas</p>
-                <p className="text-lg font-semibold">{formatNumber(totalCampaigns)}</p>
-              </div>
-            </div>
-
-            <div className="border-border flex items-start gap-3 rounded-lg border p-3">
-              <div className="bg-warning/15 text-warning flex size-9 shrink-0 items-center justify-center rounded-lg">
-                <MessageCircleReply className="size-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-muted-foreground text-xs">Taxa de resposta</p>
-                <p className="text-lg font-semibold">{formatPercent(responseRate)}</p>
-                <p className="text-muted-foreground text-xs">
-                  {formatNumber(respondedDispatches)} de {formatNumber(reachedContacts)} alcançados
-                </p>
-              </div>
-            </div>
           </div>
 
           <div
