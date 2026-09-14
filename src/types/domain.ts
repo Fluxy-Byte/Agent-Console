@@ -449,6 +449,13 @@ export interface TopAttendant {
 export interface CampaignMetrics {
   totalCampaigns: number;
   reachedContacts: number;
+  /// Total de contatos já processados em todas as campanhas (enviados com
+  /// sucesso + falhas) — o "de X" da fração de contatos alcançados.
+  totalContacts: number;
+  totalFailures: number;
+  /// alcançados - totalContacts. Sempre <= 0; quanto mais perto de 0, melhor
+  /// a entrega das campanhas (menos falha de envio).
+  reachDelta: number;
   respondedDispatches: number;
   responseRate: number | null;
 }

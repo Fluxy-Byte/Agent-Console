@@ -1,3 +1,4 @@
+import { useState } from "react";
 import useSWR from "swr";
 import {
   Award,
@@ -20,8 +21,9 @@ import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { ChannelGrowth, QueueMetric, ReportOverview, TopAttendant } from "@/types/domain";
+import { ReachedContactsDialog } from "./reached-contacts-dialog";
 
-function formatNumber(n: number): string {
+export function formatNumber(n: number): string {
   return n.toLocaleString("pt-BR");
 }
 
@@ -54,7 +56,7 @@ function growthDotClassName(growthPercent: number | null): string {
   return "bg-destructive";
 }
 
-function formatPercent(value: number | null): string {
+export function formatPercent(value: number | null): string {
   return value === null ? "—" : `${value.toFixed(0)}%`;
 }
 
@@ -79,6 +81,7 @@ function QueueMetricCard({
 
 export function ReportsPage() {
   const { data: overview } = useSWR<ReportOverview>("/api/reports/overview");
+  const [reachedContactsOpen, setReachedContactsOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -143,7 +146,12 @@ export function ReportsPage() {
             iconClassName="bg-success/15 text-success"
             label="Contatos alcançados"
             value={overview ? formatNumber(overview.campaignMetrics.reachedContacts) : "—"}
-            sublabel="Disparos que chegaram ao contato"
+            sublabel={
+              overview
+                ? `${formatNumber(overview.campaignMetrics.reachedContacts)} de ${formatNumber(overview.campaignMetrics.totalContacts)} contatos processados`
+                : ""
+            }
+            onClick={overview ? () => setReachedContactsOpen(true) : undefined}
           />
           <MetricCard
             icon={MessageCircleReply}
@@ -155,9 +163,14 @@ export function ReportsPage() {
                 ? `${formatNumber(overview.campaignMetrics.respondedDispatches)} de ${formatNumber(overview.campaignMetrics.reachedContacts)} disparos tiveram retorno`
                 : ""
             }
+            onClick={overview ? () => setReachedContactsOpen(true) : undefined}
           />
         </div>
       </div>
+
+      {overview && (
+        <ReachedContactsDialog open={reachedContactsOpen} onOpenChange={setReachedContactsOpen} metrics={overview.campaignMetrics} />
+      )}
 
       <div>
         <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold">Métricas de atendimento</h2>
