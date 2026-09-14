@@ -112,7 +112,7 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
 
   return (
     <div className="flex flex-col gap-6">
-      <Card>
+      <Card className="shadow-xl">
         <CardHeader>
           <div className="flex items-start gap-3">
             <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
@@ -147,7 +147,7 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="shadow-xl">
         <CardHeader>
           <div className="flex items-start gap-3">
             <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
@@ -193,7 +193,7 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
         </CardContent>
       </Card>
 
-      <Card className="overflow-hidden p-0">
+      <Card className="overflow-hidden p-0 shadow-xl">
         <CardHeader className="flex-row items-start justify-between space-y-0">
           <div className="flex items-start gap-3">
             <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
@@ -278,7 +278,7 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
         )}
       </Card>
 
-      <Card className="overflow-hidden p-0">
+      <Card className="overflow-hidden p-0 shadow-xl">
         <CardHeader className="flex-row items-start justify-between space-y-0">
           <div className="flex items-start gap-3">
             <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">

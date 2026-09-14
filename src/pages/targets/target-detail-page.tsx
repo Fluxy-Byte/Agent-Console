@@ -153,7 +153,7 @@ export function TargetDetailPage() {
         <TabsContent value="history">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:items-start">
             <div className="flex flex-col gap-6">
-              <Card>
+              <Card className="shadow-xl">
                 <CardHeader>
                   <CardTitle>Metadados</CardTitle>
                 </CardHeader>
@@ -162,7 +162,7 @@ export function TargetDetailPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="shadow-xl">
                 <CardHeader>
                   <CardTitle>Informações de contato</CardTitle>
                 </CardHeader>
@@ -194,7 +194,7 @@ export function TargetDetailPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-primary/20 bg-primary/5">
+              <Card className="border-primary/20 bg-primary/5 shadow-xl">
                 <CardHeader>
                   <CardTitle className="text-primary flex items-center gap-2">
                     <Bot className="size-5" /> Agente de IA
@@ -219,7 +219,7 @@ export function TargetDetailPage() {
                 grandes, então em janelas menores o card crescia com o
                 conteúdo e estourava a viewport. */}
             <aside className="flex min-h-0 max-h-[calc(100dvh-3rem)] flex-col lg:sticky lg:top-6">
-              <Card className="flex min-h-0 flex-1 flex-col">
+              <Card className="flex min-h-0 flex-1 flex-col shadow-xl">
                 <CardHeader>
                   <CardTitle>Histórico de conversas</CardTitle>
                 </CardHeader>
@@ -255,7 +255,7 @@ export function TargetDetailPage() {
         </TabsContent>
 
         <TabsContent value="tickets">
-          <Card>
+          <Card className="shadow-xl">
             <CardHeader>
               <CardTitle>Tickets de atendimento humano</CardTitle>
             </CardHeader>

@@ -1,4 +1,4 @@
-import { BrainCircuit, Headset, KeyRound, Megaphone, Network, UserGroup } from "lucide-react";
+import { BarChart3, BrainCircuit, Headset, KeyRound, Megaphone, Network, UserGroup } from "lucide-react";
 import { PermissionAction } from "@/domain/permission-action";
 
 export interface NavItem {
@@ -19,6 +19,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Contatos", to: "/targets", icon: UserGroup, action: PermissionAction.CONTACTS_VIEW },
       { label: "Campanhas", to: "/campaigns", icon: Megaphone, action: PermissionAction.CAMPAIGNS_VIEW },
+      { label: "Métricas", to: "/reports", icon: BarChart3, action: PermissionAction.REPORTS_VIEW },
     ],
   },
   {

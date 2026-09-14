@@ -228,7 +228,7 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
         />
       </div>
 
-      <Card className="overflow-hidden p-0">
+      <Card className="overflow-hidden p-0 shadow-xl">
         <CardHeader>
           <CardTitle>Filas cadastradas</CardTitle>
         </CardHeader>

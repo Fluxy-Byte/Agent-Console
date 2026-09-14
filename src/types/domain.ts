@@ -26,6 +26,7 @@ export interface Member {
   organizationId: string;
   userId: string;
   role: MemberRole;
+  blocked: boolean;
   createdAt: string;
   user: { id: string; name: string; email: string; image: string | null };
 }
@@ -412,13 +413,53 @@ export interface CampaignFilterOptions {
 
 export interface TargetStats {
   total: number;
-  active: number;
+  blocked: number;
   interactionsToday: number;
   /// Contatos distintos (não mensagens) com pelo menos uma interação nas
   /// últimas 24h — diferente de interactionsToday, que soma cada mensagem.
   contactsInteractedToday: number;
   lastInteractionAt: string | null;
   primaryAgentName: string | null;
+}
+
+export interface QueueMetric {
+  queueId: string;
+  queueName: string;
+  serviceIslandName: string;
+  ticketCount: number;
+  avgHandlingMs: number | null;
+}
+
+export interface ChannelGrowth {
+  channelId: string;
+  displayNumber: string;
+  agentName: string | null;
+  currentPeriodContacts: number;
+  previousPeriodContacts: number;
+  growthPercent: number | null;
+}
+
+export interface TopAttendant {
+  userId: string;
+  name: string;
+  email: string;
+  closedTicketCount: number;
+}
+
+export interface CampaignMetrics {
+  totalCampaigns: number;
+  reachedContacts: number;
+  respondedDispatches: number;
+  responseRate: number | null;
+}
+
+export interface ReportOverview {
+  contactsByStatus: { withAgent: number; withHuman: number };
+  avgConversationDuration: { avgDurationMs: number | null; sampleSize: number };
+  queueMetrics: { mostInteractions: QueueMetric | null; slowest: QueueMetric | null; fastest: QueueMetric | null };
+  topChannelsByGrowth: ChannelGrowth[];
+  topAttendantsByClosedTickets: TopAttendant[];
+  campaignMetrics: CampaignMetrics;
 }
 
 export interface CampaignDetail extends CampaignListItem {

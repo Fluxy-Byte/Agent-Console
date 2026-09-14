@@ -14,7 +14,7 @@ interface ConfigTabProps {
 
 function InfoRow({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
-    <div className="border-border flex items-center gap-3 rounded-lg border p-3">
+    <div className="border-border flex items-center gap-3 rounded-lg border p-3 shadow-xl">
       <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-full">
         <Icon className="size-4" />
       </div>
@@ -31,7 +31,7 @@ export function ConfigTab({ channel, canWrite, onSaved }: ConfigTabProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <Card>
+      <Card className="shadow-xl">
         <CardHeader>
           <div className="flex items-start gap-3">
             <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
@@ -51,7 +51,7 @@ export function ConfigTab({ channel, canWrite, onSaved }: ConfigTabProps) {
       </Card>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card>
+        <Card className="shadow-xl">
           <CardHeader>
             <div className="flex items-start gap-3">
               <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
@@ -91,7 +91,7 @@ export function ConfigTab({ channel, canWrite, onSaved }: ConfigTabProps) {
         </Card>
 
         {channel.serviceIsland && (
-          <Card className="h-auto self-start">
+          <Card className="h-auto shadow-xl self-start">
             <CardHeader>
               <div className="flex items-start gap-3">
                 <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">

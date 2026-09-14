@@ -16,6 +16,7 @@ export enum PermissionAction {
   CAMPAIGNS_WRITE = "CAMPAIGNS_WRITE",
   ACCESS_VIEW = "ACCESS_VIEW",
   ACCESS_WRITE = "ACCESS_WRITE",
+  REPORTS_VIEW = "REPORTS_VIEW",
   COMPANIES_MANAGE_OWN = "COMPANIES_MANAGE_OWN",
   COMPANIES_MANAGE_ALL = "COMPANIES_MANAGE_ALL",
 }
@@ -31,6 +32,7 @@ export const PERMISSION_MATRIX: Record<MemberRole, PermissionAction[]> = {
     PermissionAction.QUEUES_WRITE,
     PermissionAction.CAMPAIGNS_VIEW,
     PermissionAction.CAMPAIGNS_WRITE,
+    PermissionAction.REPORTS_VIEW,
   ],
   GERENTE: [
     PermissionAction.AGENTS_VIEW,
@@ -47,6 +49,7 @@ export const PERMISSION_MATRIX: Record<MemberRole, PermissionAction[]> = {
     PermissionAction.CAMPAIGNS_WRITE,
     PermissionAction.ACCESS_VIEW,
     PermissionAction.ACCESS_WRITE,
+    PermissionAction.REPORTS_VIEW,
     PermissionAction.COMPANIES_MANAGE_OWN,
   ],
 };

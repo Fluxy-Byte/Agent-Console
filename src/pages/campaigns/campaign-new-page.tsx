@@ -1,22 +1,22 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import Papa from "papaparse";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle2, Download, FileSpreadsheet, XCircle } from "lucide-react";
+import fundoWhatsApp from "@/assets/FundoWhatsApp.jpg";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { api, ApiError } from "@/lib/api";
-import type { Agent, ServiceIsland, Template, WhatsappChannel } from "@/types/domain";
+import type { ServiceIsland, Template, WhatsappChannel } from "@/types/domain";
 
 interface ParsedRow {
   index: number;
@@ -41,19 +41,30 @@ function normalizeKey(key: string): string {
     .replace(/[^a-z0-9]/g, "");
 }
 
-function highlightVariables(text: string | undefined): string {
+/// Sem `values`: mostra o placeholder "[Variável N]" (modo CSV, onde cada
+/// contato tem seu próprio valor — não há um único valor pra pré-visualizar).
+/// Com `values`: substitui pelo valor já digitado no disparo manual, pra dar
+/// pra ver como a mensagem fica de verdade.
+function highlightVariables(text: string | undefined, values?: string[]): string {
   if (!text) return "";
-  return text.replace(/\{\{(\d+)\}\}/g, "[Variável $1]");
+  return text.replace(/\{\{(\d+)\}\}/g, (match, n: string) => {
+    const value = values?.[Number(n) - 1];
+    return value ? value : `[Variável ${n}]`;
+  });
+}
+
+/// Trecho entre *asteriscos simples* (formatação de negrito do WhatsApp) vira
+/// <strong> de verdade na pré-visualização, em vez de mostrar os asteriscos.
+function renderBold(text: string): ReactNode {
+  return text.split(/\*(.+?)\*/g).map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : part));
 }
 
 export function CampaignNewPage() {
   const navigate = useNavigate();
 
-  const { data: agents } = useSWR<Agent[]>("/api/agents");
   const { data: channels } = useSWR<WhatsappChannel[]>("/api/wc");
   const { data: islands } = useSWR<ServiceIsland[]>("/api/service-islands");
 
-  const [agentId, setAgentId] = useState("");
   const [whatsappChannelId, setWhatsappChannelId] = useState("");
   const [templates, setTemplates] = useState<Template[] | null>(null);
   const [templatesError, setTemplatesError] = useState<string | null>(null);
@@ -77,7 +88,6 @@ export function CampaignNewPage() {
   const [manualEmail, setManualEmail] = useState("");
   const [manualVariables, setManualVariables] = useState<string[]>([]);
 
-  const channelsForAgent = channels?.filter((c) => c.agentId === agentId) ?? [];
   const currentIsland = islands?.find((i) => i.whatsappChannelId === whatsappChannelId);
   const queuesForIsland = currentIsland?.queues ?? [];
   const selectedQueue = queuesForIsland.find((q) => q.id === routeToQueueId);
@@ -92,9 +102,8 @@ export function CampaignNewPage() {
   const buttonsComponent = selectedTemplate?.components.find((c) => c.type === "BUTTONS");
 
   useEffect(() => {
-    setWhatsappChannelId("");
     setRouteToQueueId("");
-  }, [agentId]);
+  }, [whatsappChannelId]);
 
   // Fila muda -> o atendente selecionado pode não pertencer mais a ela.
   useEffect(() => {
@@ -272,105 +281,120 @@ export function CampaignNewPage() {
         <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Nova campanha</h1>
       </div>
 
-      <Card>
+      <Card className="shadow-xl">
         <CardHeader>
-          <CardTitle className="text-base">1. Destino</CardTitle>
+          <CardTitle className="text-base">Rede social</CardTitle>
+          <CardDescription>Escolha a rede social pela qual esta campanha será disparada.</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4 sm:flex-row">
-          <div className="flex flex-1 flex-col gap-1.5">
-            <Label>Agente</Label>
-            <Select value={agentId} onValueChange={setAgentId}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecione um agente" />
-              </SelectTrigger>
-              <SelectContent>
-                {agents?.map((a) => (
-                  <SelectItem key={a.id} value={a.id}>
-                    {a.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-1 flex-col gap-1.5">
-            <Label>WhatsApp Channel</Label>
-            <Select value={whatsappChannelId} onValueChange={setWhatsappChannelId} disabled={!agentId}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecione um canal" />
-              </SelectTrigger>
-              <SelectContent>
-                {channelsForAgent.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
+        <CardContent>
+          <div className="flex flex-col gap-1.5">
+            {!channels ? (
+              <p className="text-muted-foreground text-xs">Carregando redes sociais...</p>
+            ) : channels.length === 0 ? (
+              <p className="text-muted-foreground text-xs">Nenhuma rede social cadastrada.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {channels.map((c) => (
+                  <button
+                    type="button"
+                    key={c.id}
+                    onClick={() => setWhatsappChannelId(c.id)}
+                    className={cn(
+                      "cursor-pointer rounded-lg border px-4 py-2 text-left font-medium transition-colors",
+                      whatsappChannelId === c.id ? "border-primary bg-accent" : "border-border hover:bg-accent/50",
+                    )}
+                  >
                     {c.displayNumber}
-                  </SelectItem>
+                  </button>
                 ))}
-              </SelectContent>
-            </Select>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
 
       {whatsappChannelId && (
-        <Card>
+        <Card className="shadow-xl">
           <CardHeader>
             <CardTitle className="text-base">Atendimento humano</CardTitle>
+            <CardDescription>Opcionalmente, encaminhe os contatos atingidos direto para uma fila de atendimento humano.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Switch checked={routeToHuman} onCheckedChange={setRouteToHuman} className="data-[state=checked]:bg-success" />
               <div>
                 <Label>Direcionar para atendimento humano</Label>
                 <p className="text-muted-foreground text-xs">
                   Em vez de continuar com a IA, os contatos atingidos já entram numa fila de atendimento humano.
                 </p>
               </div>
-              <Switch checked={routeToHuman} onCheckedChange={setRouteToHuman} />
             </div>
 
             {routeToHuman && (
               <>
                 <div className="flex flex-col gap-1.5">
-                  <Label>Fila de atendimento</Label>
-                  <Select value={routeToQueueId} onValueChange={setRouteToQueueId}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecione uma fila" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {queuesForIsland.map((q) => (
-                        <SelectItem key={q.id} value={q.id}>
-                          {q.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {queuesForIsland.length === 0 && (
+                  <div>
+                    <Label>Fila de atendimento</Label>
+                    <p className="text-muted-foreground mt-1 text-xs">Clique para escolher a fila.</p>
+                  </div>
+                  {queuesForIsland.length === 0 ? (
                     <p className="text-muted-foreground text-xs">
                       Nenhuma fila cadastrada na ilha de atendimento deste canal ainda.
                     </p>
+                  ) : (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {queuesForIsland.map((q) => (
+                        <button
+                          type="button"
+                          key={q.id}
+                          onClick={() => setRouteToQueueId(q.id)}
+                          className={cn(
+                            "cursor-pointer rounded-lg border px-4 py-2 text-left font-medium transition-colors",
+                            routeToQueueId === q.id ? "border-primary bg-accent" : "border-border hover:bg-accent/50",
+                          )}
+                        >
+                          {q.name}
+                        </button>
+                      ))}
+                    </div>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={assignSpecificAttendant}
+                    onCheckedChange={setAssignSpecificAttendant}
+                    className="data-[state=checked]:bg-success"
+                  />
                   <Label>Atribuir a um atendente específico</Label>
-                  <Switch checked={assignSpecificAttendant} onCheckedChange={setAssignSpecificAttendant} />
                 </div>
 
                 {assignSpecificAttendant && (
                   <div className="flex flex-col gap-1.5">
-                    <Label>Atendente</Label>
-                    <Select value={routeToUserId} onValueChange={setRouteToUserId} disabled={!routeToQueueId}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecione um atendente" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(selectedQueue?.members ?? []).map((m) => (
-                          <SelectItem key={m.userId} value={m.userId}>
+                    <div>
+                      <Label>Atendente</Label>
+                      <p className="text-muted-foreground mt-1 text-xs">Clique para escolher o atendente.</p>
+                    </div>
+                    {!selectedQueue || (selectedQueue.members?.length ?? 0) === 0 ? (
+                      <p className="text-muted-foreground text-xs">
+                        {selectedQueue ? "Nenhum atendente cadastrado nessa fila ainda." : "Selecione uma fila primeiro."}
+                      </p>
+                    ) : (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(selectedQueue.members ?? []).map((m) => (
+                          <button
+                            type="button"
+                            key={m.userId}
+                            onClick={() => setRouteToUserId(m.userId)}
+                            className={cn(
+                              "cursor-pointer rounded-lg border px-4 py-2 text-left font-medium transition-colors",
+                              routeToUserId === m.userId ? "border-primary bg-accent" : "border-border hover:bg-accent/50",
+                            )}
+                          >
                             {m.user.name}
-                          </SelectItem>
+                          </button>
                         ))}
-                      </SelectContent>
-                    </Select>
-                    {selectedQueue && (selectedQueue.members?.length ?? 0) === 0 && (
-                      <p className="text-muted-foreground text-xs">Nenhum atendente cadastrado nessa fila ainda.</p>
+                      </div>
                     )}
                   </div>
                 )}
@@ -381,9 +405,10 @@ export function CampaignNewPage() {
       )}
 
       {whatsappChannelId && (
-        <Card>
+        <Card className="shadow-xl">
           <CardHeader>
-            <CardTitle className="text-base">2. Template</CardTitle>
+            <CardTitle className="text-base">Template</CardTitle>
+            <CardDescription>Escolha o template aprovado pela Meta que será enviado nesta campanha.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {templatesError ? (
@@ -420,43 +445,112 @@ export function CampaignNewPage() {
       )}
 
       {selectedTemplate && (
-        <Card>
+        <Card className="shadow-xl">
           <CardHeader>
-            <CardTitle className="text-base">3. Pré-visualização</CardTitle>
+            <CardTitle className="text-base">Pré-visualização</CardTitle>
+            <CardDescription>Confira como a mensagem vai chegar pro cliente e preencha as variáveis do template.</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4 sm:flex-row">
-            <div className="flex flex-1 items-start justify-center rounded-lg bg-[#e5ddd5] p-6 dark:bg-[#0b141a]">
-              <div className="flex max-w-sm flex-col gap-1 rounded-lg bg-white p-3 text-sm text-black shadow-md dark:bg-[#202c33] dark:text-white">
-                {headerComponent?.text && <p className="font-semibold">{highlightVariables(headerComponent.text)}</p>}
-                {bodyComponent?.text && <p className="whitespace-pre-wrap">{highlightVariables(bodyComponent.text)}</p>}
-                {footerComponent?.text && <p className="text-xs text-gray-500 dark:text-gray-400">{footerComponent.text}</p>}
-                {buttonsComponent?.buttons && buttonsComponent.buttons.length > 0 && (
-                  <div className="mt-1 flex flex-col gap-1 border-t border-gray-200 pt-1 dark:border-gray-600">
-                    {buttonsComponent.buttons.map((b, i) => (
-                      <span key={i} className="text-center text-sm text-blue-600 dark:text-blue-400">
-                        {b.text}
-                      </span>
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <div
+                className="flex flex-1 items-start justify-center rounded-lg bg-[#e5ddd5] bg-repeat bg-[length:320px] p-6 [background-image:var(--wa-bg)]"
+                style={{ "--wa-bg": `url(${fundoWhatsApp})` } as React.CSSProperties}
+              >
+                <div className="relative flex max-w-sm flex-col gap-1 rounded-lg rounded-tr-none bg-[#d9fdd3] p-3 text-sm text-black shadow-md dark:bg-[#005c4b] dark:text-white">
+                  <div className="absolute top-0 right-0 size-0 translate-x-full border-t-8 border-r-8 border-t-[#d9fdd3] border-r-transparent dark:border-t-[#005c4b]" />
+                  {headerComponent?.text && (
+                    <p className="font-semibold">
+                      {renderBold(
+                        highlightVariables(headerComponent.text, mode === "MANUAL" ? manualVariables.slice(0, headerCount) : undefined),
+                      )}
+                    </p>
+                  )}
+                  {bodyComponent?.text && (
+                    <p className="whitespace-pre-wrap">
+                      {renderBold(
+                        highlightVariables(
+                          bodyComponent.text,
+                          mode === "MANUAL" ? manualVariables.slice(headerCount, headerCount + bodyCount) : undefined,
+                        ),
+                      )}
+                    </p>
+                  )}
+                  {footerComponent?.text && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{renderBold(footerComponent.text)}</p>
+                  )}
+                  <p className="text-right text-[10px] text-gray-500 dark:text-gray-400">
+                    {new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                  {buttonsComponent?.buttons && buttonsComponent.buttons.length > 0 && (
+                    <div className="mt-1 flex flex-col gap-1 border-t border-gray-200 pt-1 dark:border-gray-600">
+                      {buttonsComponent.buttons.map((b, i) => (
+                        <span key={i} className="text-center text-sm text-blue-600 dark:text-blue-400">
+                          {b.text}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-1 flex-col gap-3 text-sm">
+                <div>
+                  <Badge variant="outline" className="border-transparent bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+                    {totalVars} variável{totalVars === 1 ? "" : "eis"} necessária{totalVars === 1 ? "" : "s"} por contato
+                  </Badge>
+                  {totalVars > 0 && (
+                    <p className="text-muted-foreground mt-1.5 text-xs">
+                      {mode === "MANUAL"
+                        ? "Preencha cada variável na ordem em que ela aparece na mensagem ao lado."
+                        : 'Preencha uma coluna "variavelN" pra cada uma, no arquivo CSV importado abaixo.'}
+                    </p>
+                  )}
+                </div>
+
+                {mode === "MANUAL" && totalVars > 0 && (
+                  <div className="flex flex-col gap-3">
+                    {Array.from({ length: totalVars }).map((_, i) => (
+                      <div key={i} className="border-border rounded-lg border p-3">
+                        <div className="mb-1.5 flex items-center gap-2">
+                          <span className="bg-primary/10 text-primary flex size-5 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
+                            {i + 1}
+                          </span>
+                          <Label htmlFor={`preview-var-${i}`} className="text-xs font-normal">
+                            {i < headerCount ? "Header" : "Corpo"} · variável {i + 1}
+                          </Label>
+                        </div>
+                        <Input
+                          id={`preview-var-${i}`}
+                          value={manualVariables[i] ?? ""}
+                          onChange={(e) =>
+                            setManualVariables((prev) => {
+                              const next = [...prev];
+                              next[i] = e.target.value;
+                              return next;
+                            })
+                          }
+                        />
+                      </div>
                     ))}
                   </div>
                 )}
+
+                {mode === "CSV" && (
+                  <>
+                    {headerCount > 0 && <p className="text-muted-foreground text-xs">Header: {headerCount} variável(is)</p>}
+                    {bodyCount > 0 && <p className="text-muted-foreground text-xs">Corpo: {bodyCount} variável(is)</p>}
+                  </>
+                )}
               </div>
-            </div>
-            <div className="flex flex-1 flex-col gap-2 text-sm">
-              <p>
-                <strong>{totalVars}</strong> variável{totalVars === 1 ? "" : "eis"} necessária{totalVars === 1 ? "" : "s"}{" "}
-                por contato
-              </p>
-              {headerCount > 0 && <p className="text-muted-foreground">Header: {headerCount} variável(is)</p>}
-              {bodyCount > 0 && <p className="text-muted-foreground">Corpo: {bodyCount} variável(is)</p>}
             </div>
           </CardContent>
         </Card>
       )}
 
       {selectedTemplate && (
-        <Card>
+        <Card className="shadow-xl">
           <CardHeader>
-            <CardTitle className="text-base">4. Contatos</CardTitle>
+            <CardTitle className="text-base">Contatos</CardTitle>
+            <CardDescription>Dê um nome à campanha e informe quem vai receber o disparo — em massa (CSV) ou manual.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
@@ -574,24 +668,6 @@ export function CampaignNewPage() {
                 {manualErrors.length > 0 && (
                   <p className="text-destructive text-xs sm:col-span-2">{manualErrors.join(", ")}</p>
                 )}
-                {Array.from({ length: totalVars }).map((_, i) => (
-                  <div key={i} className="flex flex-col gap-1.5">
-                    <Label htmlFor={`manual-var-${i}`}>
-                      Variável {i + 1} {i < headerCount ? "(header)" : "(corpo)"}
-                    </Label>
-                    <Input
-                      id={`manual-var-${i}`}
-                      value={manualVariables[i] ?? ""}
-                      onChange={(e) =>
-                        setManualVariables((prev) => {
-                          const next = [...prev];
-                          next[i] = e.target.value;
-                          return next;
-                        })
-                      }
-                    />
-                  </div>
-                ))}
               </div>
             )}
 

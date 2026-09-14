@@ -1,8 +1,19 @@
 import { type FormEvent, useState } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
-import { Check, Copy, KeyRound, Ticket } from "lucide-react";
+import { Check, Copy, KeyRound, Lock, Ticket, Unlock, UserX, Users } from "lucide-react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
@@ -16,7 +27,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PaginationControls } from "@/components/pagination-controls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api, ApiError } from "@/lib/api";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction, ROLE_LABELS, type MemberRole } from "@/domain/permission-action";
@@ -40,7 +53,12 @@ export function BusinessDetailPage() {
     id ? `/api/companies/${id}/invite-codes` : null,
   );
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [blockingId, setBlockingId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const pagedMembers = (members ?? []).slice((page - 1) * pageSize, page * pageSize);
 
   const [generatingToken, setGeneratingToken] = useState(false);
   const [tokenError, setTokenError] = useState<string | null>(null);
@@ -66,6 +84,34 @@ export function BusinessDetailPage() {
       setError(err instanceof Error ? err.message : "Não foi possível alterar o tipo de acesso.");
     } finally {
       setSavingId(null);
+    }
+  }
+
+  async function handleToggleBlocked(member: Member) {
+    setError(null);
+    setBlockingId(member.id);
+    try {
+      await api.patch(`/api/companies/${id}/members/${member.id}/blocked`, { blocked: !member.blocked });
+      await mutate();
+      toast.success(member.blocked ? "Acesso desbloqueado." : "Acesso bloqueado.");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Não foi possível alterar o bloqueio.");
+    } finally {
+      setBlockingId(null);
+    }
+  }
+
+  async function handleRemoveMember(memberId: string) {
+    setError(null);
+    setRemovingId(memberId);
+    try {
+      await api.delete(`/api/companies/${id}/members/${memberId}`);
+      await mutate();
+      toast.success("Acesso removido.");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Não foi possível remover o acesso.");
+    } finally {
+      setRemovingId(null);
     }
   }
 
@@ -132,59 +178,172 @@ export function BusinessDetailPage() {
           <p className="text-muted-foreground mt-1 text-sm">CNPJ {company?.cnpj}</p>
         </div>
 
-        <Card>
+        <Card className="shadow-xl">
           <CardHeader>
-            <CardTitle className="text-base">Acessos</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
-            {error && <p className="text-destructive text-sm">{error}</p>}
-            {members?.map((member) => (
-              <div
-                key={member.id}
-                className="border-border flex items-center justify-between rounded-lg border px-3 py-2"
-              >
-                <div>
-                  <p className="text-sm font-medium">
-                    {member.user.name} {member.userId === currentUserId && <Badge variant="secondary">Você</Badge>}
-                  </p>
-                  <p className="text-muted-foreground text-xs">{member.user.email}</p>
-                </div>
-
-                {canWrite ? (
-                  <Select
-                    value={member.role}
-                    disabled={savingId === member.id}
-                    onValueChange={(value) => handleRoleChange(member.id, value as MemberRole)}
-                  >
-                    <SelectTrigger size="sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ROLE_OPTIONS.map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {ROLE_LABELS[role]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Badge variant="outline">{ROLE_LABELS[member.role]}</Badge>
-                )}
+            <div className="flex items-start gap-3">
+              <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                <Users className="size-5" />
               </div>
-            ))}
+              <div>
+                <CardTitle className="text-base">Acessos</CardTitle>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Gerencie quem tem acesso a esta empresa, o papel de cada pessoa, e bloqueie ou remova acessos
+                  quando necessário.
+                </p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {error && <p className="text-destructive mb-3 text-sm">{error}</p>}
+            <div className="border-border overflow-hidden rounded-lg border">
+              {!members || members.length === 0 ? (
+                <div className="text-muted-foreground p-6 text-sm">
+                  {!members ? "Carregando…" : "Nenhum acesso encontrado."}
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-left">Usuário</TableHead>
+                      <TableHead>Papel</TableHead>
+                      <TableHead>Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pagedMembers.map((member) => {
+                      const isSelf = member.userId === currentUserId;
+                      return (
+                        <TableRow key={member.id}>
+                          <TableCell className="text-left">
+                            <div className="flex items-center justify-start gap-2">
+                              <div className="bg-primary/15 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
+                                {member.user.name.trim().charAt(0).toUpperCase()}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="flex items-center gap-2 truncate font-medium">
+                                  {member.user.name}
+                                  {isSelf && <Badge variant="secondary">Você</Badge>}
+                                  {member.blocked && <Badge variant="destructive">Bloqueado</Badge>}
+                                </p>
+                                <p className="text-muted-foreground truncate text-xs">{member.user.email}</p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {canWrite ? (
+                              <Select
+                                value={member.role}
+                                disabled={savingId === member.id}
+                                onValueChange={(value) => handleRoleChange(member.id, value as MemberRole)}
+                              >
+                                <SelectTrigger size="sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {ROLE_OPTIONS.map((role) => (
+                                    <SelectItem key={role} value={role}>
+                                      {ROLE_LABELS[role]}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <Badge variant="outline">{ROLE_LABELS[member.role]}</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center justify-center gap-2">
+                              {canWrite && !isSelf ? (
+                                <>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    disabled={blockingId === member.id}
+                                    onClick={() => handleToggleBlocked(member)}
+                                    title={member.blocked ? "Desbloquear acesso" : "Bloquear acesso temporariamente"}
+                                  >
+                                    {member.blocked ? <Unlock className="size-4" /> : <Lock className="size-4" />}
+                                  </Button>
+
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        disabled={removingId === member.id}
+                                        className="text-destructive hover:text-destructive"
+                                        title="Remover acesso"
+                                      >
+                                        <UserX className="size-4" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Remover acesso de {member.user.name}?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          {member.user.name} perde o acesso a esta empresa imediatamente. Pra voltar,
+                                          alguém precisa gerar um novo convite ou código. Esta ação não pode ser
+                                          desfeita.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          variant="destructive"
+                                          onClick={() => handleRemoveMember(member.id)}
+                                        >
+                                          Remover
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </>
+                              ) : (
+                                <span className="text-muted-foreground text-xs">—</span>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
           </CardContent>
+          {members && members.length > 0 && (
+            <PaginationControls
+              page={page}
+              pageSize={pageSize}
+              total={members.length}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setPage(1);
+              }}
+            />
+          )}
         </Card>
 
         {canWrite && (
-          <Card>
+          <Card className="shadow-xl">
             <CardHeader>
-              <CardTitle className="text-base">Acesso à API externa</CardTitle>
+              <div className="flex items-start gap-3">
+                <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                  <KeyRound className="size-5" />
+                </div>
+                <div>
+                  <CardTitle className="text-base">Acesso à API externa</CardTitle>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Token usado por sistemas de terceiros para consultar canais/templates e disparar campanhas desta
+                    empresa via API (Fluxy Agents).
+                  </p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              <p className="text-muted-foreground text-sm">
-                Token usado por sistemas de terceiros para consultar canais/templates e disparar campanhas desta
-                empresa via API (Fluxy Agents).
-              </p>
               <div className="flex items-center justify-between gap-3">
                 <Badge variant={company?.hasApiAccessToken ? "default" : "outline"}>
                   {company?.hasApiAccessToken ? "Token configurado" : "Nenhum token gerado"}
@@ -200,16 +359,23 @@ export function BusinessDetailPage() {
         )}
 
         {canWrite && (
-          <Card>
+          <Card className="shadow-xl">
             <CardHeader>
-              <CardTitle className="text-base">Código de convite</CardTitle>
+              <div className="flex items-start gap-3">
+                <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                  <Ticket className="size-5" />
+                </div>
+                <div>
+                  <CardTitle className="text-base">Código de convite</CardTitle>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Gere um código pro e-mail da pessoa que você quer convidar. Na tela de cadastro, o resgate só é
+                    aceito se ela se cadastrar com esse mesmo e-mail — já entra direto nesta empresa, com o papel
+                    escolhido abaixo.
+                  </p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-              <p className="text-muted-foreground text-sm">
-                Gere um código pro e-mail da pessoa que você quer convidar. Na tela de cadastro, o resgate só é
-                aceito se ela se cadastrar com esse mesmo e-mail — já entra direto nesta empresa, com o papel
-                escolhido abaixo.
-              </p>
               <form onSubmit={handleGenerateCode} className="flex items-end gap-2">
                 <div className="flex flex-1 flex-col gap-1.5">
                   <Label htmlFor="invite-email">E-mail convidado</Label>

@@ -46,7 +46,7 @@ export function AgentsListPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageBreadcrumb items={[{ label: "Agentes" }]} />
+      <PageBreadcrumb items={[{ label: "Agentes", to: "/agents" }, { label: "Lista" }]} />
 
       <div className="flex items-center justify-between">
         <div>
@@ -64,7 +64,7 @@ export function AgentsListPage() {
         {agents?.map((agent) => (
           <Card
             key={agent.id}
-            className="hover:border-primary/50 flex cursor-pointer flex-col gap-3 p-4 transition-colors"
+            className="hover:border-primary/50 shadow-xl flex cursor-pointer flex-col gap-3 p-4 transition-colors"
             onClick={() => navigate(`/agents/${agent.id}`)}
           >
             <div className="flex items-center gap-3">

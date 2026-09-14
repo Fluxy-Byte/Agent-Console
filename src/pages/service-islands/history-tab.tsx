@@ -155,7 +155,7 @@ export function HistoryTab({ island }: { island: ServiceIsland }) {
         />
       </div>
 
-      <Card className="p-4">
+      <Card className="p-4 shadow-xl">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <div className="flex flex-col gap-1.5 sm:col-span-2 xl:col-span-1">
             <Label className="text-xs">Buscar</Label>
@@ -276,7 +276,7 @@ export function HistoryTab({ island }: { island: ServiceIsland }) {
         </div>
       </Card>
 
-      <Card>
+      <Card className="shadow-xl">
         <CardHeader>
           <div className="flex items-start gap-3">
             <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">

@@ -124,7 +124,7 @@ export function ServiceIslandQueueDetailPage() {
         )}
       </div>
 
-      <Card>
+      <Card className="shadow-xl">
         <CardContent className="flex flex-col gap-6 p-6">
           <div className="flex flex-col gap-4">
             <div>

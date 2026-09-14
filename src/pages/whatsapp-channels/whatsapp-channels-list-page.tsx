@@ -138,7 +138,7 @@ export function WhatsappChannelsListPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageBreadcrumb items={[{ label: "WhatsApp Channel" }]} />
+      <PageBreadcrumb items={[{ label: "WhatsApp Channel", to: "/wc" }, { label: "Lista" }]} />
 
       <div className="flex items-center justify-between">
         <div>
@@ -334,7 +334,7 @@ export function WhatsappChannelsListPage() {
         {channels?.map((channel) => (
           <Card
             key={channel.id}
-            className="hover:border-primary/50 cursor-pointer transition-colors"
+            className="hover:border-primary/50 shadow-xl cursor-pointer transition-colors"
             onClick={() => navigate(`/wc/${channel.id}`)}
           >
             <CardHeader className="flex-row items-center gap-3 space-y-0">

@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { AlertTriangle, CheckCircle2, MoreVertical, Plus, Send, Users } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { AlertTriangle, CheckCircle2, List, Plus, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import type { DateRange } from "@/components/calendar";
 import { DateRangePicker } from "@/components/date-range-picker";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MetricCard } from "@/components/metric-card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SortableTh } from "@/components/sortable-th";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
 import type { Agent, CampaignFilterOptions, CampaignListResult, CampaignStats } from "@/types/domain";
@@ -30,11 +30,6 @@ const STATUS_OPTIONS = [
   { value: "PROCESSING", label: "Enviando" },
   { value: "COMPLETED", label: "Concluída" },
 ];
-
-const STATUS_BADGE: Record<string, { label: string; variant: "warning" | "success" }> = {
-  PROCESSING: { label: "Enviando...", variant: "warning" },
-  COMPLETED: { label: "Concluída", variant: "success" },
-};
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -93,6 +88,8 @@ export function CampaignsListPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
+      <PageBreadcrumb items={[{ label: "Campanhas", to: "/campaigns" }, { label: "Lista" }]} />
+
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Campanhas</h1>
@@ -132,7 +129,7 @@ export function CampaignsListPage() {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           icon={Send}
           iconClassName="bg-primary/10 text-primary"
@@ -161,16 +158,9 @@ export function CampaignsListPage() {
           value={stats ? formatNumber(stats.totalFailures) : "—"}
           sublabel={`${failureRate.toFixed(2).replace(".", ",")}% do total`}
         />
-        <MetricCard
-          icon={Users}
-          iconClassName="bg-primary/10 text-primary"
-          label="Contatos únicos"
-          value={stats ? formatNumber(stats.uniqueContacts) : "—"}
-          sublabel="Alcançados"
-        />
       </div>
 
-      <Card className="p-4">
+      <Card className="p-4 shadow-xl">
         <div className="grid gap-3 lg:grid-cols-[1fr_180px_180px_220px_auto] lg:items-end">
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs">Buscar</Label>
@@ -242,118 +232,120 @@ export function CampaignsListPage() {
         </div>
       </Card>
 
-      <Card className="overflow-hidden p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-border text-muted-foreground border-b text-center text-xs uppercase">
-                <th className="px-4 py-3 text-left font-medium">Campanha</th>
-                <th className="px-4 py-3 font-medium">Template/Tipo</th>
-                <th className="px-4 py-3 font-medium">Agente / Canal</th>
-                <th className="px-4 py-3 font-medium">Enviado por</th>
-                <th className="px-4 py-3 font-medium">
-                  <SortableTh
-                    label="Data / Hora"
-                    active
-                    dir={sortDir}
-                    onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-                  />
-                </th>
-                <th className="px-4 py-3 font-medium">Progresso</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {result?.items.map((c) => {
-                const progressPct = c.expectedContacts > 0 ? Math.round((c.totalContacts / c.expectedContacts) * 100) : 0;
-                const statusBadge = STATUS_BADGE[c.status];
-                const sentAt = new Date(c.sentAt);
+      <Card className="shadow-xl">
+        <CardHeader>
+          <div className="flex items-start gap-3">
+            <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+              <List className="size-5" />
+            </div>
+            <div>
+              <CardTitle>Relatório dos disparos</CardTitle>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Histórico de campanhas com template, agente, canal, quem disparou e o progresso de envio.
+              </p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="border-border overflow-hidden rounded-lg border">
+            {!result || result.items.length === 0 ? (
+              <div className="text-muted-foreground p-6 text-sm">
+                {!result ? "Carregando…" : "Nenhuma campanha encontrada."}
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-left">Campanha</TableHead>
+                    <TableHead>Template/Tipo</TableHead>
+                    <TableHead>Agente / Canal</TableHead>
+                    <TableHead>Enviado por</TableHead>
+                    <TableHead>
+                      <SortableTh
+                        label="Data / Hora"
+                        active
+                        dir={sortDir}
+                        onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+                      />
+                    </TableHead>
+                    <TableHead>Progresso</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {result.items.map((c) => {
+                    const progressPct = c.expectedContacts > 0 ? Math.round((c.totalContacts / c.expectedContacts) * 100) : 0;
+                    const sentAt = new Date(c.sentAt);
 
-                return (
-                  <tr key={c.id} className="border-border hover:bg-accent/30 border-b last:border-0">
-                    <td className="px-4 py-3 text-left align-top">
-                      <div className="flex items-center justify-start gap-3">
-                        <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-                          <Send className="size-4" />
-                        </div>
-                        <div className="min-w-0 text-left">
-                          <button
-                            type="button"
-                            className="text-left font-medium hover:underline"
-                            onClick={() => navigate(`/campaigns/${c.id}`)}
-                          >
-                            {c.name}
-                          </button>
-                          <p className="text-muted-foreground text-xs">ID: {c.id}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-center align-top">
-                      <div className="flex flex-col items-center gap-1">
-                        <span>{c.templateName}</span>
-                        {c.category && (
-                          <span className="text-muted-foreground text-xs">{CATEGORY_LABEL[c.category] ?? c.category}</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-center align-top">
-                      <div className="flex flex-col items-center gap-1 text-sm">
-                        <span>{c.agentName}</span>
-                        <span className="text-muted-foreground text-xs">{c.whatsappChannelDisplayNumber}</span>
-                      </div>
-                    </td>
-                    <td className="text-muted-foreground px-4 py-3 text-center align-top text-sm">
-                      <div className="flex flex-col items-center">
-                        <span>{c.createdByName ?? "—"}</span>
-                        <span className="text-xs">{c.createdByEmail ?? ""}</span>
-                      </div>
-                    </td>
-                    <td className="text-muted-foreground px-4 py-3 text-center align-top text-sm whitespace-nowrap">
-                      <div className="flex flex-col items-center">
-                        <span>{sentAt.toLocaleDateString("pt-BR")}</span>
-                        <span className="text-xs">{sentAt.toLocaleTimeString("pt-BR")}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-center align-top">
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="text-xs">
-                          {formatNumber(c.totalContacts)} / {formatNumber(c.expectedContacts)}
-                        </span>
-                        <div className="bg-muted h-1.5 w-28 overflow-hidden rounded-full">
-                          <div
-                            className={progressPct >= 100 ? "bg-success h-full" : "bg-primary h-full"}
-                            style={{ width: `${Math.min(progressPct, 100)}%` }}
-                          />
-                        </div>
-                        <span className="text-muted-foreground text-xs">{progressPct}%</span>
-                        {c.totalFailures > 0 && <span className="text-destructive text-xs">{c.totalFailures} falha(s)</span>}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-center align-top">
-                      <Badge variant={statusBadge?.variant ?? "outline"}>{statusBadge?.label ?? c.status}</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-center align-top">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline" size="icon" className="size-8">
-                            <MoreVertical className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => navigate(`/campaigns/${c.id}`)}>Ver detalhes</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {result && result.items.length === 0 && (
-            <p className="text-muted-foreground p-6 text-center text-sm">Nenhuma campanha encontrada.</p>
-          )}
-        </div>
+                    return (
+                      <TableRow key={c.id}>
+                        <TableCell className="text-left">
+                          <div className="flex items-center justify-start gap-3">
+                            <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
+                              <Send className="size-4" />
+                            </div>
+                            <div className="min-w-0 text-left">
+                              <button
+                                type="button"
+                                className="text-left font-medium hover:underline"
+                                onClick={() => navigate(`/campaigns/${c.id}`)}
+                              >
+                                {c.name}
+                              </button>
+                              <p className="text-muted-foreground text-xs">ID: {c.id}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col items-center gap-1">
+                            <span>{c.templateName}</span>
+                            {c.category && (
+                              <span className="text-muted-foreground text-xs">{CATEGORY_LABEL[c.category] ?? c.category}</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col items-center gap-1 text-sm">
+                            <span>{c.agentName}</span>
+                            <span className="text-muted-foreground text-xs">{c.whatsappChannelDisplayNumber}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          <div className="flex flex-col items-center">
+                            <span>{c.createdByName ?? "—"}</span>
+                            <span className="text-xs">{c.createdByEmail ?? ""}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
+                          <div className="flex flex-col items-center">
+                            <span>{sentAt.toLocaleDateString("pt-BR")}</span>
+                            <span className="text-xs">{sentAt.toLocaleTimeString("pt-BR")}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col items-center gap-1">
+                            <span className="text-xs">
+                              {formatNumber(c.totalContacts)} / {formatNumber(c.expectedContacts)}
+                            </span>
+                            <div className="bg-muted h-1.5 w-28 overflow-hidden rounded-full">
+                              <div
+                                className={progressPct >= 100 ? "bg-success h-full" : "bg-primary h-full"}
+                                style={{ width: `${Math.min(progressPct, 100)}%` }}
+                              />
+                            </div>
+                            <span className="text-muted-foreground text-xs">{progressPct}%</span>
+                            {c.totalFailures > 0 && (
+                              <span className="text-destructive text-xs">{c.totalFailures} falha(s)</span>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </CardContent>
 
         {result && result.total > 0 && (
           <div className="border-border flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between">

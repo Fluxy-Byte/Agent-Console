@@ -15,6 +15,7 @@ import { CampaignsListPage } from "@/pages/campaigns/campaigns-list-page";
 import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 import { HomePage } from "@/pages/home/home-page";
 import { PrivacyPolicyPage } from "@/pages/legal/privacy-policy-page";
+import { ReportsPage } from "@/pages/reports/reports-page";
 import { ServiceIslandDetailPage } from "@/pages/service-islands/service-island-detail-page";
 import { ServiceIslandQueueDetailPage } from "@/pages/service-islands/service-island-queue-detail-page";
 import { ServiceIslandsListPage } from "@/pages/service-islands/service-islands-list-page";
@@ -76,6 +77,7 @@ export function App() {
               <Route path="/campaigns" element={<CampaignsListPage />} />
               <Route path="/campaigns/new" element={<CampaignNewPage />} />
               <Route path="/campaigns/:id" element={<CampaignDetailPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
               <Route path="/agents" element={<AgentsListPage />} />
               <Route path="/agents/new" element={<AgentDetailPage />} />
               <Route path="/agents/:id" element={<AgentDetailPage />} />

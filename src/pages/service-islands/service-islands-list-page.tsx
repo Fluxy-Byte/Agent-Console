@@ -11,7 +11,7 @@ export function ServiceIslandsListPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageBreadcrumb items={[{ label: "Ilhas de Atendimento" }]} />
+      <PageBreadcrumb items={[{ label: "Ilhas de Atendimento", to: "/service-island" }, { label: "Lista" }]} />
 
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Ilhas de Atendimento</h1>
@@ -24,7 +24,7 @@ export function ServiceIslandsListPage() {
         {islands?.map((island) => (
           <Card
             key={island.id}
-            className="hover:border-primary/50 cursor-pointer transition-colors"
+            className="hover:border-primary/50 shadow-xl cursor-pointer transition-colors"
             onClick={() => navigate(`/service-island/${island.id}`)}
           >
             <CardHeader className="flex-row items-center gap-3 space-y-0">

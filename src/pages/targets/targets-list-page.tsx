@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { Clock, Contact, MessageCircle, SlidersHorizontal, UserCheck, UserRound, Users, UsersRound } from "lucide-react";
+import { Ban, Bot, Contact, Headset, SlidersHorizontal, UserRound, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DateRange } from "@/components/calendar";
 import { DateRangePicker } from "@/components/date-range-picker";
 import { Input } from "@/components/ui/input";
@@ -13,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { MetricCard } from "@/components/metric-card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SortableTh } from "@/components/sortable-th";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
 import type { Agent, TargetListResult, TargetStats } from "@/types/domain";
@@ -28,7 +28,16 @@ const STATUS_OPTIONS = [
   { value: "FINISHED", label: "Finalizado" },
 ];
 
-const STATUS_LABELS: Record<string, string> = { AI: "IA", HUMAN: "Humano", FINISHED: "Finalizado" };
+const STATUS_LABELS: Record<string, string> = { AI: "Agente", HUMAN: "Humano", FINISHED: "Finalizado" };
+const STATUS_BADGE_VARIANTS: Record<string, "success" | "warning" | "secondary"> = {
+  AI: "success",
+  HUMAN: "warning",
+  FINISHED: "secondary",
+};
+const STATUS_ICONS: Record<string, typeof Bot | undefined> = {
+  AI: Bot,
+  HUMAN: Headset,
+};
 
 type SortBy = "name" | "waId" | "status" | "lastInteractionAt";
 
@@ -37,7 +46,6 @@ function formatNumber(n: number): string {
 }
 
 export function TargetsListPage() {
-  const navigate = useNavigate();
   const can = useCan();
   const canWrite = can(PermissionAction.CONTACTS_WRITE);
 
@@ -76,7 +84,7 @@ export function TargetsListPage() {
   const { data: result, mutate } = useSWR<TargetListResult>(`/api/targets?${listParams.toString()}`);
 
   const totalPages = result ? Math.max(1, Math.ceil(result.total / pageSize)) : 1;
-  const activeRate = stats && stats.total > 0 ? (stats.active / stats.total) * 100 : 0;
+  const blockedRate = stats && stats.total > 0 ? (stats.blocked / stats.total) * 100 : 0;
 
   function toggleSort(column: SortBy) {
     if (sortBy === column) {
@@ -92,14 +100,9 @@ export function TargetsListPage() {
     <div className="flex flex-col gap-6 p-6">
       <PageBreadcrumb items={[{ label: "Contatos", to: "/targets" }, { label: "Lista" }]} />
 
-      <div className="flex items-start gap-3">
-        <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
-          <Contact className="size-5" />
-        </div>
-        <div>
-          <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Contatos</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Contatos cadastrados nos WhatsApp Channel desta empresa.</p>
-        </div>
+      <div>
+        <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Contatos</h1>
+        <p className="text-muted-foreground mt-1 text-sm">Contatos cadastrados nos WhatsApp Channel desta empresa.</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -111,43 +114,22 @@ export function TargetsListPage() {
           sublabel="Contatos cadastrados"
         />
         <MetricCard
-          icon={UserCheck}
-          iconClassName="bg-success/15 text-success"
-          label="Contatos ativos"
-          value={stats ? formatNumber(stats.active) : "—"}
-          sublabel={`${activeRate.toFixed(0)}% do total`}
-        />
-        <MetricCard
-          icon={UsersRound}
-          iconClassName="bg-teal-500/10 text-teal-600 dark:text-teal-400"
-          label="Interações (Contatos)"
-          value={stats ? formatNumber(stats.contactsInteractedToday) : "—"}
-          sublabel="Contatos distintos · últimas 24h"
-        />
-        <MetricCard
-          icon={MessageCircle}
-          iconClassName="bg-blue-500/10 text-blue-600 dark:text-blue-400"
-          label="Interações (Mensagens)"
-          value={stats ? formatNumber(stats.interactionsToday) : "—"}
-          sublabel="Mensagens trocadas · últimas 24h"
-        />
-        <MetricCard
-          icon={Clock}
-          iconClassName="bg-warning/15 text-warning"
-          label="Última interação"
-          value={stats?.lastInteractionAt ? new Date(stats.lastInteractionAt).toLocaleDateString("pt-BR") : "—"}
-          sublabel={stats?.lastInteractionAt ? new Date(stats.lastInteractionAt).toLocaleTimeString("pt-BR") : ""}
+          icon={Ban}
+          iconClassName="bg-destructive/10 text-destructive"
+          label="Quantidade de contatos bloqueados"
+          value={stats ? formatNumber(stats.blocked) : "—"}
+          sublabel={`${blockedRate.toFixed(0)}% do total`}
         />
         <MetricCard
           icon={Contact}
           iconClassName="bg-primary/10 text-primary"
-          label="Agente principal"
+          label="Agente com mais contatos em conversa"
           value={stats?.primaryAgentName ?? "—"}
           sublabel="Responsável"
         />
       </div>
 
-      <Card className="flex flex-col gap-3 p-4">
+      <Card className="flex flex-col gap-3 p-4 shadow-xl">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs">Agente</Label>
@@ -249,85 +231,106 @@ export function TargetsListPage() {
         )}
       </Card>
 
-      <Card className="overflow-hidden p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-border text-muted-foreground border-b text-center text-xs uppercase">
-                <th className="px-4 py-3 text-left font-medium">
-                  <SortableTh label="Nome" active={sortBy === "name"} dir={sortDir} onClick={() => toggleSort("name")} />
-                </th>
-                <th className="px-4 py-3 font-medium">
-                  <SortableTh label="Número" active={sortBy === "waId"} dir={sortDir} onClick={() => toggleSort("waId")} />
-                </th>
-                <th className="px-4 py-3 font-medium">Agente</th>
-                <th className="px-4 py-3 font-medium">
-                  <SortableTh label="Status" active={sortBy === "status"} dir={sortDir} onClick={() => toggleSort("status")} />
-                </th>
-                <th className="px-4 py-3 font-medium">
-                  <SortableTh
-                    label="Última interação"
-                    active={sortBy === "lastInteractionAt"}
-                    dir={sortDir}
-                    onClick={() => toggleSort("lastInteractionAt")}
-                  />
-                </th>
-                <th className="px-4 py-3 font-medium">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {result?.items.map((target) => {
-                const initial = target.name?.trim()?.[0]?.toUpperCase();
-                const isActive = target.status !== "FINISHED";
-                return (
-                  <tr key={target.id} className="border-border hover:bg-accent/30 border-b last:border-0">
-                    <td
-                      className="cursor-pointer px-4 py-3 text-left"
-                      onClick={() => navigate(`/targets/${target.id}`)}
-                    >
-                      <div className="flex items-center justify-start gap-3">
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500 text-sm font-medium text-white">
-                          {initial ?? <UserRound className="size-4" />}
-                        </div>
-                        <div>
-                          {target.name ? (
-                            <span className="font-medium">{target.name}</span>
-                          ) : (
-                            <Badge variant="secondary">Sem nome</Badge>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-center">{target.waId ?? "—"}</td>
-                    <td className="px-4 py-3 text-center">{target.whatsappChannel?.agent?.name ?? "—"}</td>
-                    <td className="px-4 py-3 text-center">
-                      <Badge variant={isActive ? "success" : "secondary"}>
-                        {isActive ? "Ativo" : STATUS_LABELS[target.status]}
-                      </Badge>
-                    </td>
-                    <td className="text-muted-foreground px-4 py-3 text-center text-sm">
-                      {target.lastInteractionAt ? new Date(target.lastInteractionAt).toLocaleString("pt-BR") : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center">
-                        <BlockAgentsDialog
-                          targetId={target.id}
-                          targetName={target.name || target.waId || target.bsuid || "este contato"}
-                          blockedAgentIds={target.blockedAgentIds}
-                          disabled={!canWrite}
-                          onSaved={() => mutate()}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {result && result.items.length === 0 && (
-            <p className="text-muted-foreground p-6 text-center text-sm">Nenhum contato encontrado.</p>
-          )}
-        </div>
+      <Card className="shadow-xl">
+        <CardHeader>
+          <div className="flex items-start gap-3">
+            <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+              <Contact className="size-5" />
+            </div>
+            <div>
+              <CardTitle>Lista de contatos</CardTitle>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Contatos de todas as redes sociais cadastradas, filtrados conforme os campos acima.
+              </p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="border-border overflow-hidden rounded-lg border">
+            {!result || result.items.length === 0 ? (
+              <div className="text-muted-foreground p-6 text-sm">
+                {!result ? "Carregando…" : "Nenhum contato encontrado."}
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-left">
+                      <SortableTh label="Nome" active={sortBy === "name"} dir={sortDir} onClick={() => toggleSort("name")} />
+                    </TableHead>
+                    <TableHead>
+                      <SortableTh label="Número" active={sortBy === "waId"} dir={sortDir} onClick={() => toggleSort("waId")} />
+                    </TableHead>
+                    <TableHead>Agente</TableHead>
+                    <TableHead>
+                      <SortableTh label="Status" active={sortBy === "status"} dir={sortDir} onClick={() => toggleSort("status")} />
+                    </TableHead>
+                    <TableHead>
+                      <SortableTh
+                        label="Última interação"
+                        active={sortBy === "lastInteractionAt"}
+                        dir={sortDir}
+                        onClick={() => toggleSort("lastInteractionAt")}
+                      />
+                    </TableHead>
+                    <TableHead>Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {result.items.map((target) => {
+                    const initial = target.name?.trim()?.[0]?.toUpperCase();
+                    const StatusIcon = STATUS_ICONS[target.status];
+                    return (
+                      <TableRow key={target.id}>
+                        <TableCell
+                          className="cursor-pointer text-left"
+                          onClick={() => window.open(`/targets/${target.id}`, "_blank")}
+                        >
+                          <div className="flex items-center justify-start gap-3">
+                            <div className="bg-primary/15 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium">
+                              {initial ?? <UserRound className="size-4" />}
+                            </div>
+                            <div>
+                              {target.name ? (
+                                <span className="font-medium">{target.name}</span>
+                              ) : (
+                                <Badge variant="secondary">Sem nome</Badge>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{target.waId ?? "—"}</TableCell>
+                        <TableCell>{target.whatsappChannel?.agent?.name ?? "—"}</TableCell>
+                        <TableCell>
+                          <Badge variant={STATUS_BADGE_VARIANTS[target.status]} className="gap-1">
+                            {StatusIcon && <StatusIcon className="size-3" />}
+                            {STATUS_LABELS[target.status]}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {target.lastInteractionAt
+                            ? `${new Date(target.lastInteractionAt).toLocaleDateString("pt-BR")} às ${new Date(target.lastInteractionAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`
+                            : "—"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-center">
+                            <BlockAgentsDialog
+                              targetId={target.id}
+                              targetName={target.name || target.waId || target.bsuid || "este contato"}
+                              blockedAgentIds={target.blockedAgentIds}
+                              disabled={!canWrite}
+                              onSaved={() => mutate()}
+                            />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </CardContent>
 
         {result && result.total > 0 && (
           <div className="border-border flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between">

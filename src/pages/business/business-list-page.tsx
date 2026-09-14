@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, ApiError } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setActiveCompany } from "@/store/slices/active-company-slice";
 import type { Company, Member } from "@/types/domain";
@@ -162,7 +163,7 @@ export function BusinessListPage() {
 
         <div className="grid gap-3 sm:grid-cols-2">
           {companies?.map((company) => (
-            <Card key={company.id} className={company.id === activeCompanyId ? "border-primary" : undefined}>
+            <Card key={company.id} className={cn("shadow-xl", company.id === activeCompanyId && "border-primary")}>
               <CardHeader className="flex-row items-center gap-3 space-y-0">
                 <div className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-lg">
                   <Building2 className="size-5" />

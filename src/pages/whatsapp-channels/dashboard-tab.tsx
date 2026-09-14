@@ -177,7 +177,7 @@ const STATUS_FIELD_META: Record<string, { label: string; icon: LucideIcon }> = {
 function StatusTile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   const severity = statusSeverity(value);
   return (
-    <div className="border-border bg-card flex items-center gap-3 rounded-xl border p-4">
+    <div className="border-border bg-card flex items-center gap-3 rounded-xl border p-4 shadow-xl">
       <div className={cn("flex size-11 shrink-0 items-center justify-center rounded-full", SEVERITY_ICON_CLASS[severity])}>
         <Icon className="size-5" />
       </div>
@@ -193,7 +193,7 @@ function StatusTile({ icon: Icon, label, value }: { icon: LucideIcon; label: str
 
 function WhatsappUsageTile({ icon: Icon, value }: { icon: LucideIcon; value: number }) {
   return (
-    <div className="bg-primary/5 border-border flex items-start gap-3 rounded-xl border p-4">
+    <div className="bg-primary/5 border-border flex items-start gap-3 rounded-xl border p-4 shadow-xl">
       <div className="bg-primary/15 text-primary flex size-9 shrink-0 items-center justify-center rounded-full">
         <Icon className="size-4" />
       </div>
@@ -207,7 +207,7 @@ function WhatsappUsageTile({ icon: Icon, value }: { icon: LucideIcon; value: num
 
 function CampaignCountRow({ icon: Icon, label, count }: { icon: LucideIcon; label: string; count: number }) {
   return (
-    <div className="border-border flex items-center gap-3 rounded-xl border p-3">
+    <div className="border-border flex items-center gap-3 rounded-xl border p-3 shadow-xl">
       <div className="bg-primary/15 text-primary flex size-9 shrink-0 items-center justify-center rounded-full">
         <Icon className="size-4" />
       </div>
@@ -352,7 +352,7 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
         <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-start sm:justify-between">
           <CardTitleWithDescription
             icon={Wallet}
-            title="Gastos"
+            title="Volumetria do canal"
             description="Volumetria de mensagens trocadas no período selecionado e mensagens de campanha enviadas por categoria de template."
           />
           <DateRangePicker value={gastosRange} onChange={setGastosRange} className="sm:w-[260px]" />
