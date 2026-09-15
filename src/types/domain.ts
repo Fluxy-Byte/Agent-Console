@@ -77,7 +77,7 @@ export interface RagDocument {
   updatedAt: string;
 }
 
-export interface WhatsappChannel {
+export interface Channel {
   id: string;
   organizationId: string;
   /// Opcional: um canal pode não ter nenhum agente de IA vinculado (só
@@ -95,13 +95,20 @@ export interface WhatsappChannel {
   /// 3 primeiros + 3 últimos caracteres do token, com asteriscos fixos no
   /// meio (ex: "AAA************BBB") — null quando nenhum token configurado.
   metaAccessTokenPreview: string | null;
+  /// Palavras/frases-chave de reset de jornada: quando o contato manda uma
+  /// mensagem igual a uma delas, o worker apaga o histórico de sessão e os
+  /// metadados salvos do contato em vez de responder normalmente.
+  wordsToReset: string[];
+  /// Mensagem enviada ao contato depois do reset de jornada. null = usa a
+  /// mensagem padrão fixa no Piloto.
+  resetMessage: string | null;
   createdAt: string;
   updatedAt: string;
   serviceIsland?: ServiceIsland | null;
   agent?: Agent | null;
 }
 
-export interface WhatsappChannelStatus {
+export interface ChannelStatus {
   id: string;
   display_phone_number?: string;
   verified_name?: string;
@@ -134,7 +141,7 @@ export interface MessagesSeries {
   points: { date: string; sent: number; received: number }[];
 }
 
-export interface WhatsappChannelCampaignReport {
+export interface ChannelCampaignReport {
   totalMessages: number;
   byCategory: { category: string | null; campaignCount: number; messagesSent: number }[];
 }
@@ -156,7 +163,7 @@ export interface ServiceIsland {
   allowActiveDispatch: boolean;
   createdAt: string;
   updatedAt: string;
-  whatsappChannel?: WhatsappChannel;
+  whatsappChannel?: Channel;
   queues?: Queue[];
   closeTags?: TicketCloseTag[];
 }
@@ -217,7 +224,7 @@ export interface Target {
   firstInteractionAt: string;
   lastInteractionAt: string | null;
   blockedAgentIds: string[];
-  whatsappChannel?: WhatsappChannel & { agent: Agent };
+  whatsappChannel?: Channel & { agent: Agent };
   tickets?: TicketSummary[];
 }
 

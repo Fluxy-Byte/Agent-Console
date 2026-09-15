@@ -7,17 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { api, ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { Queue, QueueListResult, WhatsappChannel } from "@/types/domain";
+import type { Queue, QueueListResult, Channel } from "@/types/domain";
 
 interface DefaultQueueDialogProps {
-  channel: WhatsappChannel;
+  channel: Channel;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
 }
 
 /// Modal pra escolher a fila (Queue) que recebe o atendimento quando
-/// openAgent=false — grava em WhatsappChannel.idServiceIslandDefault. Lista
+/// openAgent=false — grava em Channel.idServiceIslandDefault. Lista
 /// as filas da ilha deste canal (mesma paginação simples do restante da UI,
 /// uma ilha dificilmente passa de 50 filas).
 export function DefaultQueueDialog({ channel, open, onOpenChange, onSaved }: DefaultQueueDialogProps) {
@@ -44,7 +44,7 @@ export function DefaultQueueDialog({ channel, open, onOpenChange, onSaved }: Def
     setError(null);
     setSaving(true);
     try {
-      await api.put(`/api/wc/${channel.id}`, { idServiceIslandDefault: selectedId });
+      await api.put(`/api/channels/${channel.id}`, { idServiceIslandDefault: selectedId });
       onSaved();
       toast.success("Fila de encaminhamento atualizada.");
       onOpenChange(false);

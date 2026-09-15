@@ -103,7 +103,7 @@ const MODULES: ModuleCard[] = [
     icon: MessageSquareText,
     title: "WhatsApp Channel",
     description: "Conecte e gerencie seus canais oficiais de WhatsApp, com dashboards de conversas e volume de mensagens.",
-    to: "/wc",
+    to: "/channels",
     ctaLabel: "Ver canais",
   },
   {

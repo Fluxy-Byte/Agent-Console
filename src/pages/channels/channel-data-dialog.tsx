@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, ApiError } from "@/lib/api";
-import type { WhatsappChannel } from "@/types/domain";
+import type { Channel } from "@/types/domain";
 
 interface ChannelDataDialogProps {
-  channel: WhatsappChannel;
+  channel: Channel;
   disabled: boolean;
   onSaved: () => void;
   trigger: React.ReactNode;
@@ -40,7 +40,7 @@ export function ChannelDataDialog({ channel, disabled, onSaved, trigger }: Chann
     try {
       // Campo em branco = não mexe no token já salvo — só envia se o usuário
       // digitou um novo.
-      await api.put(`/api/wc/${channel.id}`, metaAccessToken ? { ...form, metaAccessToken } : form);
+      await api.put(`/api/channels/${channel.id}`, metaAccessToken ? { ...form, metaAccessToken } : form);
       onSaved();
       toast.success("Dados do canal atualizados.");
       setOpen(false);

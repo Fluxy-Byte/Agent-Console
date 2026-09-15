@@ -26,7 +26,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Configurações para WhatsApp",
     items: [
       { label: "Agentes de IA", to: "/agents", icon: BrainCircuit, action: PermissionAction.AGENTS_VIEW },
-      { label: "Redes Sociais", to: "/wc", icon: Network, action: PermissionAction.WABAS_VIEW },
+      { label: "Redes Sociais", to: "/channels", icon: Network, action: PermissionAction.WABAS_VIEW },
       { label: "Ilhas de Atendimento", to: "/service-island", icon: Headset, action: PermissionAction.SERVICE_ISLANDS_VIEW },
     ],
   },

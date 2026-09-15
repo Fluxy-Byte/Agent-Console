@@ -1,13 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { Bot, Building2, CalendarDays, Eye, Hash, Headset, IdCard, KeyRound, type LucideIcon, Pencil, Phone, Tag } from "lucide-react";
+import { Bot, Building2, CalendarDays, Eye, Hash, Headset, IdCard, KeyRound, type LucideIcon, Pencil, Phone, RotateCcw, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { WhatsappChannel } from "@/types/domain";
+import type { Channel } from "@/types/domain";
 import { AgentPicker } from "./agent-picker-dialog";
 import { ChannelDataDialog } from "./channel-data-dialog";
+import { ResetKeywordsDialog } from "./reset-keywords-dialog";
 
 interface ConfigTabProps {
-  channel: WhatsappChannel;
+  channel: Channel;
   canWrite: boolean;
   onSaved: () => void;
 }
@@ -126,6 +127,38 @@ export function ConfigTab({ channel, canWrite, onSaved }: ConfigTabProps) {
           </Card>
         )}
       </div>
+
+      <Card className="shadow-xl">
+        <CardHeader>
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                <RotateCcw className="size-5" />
+              </div>
+              <div>
+                <CardTitle>Palavras-chave para reset de jornada</CardTitle>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Se o contato mandar uma mensagem igual a uma destas palavras, o agente apaga o histórico da
+                  conversa e os dados salvos dele, recomeçando o atendimento do zero.
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ResetKeywordsDialog
+            channel={channel}
+            disabled={!canWrite}
+            onSaved={onSaved}
+            trigger={
+              <Button type="button" variant="outline" className="border-primary/40 text-primary bg-primary/10 hover:bg-primary/15 w-full border-dashed" disabled={!canWrite}>
+                <Pencil className="size-4" /> Gerenciar palavras-chave
+                {channel.wordsToReset.length > 0 ? ` (${channel.wordsToReset.length})` : ""}
+              </Button>
+            }
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

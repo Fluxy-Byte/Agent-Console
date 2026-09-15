@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
 import { api, ApiError } from "@/lib/api";
-import type { Agent, WhatsappChannel } from "@/types/domain";
+import type { Agent, Channel } from "@/types/domain";
 
 interface WabaPhoneNumberResult {
   phoneNumberId: string;
@@ -30,11 +30,11 @@ interface WabaPhoneNumberResult {
   alreadyRegistered: boolean;
 }
 
-export function WhatsappChannelsListPage() {
+export function ChannelsListPage() {
   const navigate = useNavigate();
   const can = useCan();
   const canWrite = can(PermissionAction.WABAS_WRITE);
-  const { data: channels, mutate } = useSWR<WhatsappChannel[]>("/api/wc");
+  const { data: channels, mutate } = useSWR<Channel[]>("/api/channels");
   const { data: agents } = useSWR<Agent[]>(canWrite ? "/api/agents" : null);
 
   const [open, setOpen] = useState(false);
@@ -68,7 +68,7 @@ export function WhatsappChannelsListPage() {
     setSearchError(null);
     setSearching(true);
     try {
-      const found = await api.post<WabaPhoneNumberResult[]>("/api/wc/waba-lookup", {
+      const found = await api.post<WabaPhoneNumberResult[]>("/api/channels/waba-lookup", {
         wabaId: lookupWabaId,
         metaAccessToken: lookupMetaAccessToken,
       });
@@ -93,7 +93,7 @@ export function WhatsappChannelsListPage() {
     setSearchError(null);
     setRegistering(true);
     try {
-      const result = await api.post<{ created: unknown[]; skipped: unknown[] }>("/api/wc/bulk", {
+      const result = await api.post<{ created: unknown[]; skipped: unknown[] }>("/api/channels/bulk", {
         agentId: lookupAgentId || undefined,
         wabaId: lookupWabaId,
         metaAccessToken: lookupMetaAccessToken,
@@ -121,7 +121,7 @@ export function WhatsappChannelsListPage() {
     try {
       // Agente é opcional: sem seleção, o canal nasce só com atendimento
       // humano (openAgent=false, resolvido pelo Agent-Api).
-      await api.post("/api/wc", { agentId: agentId || undefined, phoneNumberId, displayNumber, wabaId, metaAccessToken });
+      await api.post("/api/channels", { agentId: agentId || undefined, phoneNumberId, displayNumber, wabaId, metaAccessToken });
       await mutate();
       setOpen(false);
       setAgentId("");
@@ -138,7 +138,7 @@ export function WhatsappChannelsListPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageBreadcrumb items={[{ label: "WhatsApp Channel", to: "/wc" }, { label: "Lista" }]} />
+      <PageBreadcrumb items={[{ label: "WhatsApp Channel", to: "/channels" }, { label: "Lista" }]} />
 
       <div className="flex items-center justify-between">
         <div>
@@ -335,7 +335,7 @@ export function WhatsappChannelsListPage() {
           <Card
             key={channel.id}
             className="hover:border-primary/50 shadow-xl cursor-pointer transition-colors"
-            onClick={() => navigate(`/wc/${channel.id}`)}
+            onClick={() => navigate(`/channels/${channel.id}`)}
           >
             <CardHeader className="flex-row items-center gap-3 space-y-0">
               <div className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-lg">

@@ -21,8 +21,8 @@ import { ServiceIslandQueueDetailPage } from "@/pages/service-islands/service-is
 import { ServiceIslandsListPage } from "@/pages/service-islands/service-islands-list-page";
 import { TargetDetailPage } from "@/pages/targets/target-detail-page";
 import { TargetsListPage } from "@/pages/targets/targets-list-page";
-import { WhatsappChannelDetailPage } from "@/pages/whatsapp-channels/whatsapp-channel-detail-page";
-import { WhatsappChannelsListPage } from "@/pages/whatsapp-channels/whatsapp-channels-list-page";
+import { ChannelDetailPage } from "@/pages/channels/channel-detail-page";
+import { ChannelsListPage } from "@/pages/channels/channels-list-page";
 import { RedirectIfBootstrapped, RequireActiveCompany, RequireAuth } from "@/routes/require-auth";
 import { useBootstrapSession } from "@/hooks/use-bootstrap-session";
 
@@ -81,8 +81,8 @@ export function App() {
               <Route path="/agents" element={<AgentsListPage />} />
               <Route path="/agents/new" element={<AgentDetailPage />} />
               <Route path="/agents/:id" element={<AgentDetailPage />} />
-              <Route path="/wc" element={<WhatsappChannelsListPage />} />
-              <Route path="/wc/:id" element={<WhatsappChannelDetailPage />} />
+              <Route path="/channels" element={<ChannelsListPage />} />
+              <Route path="/channels/:id" element={<ChannelDetailPage />} />
               <Route path="/service-island" element={<ServiceIslandsListPage />} />
               <Route path="/service-island/:id" element={<ServiceIslandDetailPage />} />
               <Route path="/service-island/:islandId/queue/:queueId" element={<ServiceIslandQueueDetailPage />} />

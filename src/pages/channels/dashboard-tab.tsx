@@ -26,7 +26,7 @@ import { DateRangePicker } from "@/components/date-range-picker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { TemplateCategory, WhatsappChannelCampaignReport, WhatsappChannelStatus } from "@/types/domain";
+import type { TemplateCategory, ChannelCampaignReport, ChannelStatus } from "@/types/domain";
 import { ConversationsFlowChart } from "./conversations-flow-chart";
 import { MessagesFlowChart } from "./messages-flow-chart";
 
@@ -43,8 +43,8 @@ const CATEGORY_LABEL: Record<TemplateCategory, string> = {
 const ALWAYS_VISIBLE_CATEGORIES: TemplateCategory[] = ["MARKETING", "UTILITY"];
 
 function mergeCampaignCategories(
-  byCategory: WhatsappChannelCampaignReport["byCategory"],
-): WhatsappChannelCampaignReport["byCategory"] {
+  byCategory: ChannelCampaignReport["byCategory"],
+): ChannelCampaignReport["byCategory"] {
   const rows = new Map(byCategory.map((row) => [row.category, row]));
   for (const category of ALWAYS_VISIBLE_CATEGORIES) {
     if (!rows.has(category)) rows.set(category, { category, campaignCount: 0, messagesSent: 0 });
@@ -219,7 +219,7 @@ function CampaignCountRow({ icon: Icon, label, count }: { icon: LucideIcon; labe
   );
 }
 
-function CategoryConsumption({ byCategory }: { byCategory: WhatsappChannelCampaignReport["byCategory"] }) {
+function CategoryConsumption({ byCategory }: { byCategory: ChannelCampaignReport["byCategory"] }) {
   const total = byCategory.reduce((sum, row) => sum + row.messagesSent, 0);
   return (
     <div className="border-border rounded-xl border p-4">
@@ -283,8 +283,8 @@ function startOfCurrentMonth(): Date {
 }
 
 export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProps) {
-  const { data: status, error: statusError } = useSWR<WhatsappChannelStatus>(
-    hasMetaAccessToken ? `/api/wc/${channelId}/status` : null,
+  const { data: status, error: statusError } = useSWR<ChannelStatus>(
+    hasMetaAccessToken ? `/api/channels/${channelId}/status` : null,
   );
 
   /// Período do card "Gastos" — começa no mês atual, mas o usuário pode
@@ -295,8 +295,8 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
     gastosRange.from && gastosRange.to
       ? `?startDate=${gastosRange.from.toISOString()}&endDate=${gastosRange.to.toISOString()}`
       : "";
-  const { data: campaignReport } = useSWR<WhatsappChannelCampaignReport>(
-    `/api/wc/${channelId}/campaigns-report${gastosQuery}`,
+  const { data: campaignReport } = useSWR<ChannelCampaignReport>(
+    `/api/channels/${channelId}/campaigns-report${gastosQuery}`,
   );
 
   return (
@@ -337,7 +337,7 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
             {status && (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {Object.entries(STATUS_FIELD_META).map(([field, meta]) => {
-                  const value = status[field as keyof WhatsappChannelStatus] as string | undefined;
+                  const value = status[field as keyof ChannelStatus] as string | undefined;
                   if (!value) return null;
                   const icon = FIELD_ICON_RESOLVER[field]?.(value) ?? meta.icon;
                   return <StatusTile key={field} icon={icon} label={meta.label} value={value} />;

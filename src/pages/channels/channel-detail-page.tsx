@@ -4,22 +4,22 @@ import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
-import type { WhatsappChannel } from "@/types/domain";
+import type { Channel } from "@/types/domain";
 import { ConfigTab } from "./config-tab";
 import { DashboardTab } from "./dashboard-tab";
 
-export function WhatsappChannelDetailPage() {
+export function ChannelDetailPage() {
   const { id } = useParams<{ id: string }>();
   const can = useCan();
   const canWrite = can(PermissionAction.WABAS_WRITE);
 
-  const { data: channel, mutate } = useSWR<WhatsappChannel>(id ? `/api/wc/${id}` : null);
+  const { data: channel, mutate } = useSWR<Channel>(id ? `/api/channels/${id}` : null);
 
   if (!channel) return <div className="p-6 text-sm text-muted-foreground">Carregando…</div>;
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageBreadcrumb items={[{ label: "WhatsApp Channel", to: "/wc" }, { label: channel.displayNumber }]} />
+      <PageBreadcrumb items={[{ label: "WhatsApp Channel", to: "/channels" }, { label: channel.displayNumber }]} />
 
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">{channel.displayNumber}</h1>

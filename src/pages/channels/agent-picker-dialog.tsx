@@ -17,11 +17,11 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { api, ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { Agent, WhatsappChannel } from "@/types/domain";
+import type { Agent, Channel } from "@/types/domain";
 import { DefaultQueueDialog } from "./default-queue-dialog";
 
 interface AgentPickerProps {
-  channel: WhatsappChannel;
+  channel: Channel;
   disabled: boolean;
   onSaved: () => void;
 }
@@ -42,7 +42,7 @@ export function AgentPicker({ channel, disabled, onSaved }: AgentPickerProps) {
     if (!pendingAgent) return;
     setSaving(true);
     try {
-      await api.put(`/api/wc/${channel.id}`, { agentId: pendingAgent.id });
+      await api.put(`/api/channels/${channel.id}`, { agentId: pendingAgent.id });
       onSaved();
       toast.success(`Agente alterado para "${pendingAgent.name}".`);
       setPendingAgent(null);
@@ -59,7 +59,7 @@ export function AgentPicker({ channel, disabled, onSaved }: AgentPickerProps) {
   async function handleToggleOpenAgent(checked: boolean) {
     setOpenAgentSaving(true);
     try {
-      await api.put(`/api/wc/${channel.id}`, { openAgent: checked });
+      await api.put(`/api/channels/${channel.id}`, { openAgent: checked });
       onSaved();
       toast.success(checked ? "Agente ativado para este canal." : "Agente desativado para este canal.");
     } catch (err) {

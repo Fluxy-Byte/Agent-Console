@@ -16,7 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { api, ApiError } from "@/lib/api";
-import type { ServiceIsland, Template, WhatsappChannel } from "@/types/domain";
+import type { Channel, ServiceIsland, Template } from "@/types/domain";
 
 interface ParsedRow {
   index: number;
@@ -62,7 +62,7 @@ function renderBold(text: string): ReactNode {
 export function CampaignNewPage() {
   const navigate = useNavigate();
 
-  const { data: channels } = useSWR<WhatsappChannel[]>("/api/wc");
+  const { data: channels } = useSWR<Channel[]>("/api/channels");
   const { data: islands } = useSWR<ServiceIsland[]>("/api/service-islands");
 
   const [whatsappChannelId, setWhatsappChannelId] = useState("");
@@ -117,7 +117,7 @@ export function CampaignNewPage() {
     if (!whatsappChannelId) return;
 
     api
-      .get<Template[]>(`/api/wc/${whatsappChannelId}/templates`)
+      .get<Template[]>(`/api/channels/${whatsappChannelId}/templates`)
       .then((result) => setTemplates(result))
       .catch((err) => {
         setTemplatesError(err instanceof ApiError ? err.message : "Não foi possível listar os templates deste canal.");

@@ -38,7 +38,7 @@ function parsePeriod(value: string): SeriesPeriod {
 /// o mês atual ou um ano inteiro (a partir de 2024).
 export function MessagesFlowChart({ channelId }: { channelId: string }) {
   const [period, setPeriod] = useState<SeriesPeriod>("current-month");
-  const { data } = useSWR<MessagesSeries>(`/api/wc/${channelId}/messages-series?period=${periodToParam(period)}`);
+  const { data } = useSWR<MessagesSeries>(`/api/channels/${channelId}/messages-series?period=${periodToParam(period)}`);
 
   return (
     <Card className="pt-0 shadow-xl">

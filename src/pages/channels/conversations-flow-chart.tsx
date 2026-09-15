@@ -20,7 +20,7 @@ const YEAR_OPTIONS = buildYearOptions();
 /// do gráfico de mensagens.
 export function ConversationsFlowChart({ channelId }: { channelId: string }) {
   const [year, setYear] = useState<number>(YEAR_OPTIONS[0]);
-  const { data } = useSWR<ConversationsSeries>(`/api/wc/${channelId}/conversations-series?period=${year}`);
+  const { data } = useSWR<ConversationsSeries>(`/api/channels/${channelId}/conversations-series?period=${year}`);
 
   return (
     <Card className="pt-0 shadow-xl">
