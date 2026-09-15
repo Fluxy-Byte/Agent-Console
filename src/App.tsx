@@ -10,8 +10,7 @@ import { SignUpPage } from "@/pages/auth/signup-page";
 import { AgentDetailPage } from "@/pages/agents/agent-detail-page";
 import { AgentsListPage } from "@/pages/agents/agents-list-page";
 import { CampaignDetailPage } from "@/pages/campaigns/campaign-detail-page";
-import { CampaignNewPage } from "@/pages/campaigns/campaign-new-page";
-import { CampaignsListPage } from "@/pages/campaigns/campaigns-list-page";
+import { CampaignsPage } from "@/pages/campaigns/campaigns-page";
 import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 import { HomePage } from "@/pages/home/home-page";
 import { PrivacyPolicyPage } from "@/pages/legal/privacy-policy-page";
@@ -74,8 +73,7 @@ export function App() {
             <Route element={<AppShell />}>
               <Route path="/targets" element={<TargetsListPage />} />
               <Route path="/targets/:id" element={<TargetDetailPage />} />
-              <Route path="/campaigns" element={<CampaignsListPage />} />
-              <Route path="/campaigns/new" element={<CampaignNewPage />} />
+              <Route path="/campaigns" element={<CampaignsPage />} />
               <Route path="/campaigns/:id" element={<CampaignDetailPage />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/agents" element={<AgentsListPage />} />

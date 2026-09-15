@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { AlertTriangle, CheckCircle2, List, Plus, Send } from "lucide-react";
+import { AlertTriangle, CheckCircle2, List, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import type { DateRange } from "@/components/calendar";
 import { DateRangePicker } from "@/components/date-range-picker";
 import { Input } from "@/components/ui/input";
@@ -13,9 +12,7 @@ import { MetricCard } from "@/components/metric-card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SortableTh } from "@/components/sortable-th";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useCan } from "@/hooks/use-can";
-import { PermissionAction } from "@/domain/permission-action";
-import type { Agent, CampaignFilterOptions, CampaignListResult, CampaignStats } from "@/types/domain";
+import type { Channel, CampaignFilterOptions, CampaignListResult, CampaignStats } from "@/types/domain";
 
 const ALL = "all";
 
@@ -37,12 +34,10 @@ function formatNumber(n: number): string {
   return n.toLocaleString("pt-BR");
 }
 
-export function CampaignsListPage() {
+export function CampaignHistoryTab() {
   const navigate = useNavigate();
-  const can = useCan();
-  const canWrite = can(PermissionAction.CAMPAIGNS_WRITE);
 
-  const [agentId, setAgentId] = useState(ALL);
+  const [whatsappChannelId, setWhatsappChannelId] = useState(ALL);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState(ALL);
   const [templateName, setTemplateName] = useState(ALL);
@@ -51,13 +46,11 @@ export function CampaignsListPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // includeDeleted: campanhas antigas podem ter sido disparadas por um
-  // agente já excluído — o filtro precisa continuar oferecendo essa opção.
-  const { data: agents } = useSWR<Agent[]>("/api/agents?includeDeleted=true");
+  const { data: channels } = useSWR<Channel[]>("/api/channels");
   const { data: filterOptions } = useSWR<CampaignFilterOptions>("/api/campaigns/filter-options");
 
   const filterParams = new URLSearchParams();
-  if (agentId !== ALL) filterParams.set("agentId", agentId);
+  if (whatsappChannelId !== ALL) filterParams.set("whatsappChannelId", whatsappChannelId);
   if (search) filterParams.set("search", search);
   if (status !== ALL) filterParams.set("status", status);
   if (templateName !== ALL) filterParams.set("templateName", templateName);
@@ -73,9 +66,12 @@ export function CampaignsListPage() {
   const { data: result } = useSWR<CampaignListResult>(`/api/campaigns?${listParams.toString()}`);
 
   const totalPages = result ? Math.max(1, Math.ceil(result.total / pageSize)) : 1;
-  const hasFilters = Boolean(search || status !== ALL || templateName !== ALL || dateRange.from || dateRange.to);
+  const hasFilters = Boolean(
+    whatsappChannelId !== ALL || search || status !== ALL || templateName !== ALL || dateRange.from || dateRange.to,
+  );
 
   function resetFilters() {
+    setWhatsappChannelId(ALL);
     setSearch("");
     setStatus(ALL);
     setTemplateName(ALL);
@@ -87,48 +83,7 @@ export function CampaignsListPage() {
   const completionRate = stats && stats.totalCampaigns > 0 ? (stats.completedCampaigns / stats.totalCampaigns) * 100 : 0;
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <PageBreadcrumb items={[{ label: "Campanhas", to: "/campaigns" }, { label: "Lista" }]} />
-
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Campanhas</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Disparos em massa (ou manuais) de templates de WhatsApp e histórico de envios.
-          </p>
-        </div>
-        <div className="flex items-end gap-3">
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs">Agente</Label>
-            <Select
-              value={agentId}
-              onValueChange={(v) => {
-                setAgentId(v);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL}>Todos os agentes</SelectItem>
-                {agents?.map((a) => (
-                  <SelectItem key={a.id} value={a.id}>
-                    {a.name}
-                    {a.deletedAt && " (excluído)"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          {canWrite && (
-            <Button onClick={() => navigate("/campaigns/new")}>
-              <Plus className="size-4" /> Nova campanha
-            </Button>
-          )}
-        </div>
-      </div>
-
+    <div className="flex flex-col gap-6">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           icon={Send}
@@ -161,7 +116,7 @@ export function CampaignsListPage() {
       </div>
 
       <Card className="p-4 shadow-xl">
-        <div className="grid gap-3 lg:grid-cols-[1fr_180px_180px_220px_auto] lg:items-end">
+        <div className="grid gap-3 lg:grid-cols-[1fr_180px_180px_180px_220px_auto] lg:items-end">
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs">Buscar</Label>
             <Input
@@ -172,6 +127,28 @@ export function CampaignsListPage() {
                 setPage(1);
               }}
             />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-xs">Rede social</Label>
+            <Select
+              value={whatsappChannelId}
+              onValueChange={(v) => {
+                setWhatsappChannelId(v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>Todas</SelectItem>
+                {channels?.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.displayNumber}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs">Status</Label>

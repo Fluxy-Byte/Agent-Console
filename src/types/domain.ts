@@ -102,6 +102,11 @@ export interface Channel {
   /// Mensagem enviada ao contato depois do reset de jornada. null = usa a
   /// mensagem padrão fixa no Piloto.
   resetMessage: string | null;
+  /// Frases que, quando um contato responde a um disparo de campanha deste
+  /// canal com uma delas, bloqueiam o contato de futuras campanhas NESTE
+  /// canal. Só avaliado quando useWordsToBlockCampaign=true.
+  wordsToBlockCampaign: string[];
+  useWordsToBlockCampaign: boolean;
   createdAt: string;
   updatedAt: string;
   serviceIsland?: ServiceIsland | null;

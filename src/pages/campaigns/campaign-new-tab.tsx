@@ -3,12 +3,21 @@ import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import Papa from "papaparse";
 import { toast } from "sonner";
-import { ArrowLeft, CheckCircle2, Download, FileSpreadsheet, XCircle } from "lucide-react";
+import { CheckCircle2, Download, FileSpreadsheet, Reply, XCircle } from "lucide-react";
 import fundoWhatsApp from "@/assets/FundoWhatsApp.jpg";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +34,14 @@ interface ParsedRow {
   email: string;
   variables: string[];
   errors: string[];
+}
+
+interface ContactPayload {
+  phone: string;
+  name?: string;
+  email?: string;
+  parametersHeader?: { type: string; text: string }[];
+  parametersBody?: { type: string; text: string }[];
 }
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -59,7 +76,7 @@ function renderBold(text: string): ReactNode {
   return text.split(/\*(.+?)\*/g).map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : part));
 }
 
-export function CampaignNewPage() {
+export function CampaignNewTab() {
   const navigate = useNavigate();
 
   const { data: channels } = useSWR<Channel[]>("/api/channels");
@@ -71,7 +88,13 @@ export function CampaignNewPage() {
   const [templateName, setTemplateName] = useState("");
   const [campaignName, setCampaignName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [checkingBlocked, setCheckingBlocked] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Preenchidos quando /api/campaigns/blocked-contacts encontra contatos
+  // bloqueados — abre o alerta de confirmação em vez de disparar direto.
+  const [blockedPhones, setBlockedPhones] = useState<string[] | null>(null);
+  const [pendingContacts, setPendingContacts] = useState<ContactPayload[] | null>(null);
 
   const [routeToHuman, setRouteToHuman] = useState(false);
   const [routeToQueueId, setRouteToQueueId] = useState("");
@@ -205,6 +228,7 @@ export function CampaignNewPage() {
       selectedTemplate &&
       campaignName.trim() &&
       !submitting &&
+      !checkingBlocked &&
       (mode === "CSV"
         ? rows && rows.length > 0 && invalidRows.length === 0
         : manualPhoneDigits.length >= 8 && manualErrors.length === 0 && !manualMissingVariable) &&
@@ -212,40 +236,39 @@ export function CampaignNewPage() {
       (!routeToHuman || !assignSpecificAttendant || routeToUserId),
   );
 
-  async function handleSubmit() {
-    if (!selectedTemplate) return;
-    setError(null);
-    setSubmitting(true);
-
-    const contacts =
-      mode === "CSV"
-        ? validRows.map((r) => ({
-            phone: r.phone,
-            name: r.name || undefined,
-            email: r.email || undefined,
+  function buildContacts(): ContactPayload[] {
+    return mode === "CSV"
+      ? validRows.map((r) => ({
+          phone: r.phone,
+          name: r.name || undefined,
+          email: r.email || undefined,
+          parametersHeader:
+            headerCount > 0 ? r.variables.slice(0, headerCount).map((v) => ({ type: "text", text: v })) : undefined,
+          parametersBody:
+            bodyCount > 0
+              ? r.variables.slice(headerCount, headerCount + bodyCount).map((v) => ({ type: "text", text: v }))
+              : undefined,
+        }))
+      : [
+          {
+            phone: manualPhoneDigits,
+            name: manualName || undefined,
+            email: manualEmail || undefined,
             parametersHeader:
-              headerCount > 0 ? r.variables.slice(0, headerCount).map((v) => ({ type: "text", text: v })) : undefined,
+              headerCount > 0
+                ? manualVariables.slice(0, headerCount).map((v) => ({ type: "text", text: v }))
+                : undefined,
             parametersBody:
               bodyCount > 0
-                ? r.variables.slice(headerCount, headerCount + bodyCount).map((v) => ({ type: "text", text: v }))
+                ? manualVariables.slice(headerCount, headerCount + bodyCount).map((v) => ({ type: "text", text: v }))
                 : undefined,
-          }))
-        : [
-            {
-              phone: manualPhoneDigits,
-              name: manualName || undefined,
-              email: manualEmail || undefined,
-              parametersHeader:
-                headerCount > 0
-                  ? manualVariables.slice(0, headerCount).map((v) => ({ type: "text", text: v }))
-                  : undefined,
-              parametersBody:
-                bodyCount > 0
-                  ? manualVariables.slice(headerCount, headerCount + bodyCount).map((v) => ({ type: "text", text: v }))
-                  : undefined,
-            },
-          ];
+          },
+        ];
+  }
 
+  async function dispatchCampaign(contacts: ContactPayload[]) {
+    if (!selectedTemplate) return;
+    setSubmitting(true);
     try {
       const result = await api.post<{ id: string }>("/api/campaigns", {
         whatsappChannelId,
@@ -269,17 +292,70 @@ export function CampaignNewPage() {
     }
   }
 
+  async function handleSubmit() {
+    if (!selectedTemplate) return;
+    setError(null);
+
+    const contacts = buildContacts();
+
+    setCheckingBlocked(true);
+    try {
+      const { blockedPhones: blocked } = await api.post<{ blockedPhones: string[] }>("/api/campaigns/blocked-contacts", {
+        whatsappChannelId,
+        phones: contacts.map((c) => c.phone),
+      });
+
+      if (blocked.length > 0) {
+        setBlockedPhones(blocked);
+        setPendingContacts(contacts);
+        return;
+      }
+
+      await dispatchCampaign(contacts);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Não foi possível verificar contatos bloqueados.");
+    } finally {
+      setCheckingBlocked(false);
+    }
+  }
+
+  function handleCancelBlocked() {
+    setBlockedPhones(null);
+    setPendingContacts(null);
+  }
+
+  async function handleContinueWithoutBlocked() {
+    if (!pendingContacts || !blockedPhones) return;
+    const blockedSet = new Set(blockedPhones);
+    const filtered = pendingContacts.filter((c) => !blockedSet.has(c.phone));
+    setBlockedPhones(null);
+    setPendingContacts(null);
+    await dispatchCampaign(filtered);
+  }
+
   return (
-    <div className="flex flex-1 flex-col gap-4 p-6">
-      <PageBreadcrumb items={[{ label: "Campanhas", to: "/campaigns" }, { label: "Nova campanha" }]} />
-
-      <Button variant="ghost" size="sm" onClick={() => navigate("/campaigns")} className="w-fit gap-2 px-2">
-        <ArrowLeft className="size-4" /> Voltar
-      </Button>
-
-      <div className="border-border bg-card rounded-lg border p-4">
-        <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Nova campanha</h1>
-      </div>
+    <div className="flex flex-col gap-4">
+      <AlertDialog
+        open={blockedPhones !== null}
+        onOpenChange={(open) => {
+          if (!open) handleCancelBlocked();
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Contatos bloqueados para campanha</AlertDialogTitle>
+            <AlertDialogDescription>
+              {blockedPhones?.length} contato(s) já pediram para não receber mais mensagens de campanha nesta rede
+              social e não serão incluídos neste disparo: {blockedPhones?.join(", ")}. Deseja continuar o disparo sem
+              eles?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleContinueWithoutBlocked}>Continuar sem eles</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Card className="shadow-xl">
         <CardHeader>
@@ -456,40 +532,40 @@ export function CampaignNewPage() {
                 className="flex flex-1 items-start justify-center rounded-lg bg-[#e5ddd5] bg-repeat bg-[length:320px] p-6 [background-image:var(--wa-bg)]"
                 style={{ "--wa-bg": `url(${fundoWhatsApp})` } as React.CSSProperties}
               >
-                <div className="relative flex max-w-sm flex-col gap-1 rounded-lg rounded-tr-none bg-[#d9fdd3] p-3 text-sm text-black shadow-md dark:bg-[#005c4b] dark:text-white">
-                  <div className="absolute top-0 right-0 size-0 translate-x-full border-t-8 border-r-8 border-t-[#d9fdd3] border-r-transparent dark:border-t-[#005c4b]" />
-                  {headerComponent?.text && (
-                    <p className="font-semibold">
-                      {renderBold(
-                        highlightVariables(headerComponent.text, mode === "MANUAL" ? manualVariables.slice(0, headerCount) : undefined),
-                      )}
+                <div className="flex max-w-sm flex-col gap-[3px]">
+                  <div className="relative flex flex-col gap-1 rounded-lg rounded-tr-none bg-white p-3 text-sm text-black shadow-md">
+                    <div className="absolute top-0 right-0 size-0 translate-x-full border-t-8 border-r-8 border-t-white border-r-transparent" />
+                    {headerComponent?.text && (
+                      <p className="font-semibold">
+                        {renderBold(
+                          highlightVariables(headerComponent.text, mode === "MANUAL" ? manualVariables.slice(0, headerCount) : undefined),
+                        )}
+                      </p>
+                    )}
+                    {bodyComponent?.text && (
+                      <p className="whitespace-pre-wrap">
+                        {renderBold(
+                          highlightVariables(
+                            bodyComponent.text,
+                            mode === "MANUAL" ? manualVariables.slice(headerCount, headerCount + bodyCount) : undefined,
+                          ),
+                        )}
+                      </p>
+                    )}
+                    {footerComponent?.text && <p className="text-xs text-gray-500">{renderBold(footerComponent.text)}</p>}
+                    <p className="text-right text-[10px] text-gray-500">
+                      {new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                     </p>
-                  )}
-                  {bodyComponent?.text && (
-                    <p className="whitespace-pre-wrap">
-                      {renderBold(
-                        highlightVariables(
-                          bodyComponent.text,
-                          mode === "MANUAL" ? manualVariables.slice(headerCount, headerCount + bodyCount) : undefined,
-                        ),
-                      )}
-                    </p>
-                  )}
-                  {footerComponent?.text && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{renderBold(footerComponent.text)}</p>
-                  )}
-                  <p className="text-right text-[10px] text-gray-500 dark:text-gray-400">
-                    {new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                  </p>
-                  {buttonsComponent?.buttons && buttonsComponent.buttons.length > 0 && (
-                    <div className="mt-1 flex flex-col gap-1 border-t border-gray-200 pt-1 dark:border-gray-600">
-                      {buttonsComponent.buttons.map((b, i) => (
-                        <span key={i} className="text-center text-sm text-blue-600 dark:text-blue-400">
-                          {b.text}
-                        </span>
-                      ))}
+                  </div>
+                  {buttonsComponent?.buttons?.map((b, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-center gap-1.5 rounded-lg bg-white py-2 text-center text-sm font-medium text-blue-600 shadow-md"
+                    >
+                      <Reply className="size-4" />
+                      {b.text}
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
               <div className="flex flex-1 flex-col gap-3 text-sm">
@@ -675,7 +751,7 @@ export function CampaignNewPage() {
 
             <Button type="button" disabled={!canSubmit} onClick={handleSubmit} className="w-fit gap-2">
               <FileSpreadsheet className="size-4" />
-              {submitting ? "Enviando..." : "Disparar campanha"}
+              {checkingBlocked ? "Verificando contatos…" : submitting ? "Enviando..." : "Disparar campanha"}
             </Button>
           </CardContent>
         </Card>
