@@ -187,83 +187,93 @@ export function ReportsPage() {
             valueKind="count"
           />
           <QueueMetricCard
-            icon={TrendingDown}
-            iconClassName="bg-destructive/10 text-destructive"
-            label="Fila com mais demora"
-            metric={overview?.queueMetrics.slowest}
-            valueKind="duration"
-          />
-          <QueueMetricCard
             icon={Zap}
             iconClassName="bg-success/15 text-success"
             label="Fila com mais rapidez"
             metric={overview?.queueMetrics.fastest}
             valueKind="duration"
           />
+          <QueueMetricCard
+            icon={TrendingDown}
+            iconClassName="bg-destructive/10 text-destructive"
+            label="Fila com mais demora"
+            metric={overview?.queueMetrics.slowest}
+            valueKind="duration"
+          />
         </div>
       </div>
 
-      <Card className="shadow-xl">
-        <CardHeader>
-          <div className="flex items-start gap-3">
-            <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
-              <Trophy className="size-5" />
-            </div>
-            <div>
-              <CardTitle>Top 5 canais que mais evoluíram</CardTitle>
-              <p className="text-muted-foreground mt-1 text-sm">
-                Ranking dos canais com maior crescimento de contatos novos nos últimos 30 dias frente aos 30 dias
-                anteriores.
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {!overview || overview.topChannelsByGrowth.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              {!overview ? "Carregando…" : "Ainda não há dados suficientes para montar esse ranking."}
-            </p>
-          ) : (
-            <div className="border-border overflow-hidden rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-left">Canal</TableHead>
-                    <TableHead>Agente</TableHead>
-                    <TableHead>Últimos 30 dias</TableHead>
-                    <TableHead>30 dias anteriores</TableHead>
-                    <TableHead>Crescimento</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {overview.topChannelsByGrowth.map((channel: ChannelGrowth, index: number) => (
-                    <TableRow key={channel.channelId}>
-                      <TableCell className="text-left">
-                        <div className="flex items-center justify-start gap-2">
-                          <div className="bg-primary/15 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
-                            {index + 1}
-                          </div>
-                          <Radio className="text-muted-foreground size-3.5 shrink-0" />
-                          <span className="truncate font-medium">{channel.displayNumber}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{channel.agentName ?? "—"}</TableCell>
-                      <TableCell className="text-muted-foreground">{formatNumber(channel.currentPeriodContacts)}</TableCell>
-                      <TableCell className="text-muted-foreground">{formatNumber(channel.previousPeriodContacts)}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center justify-center gap-1.5">
-                          <span className={cn("size-1.5 rounded-full", growthDotClassName(channel.growthPercent))} />
-                          {formatGrowth(channel.growthPercent)}
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {overview && overview.channelCount > 1 && (
+        <div>
+          <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold">Métricas de redes sociais</h2>
+          <p className="text-muted-foreground mt-1 mb-3 text-sm">
+            Como os canais de redes sociais estão evoluindo em captação de contatos novos.
+          </p>
+          <Card className="shadow-xl">
+            <CardHeader>
+              <div className="flex items-start gap-3">
+                <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                  <Trophy className="size-5" />
+                </div>
+                <div>
+                  <CardTitle>Top 5 canais que mais evoluíram</CardTitle>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Ranking dos canais com maior crescimento de contatos novos nos últimos 30 dias frente aos 30 dias
+                    anteriores.
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {overview.topChannelsByGrowth.length === 0 ? (
+                <p className="text-muted-foreground text-sm">Ainda não há dados suficientes para montar esse ranking.</p>
+              ) : (
+                <div className="border-border overflow-hidden rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-left">Canal</TableHead>
+                        <TableHead>Agente</TableHead>
+                        <TableHead>Últimos 30 dias</TableHead>
+                        <TableHead>30 dias anteriores</TableHead>
+                        <TableHead>Crescimento</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {overview.topChannelsByGrowth.map((channel: ChannelGrowth, index: number) => (
+                        <TableRow key={channel.channelId}>
+                          <TableCell className="text-left">
+                            <div className="flex items-center justify-start gap-2">
+                              <div className="bg-primary/15 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
+                                {index + 1}
+                              </div>
+                              <Radio className="text-muted-foreground size-3.5 shrink-0" />
+                              <span className="truncate font-medium">{channel.displayNumber}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">{channel.agentName ?? "—"}</TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {formatNumber(channel.currentPeriodContacts)}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {formatNumber(channel.previousPeriodContacts)}
+                          </TableCell>
+                          <TableCell>
+                            <span className="inline-flex items-center justify-center gap-1.5">
+                              <span className={cn("size-1.5 rounded-full", growthDotClassName(channel.growthPercent))} />
+                              {formatGrowth(channel.growthPercent)}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <Card className="shadow-xl">
         <CardHeader>

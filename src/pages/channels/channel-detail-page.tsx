@@ -19,11 +19,11 @@ export function ChannelDetailPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageBreadcrumb items={[{ label: "WhatsApp Channel", to: "/channels" }, { label: channel.displayNumber }]} />
+      <PageBreadcrumb items={[{ label: "Redes sociais", to: "/channels" }, { label: channel.displayNumber }]} />
 
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">{channel.displayNumber}</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Configurações e métricas do WhatsApp Channel.</p>
+        <p className="text-muted-foreground mt-1 text-sm">Configurações e métricas desta rede social.</p>
       </div>
 
       <Tabs defaultValue="dashboard">

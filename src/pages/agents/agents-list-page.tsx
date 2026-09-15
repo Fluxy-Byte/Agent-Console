@@ -96,7 +96,7 @@ export function AgentsListPage() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Excluir "{agent.name}"?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Só é possível excluir um agente sem nenhum WhatsApp Channel vinculado. O agente some da lista
+                        Só é possível excluir um agente sem nenhuma rede social vinculada. O agente some da lista
                         e de qualquer configuração nova, mas continua aparecendo em filtros e informações de
                         contatos/campanhas antigas.
                       </AlertDialogDescription>

@@ -102,7 +102,7 @@ export function TargetsListPage() {
 
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Contatos</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Contatos cadastrados nos WhatsApp Channel desta empresa.</p>
+        <p className="text-muted-foreground mt-1 text-sm">Contatos cadastrados nas Redes sociais desta empresa.</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

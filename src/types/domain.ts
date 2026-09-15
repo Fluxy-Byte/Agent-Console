@@ -55,7 +55,7 @@ export interface Agent {
   openaiTokenPreview: string | null;
   geminiTokenPreview: string | null;
   /// Soft delete — null = ativo. Excluído nunca aparece na lista de agentes
-  /// nem no vínculo de WhatsApp Channel, mas ainda pode aparecer em filtros
+  /// nem no vínculo de Redes sociais, mas ainda pode aparecer em filtros
   /// (Contatos/Campanhas, via ?includeDeleted=true) e telas de informação.
   deletedAt: string | null;
   createdAt: string;
@@ -471,6 +471,7 @@ export interface ReportOverview {
   contactsByStatus: { withAgent: number; withHuman: number };
   avgConversationDuration: { avgDurationMs: number | null; sampleSize: number };
   queueMetrics: { mostInteractions: QueueMetric | null; slowest: QueueMetric | null; fastest: QueueMetric | null };
+  channelCount: number;
   topChannelsByGrowth: ChannelGrowth[];
   topAttendantsByClosedTickets: TopAttendant[];
   campaignMetrics: CampaignMetrics;

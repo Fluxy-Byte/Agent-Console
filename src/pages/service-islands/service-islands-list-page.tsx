@@ -16,7 +16,7 @@ export function ServiceIslandsListPage() {
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Ilhas de Atendimento</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Cada WhatsApp Channel tem uma ilha de atendimento, criada automaticamente.
+          Cada rede social tem uma ilha de atendimento, criada automaticamente.
         </p>
       </div>
 
@@ -42,7 +42,7 @@ export function ServiceIslandsListPage() {
         ))}
         {islands && islands.length === 0 && (
           <p className="text-muted-foreground col-span-full text-sm">
-            Nenhuma ilha de atendimento ainda — crie um WhatsApp Channel para gerar uma automaticamente.
+            Nenhuma ilha de atendimento ainda — crie uma rede social para gerar uma automaticamente.
           </p>
         )}
       </div>
