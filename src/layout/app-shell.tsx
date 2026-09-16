@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { ChevronsLeft, ChevronsRight, LogOut } from "lucide-react";
-import fluxyLogo from "@/assets/Logo.png";
+import sturnusWordmark from "@/assets/NomeSemFundo.png";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useCan } from "@/hooks/use-can";
@@ -48,9 +48,8 @@ export function AppShell() {
           collapsed ? "w-16" : "w-64",
         )}
       >
-        <Link to="/" className="flex h-14 items-center gap-2 px-4">
-          <img src={fluxyLogo} alt="Fluxy" className="size-8 shrink-0 rounded-lg" />
-          {!collapsed && <span className="font-[family-name:var(--font-display)] font-semibold">Fluxy Agents</span>}
+        <Link to="/" className="flex h-14 items-center justify-center gap-2 px-4">
+          {!collapsed && <img src={sturnusWordmark} alt="Sturnus Flow" className="h-12 w-auto" />}
         </Link>
 
         <nav className="flex-1 overflow-y-auto px-2 py-2">
@@ -72,7 +71,7 @@ export function AppShell() {
                         cn(
                           "flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors",
                           isActive
-                            ? "bg-primary/10 text-primary font-medium"
+                            ? "bg-primary text-primary-foreground font-medium"
                             : "text-foreground/80 hover:bg-accent hover:text-accent-foreground",
                         )
                       }

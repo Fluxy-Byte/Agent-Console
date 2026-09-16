@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Bot, MessageSquare, ShieldCheck, Zap } from "lucide-react";
-import fluxyLogo from "@/assets/Logo.png";
+import sturnusWordmark from "@/assets/NomeSemFundo.png";
 
 const FEATURES = [
   { icon: Bot, text: "Agentes de IA que atendem seus clientes 24 horas por dia" },
@@ -44,14 +44,13 @@ export function AuthLayout({ children, hideMobileLogo }: AuthLayoutProps) {
           </ul>
         </div>
 
-        <p className="relative text-xs text-white/60">© {new Date().getFullYear()} Fluxy Technologies</p>
+        <p className="relative text-xs text-white/60">© {new Date().getFullYear()} Sturnus Flow</p>
       </div>
 
       <div className="bg-dot-grid flex flex-1 flex-col items-center justify-center gap-6 p-4">
         {!hideMobileLogo && (
           <div className="flex items-center gap-2 lg:hidden">
-            <img src={fluxyLogo} alt="Fluxy" className="size-8 rounded-lg" />
-            <span className="font-[family-name:var(--font-display)] text-lg font-semibold">Fluxy Agents</span>
+            <img src={sturnusWordmark} alt="Sturnus Flow" className="h-9 w-auto" />
           </div>
         )}
         {children}

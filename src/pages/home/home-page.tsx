@@ -25,10 +25,9 @@ import {
   Webhook,
 } from "lucide-react";
 import heroImage from "@/assets/ApresentacaoInicial.jpg";
+import logoCompleta from "@/assets/LogoCompletaSemFundo.png";
 import conversaImage from "@/assets/Conversa.png";
 import metaLogo from "@/assets/LogoMetaOficalSemFundo.png";
-import identidadeAgenteImage from "@/assets/IndentidadeAgente.png";
-import mensagensAgenteImage from "@/assets/MensagensAgente.png";
 import ragAgenteImage from "@/assets/RagAgente.png";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -65,18 +64,6 @@ const MODULES: ModuleCard[] = [
     to: "/agents",
     ctaLabel: "Ver agentes",
     carousel: [
-      {
-        image: identidadeAgenteImage,
-        title: "Identidade do agente",
-        description:
-          "Defina o nome, ative ou desative o agente e escreva a personalidade que guia todas as respostas: tom de voz, regras do que pode ou não falar e o contexto do seu negócio. Tudo isso entra automaticamente no prompt usado pela IA para gerar cada resposta.",
-      },
-      {
-        image: mensagensAgenteImage,
-        title: "Mensagens obrigatórias e opcionais",
-        description:
-          "As mensagens obrigatórias — processando, transbordo para humano, formato não suportado e número bloqueado — garantem que o cliente nunca fique sem retorno. As opcionais, como o aviso de fora do horário de atendimento, você ativa ou desativa quando quiser. Todos os textos são livres para editar.",
-      },
       {
         image: ragAgenteImage,
         title: "RAG — Base de conhecimento",
@@ -204,14 +191,22 @@ function ModuleCarousel({ slides }: { slides: ModuleCarouselSlide[] }) {
 
 export function HomePage() {
   const heroRef = useRef<HTMLDivElement>(null);
-  const [pastHero, setPastHero] = useState(false);
+  const [pastHero, setPastHero] = useState(true);
   const [activeModule, setActiveModule] = useState(0);
   const selectedModule = MODULES[activeModule];
 
+  // "pastHero" na verdade significa "fora da faixa do hero escuro" — cabeçalho
+  // fica sólido tanto antes de chegar no hero (sobre a seção clara da logo)
+  // quanto depois de passar dele (sobre o conteúdo claro abaixo); só fica
+  // transparente enquanto a imagem escura do hero está atrás dele.
   useEffect(() => {
     function handleScroll() {
-      const heroHeight = heroRef.current?.offsetHeight ?? 0;
-      setPastHero(window.scrollY >= heroHeight - 1);
+      const hero = heroRef.current;
+      if (!hero) return;
+      const heroTop = hero.offsetTop;
+      const heroBottom = heroTop + hero.offsetHeight;
+      const insideHero = window.scrollY >= heroTop - 1 && window.scrollY < heroBottom;
+      setPastHero(!insideHero);
     }
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -222,8 +217,17 @@ export function HomePage() {
     <div className="bg-dot-grid min-h-screen">
       <SiteHeader transparent={!pastHero} />
 
+      {/* Abertura com a logo completa */}
+      <section id="top" className="flex min-h-screen w-full scroll-mt-20 items-center justify-center p-8">
+        <img
+          src={logoCompleta}
+          alt="Sturnus Flow — Conexões que movem"
+          className="animate-logo-shrink-in max-h-[85vh] w-full max-w-none object-contain"
+        />
+      </section>
+
       {/* Hero */}
-      <section id="top" className="relative w-full scroll-mt-20">
+      <section className="relative w-full">
         <div ref={heroRef} className="relative h-[520px] w-full overflow-hidden sm:h-[560px] lg:h-[620px]">
           <img src={heroImage} alt="Atendimento Fluxy" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/10" />

@@ -8,9 +8,7 @@ import {
   Headset,
   ListChecks,
   Megaphone,
-  MessageCircleReply,
   Radio,
-  Send,
   Trophy,
   TrendingDown,
   Zap,
@@ -21,7 +19,8 @@ import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { ChannelGrowth, QueueMetric, ReportOverview, TopAttendant } from "@/types/domain";
-import { ReachedContactsDialog } from "./reached-contacts-dialog";
+import { ResponseRateCard } from "./response-rate-card";
+import { ResponsesByWeekdayCard } from "./responses-by-weekday-card";
 
 export function formatNumber(n: number): string {
   return n.toLocaleString("pt-BR");
@@ -81,7 +80,6 @@ function QueueMetricCard({
 
 export function ReportsPage() {
   const { data: overview } = useSWR<ReportOverview>("/api/reports/overview");
-  const [reachedContactsOpen, setReachedContactsOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -133,44 +131,20 @@ export function ReportsPage() {
           Quantas campanhas já foram disparadas, quantos contatos realmente receberam a mensagem e qual fração
           desses contatos respondeu depois do disparo.
         </p>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <MetricCard
-            icon={Megaphone}
-            iconClassName="bg-primary/10 text-primary"
-            label="Total de campanhas"
-            value={overview ? formatNumber(overview.campaignMetrics.totalCampaigns) : "—"}
-            sublabel="Campanhas disparadas"
-          />
-          <MetricCard
-            icon={Send}
-            iconClassName="bg-success/15 text-success"
-            label="Contatos alcançados"
-            value={overview ? formatNumber(overview.campaignMetrics.reachedContacts) : "—"}
-            sublabel={
-              overview
-                ? `${formatNumber(overview.campaignMetrics.reachedContacts)} de ${formatNumber(overview.campaignMetrics.totalContacts)} contatos processados`
-                : ""
-            }
-            onClick={overview ? () => setReachedContactsOpen(true) : undefined}
-          />
-          <MetricCard
-            icon={MessageCircleReply}
-            iconClassName="bg-warning/15 text-warning"
-            label="Taxa de resposta"
-            value={overview ? formatPercent(overview.campaignMetrics.responseRate) : "—"}
-            sublabel={
-              overview
-                ? `${formatNumber(overview.campaignMetrics.respondedDispatches)} de ${formatNumber(overview.campaignMetrics.reachedContacts)} disparos tiveram retorno`
-                : ""
-            }
-            onClick={overview ? () => setReachedContactsOpen(true) : undefined}
-          />
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:items-stretch">
+          <div className="flex flex-col gap-3">
+            <MetricCard
+              icon={Megaphone}
+              iconClassName="bg-primary/10 text-primary"
+              label="Total de campanhas"
+              value={overview ? formatNumber(overview.campaignMetrics.totalCampaigns) : "—"}
+              sublabel="Campanhas disparadas"
+            />
+            <div className="flex-1">{overview && <ResponseRateCard metrics={overview.campaignMetrics} />}</div>
+          </div>
+          {overview && <ResponsesByWeekdayCard metrics={overview.campaignMetrics} />}
         </div>
       </div>
-
-      {overview && (
-        <ReachedContactsDialog open={reachedContactsOpen} onOpenChange={setReachedContactsOpen} metrics={overview.campaignMetrics} />
-      )}
 
       <div>
         <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold">Métricas de atendimento</h2>

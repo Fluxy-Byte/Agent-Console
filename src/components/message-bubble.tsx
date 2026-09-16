@@ -13,6 +13,8 @@ export function MessageBubble({
   message,
   attendantName,
   senderLabelOverride,
+  agentBubbleClassName = "bg-[#1E56E9]/10",
+  agentTextClassName = "text-black",
 }: {
   message: MessageDocument;
   attendantName?: string;
@@ -20,8 +22,16 @@ export function MessageBubble({
    * chama já sabe resolver o remetente com mais precisão (ex.: nome do agente de IA,
    * ou o atendente histórico de cada mensagem numa conversa com vários tickets). */
   senderLabelOverride?: string | null;
+  /** Cor do balão pra mensagens de IA/atendente — default usado nos tickets;
+   * a tela de Histórico de conversas passa uma opacidade diferente. */
+  agentBubbleClassName?: string;
+  /** Cor do texto pra mensagens de IA/atendente — default usado nos tickets;
+   * a tela de Histórico de conversas passa branco. */
+  agentTextClassName?: string;
 }) {
   const isCustomer = message.senderType === "CUSTOMER";
+  const isAgentOrHuman =
+    message.senderType === "AGENT_AI" || message.senderType === "ATTENDANT" || message.senderType === "SYSTEM";
   const createdAt = new Date(message.createdAt);
   const dateTime = `${createdAt.toLocaleDateString("pt-BR")} às ${createdAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
   const sender = senderLabelOverride !== undefined ? senderLabelOverride : senderLabel(message, attendantName);
@@ -29,11 +39,9 @@ export function MessageBubble({
   return (
     <div className={`flex flex-col gap-1 ${isCustomer ? "items-start" : "items-end"}`}>
       <div
-        className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm shadow-lg ${
-          isCustomer
-            ? "rounded-tl-none bg-muted text-foreground shadow-black/10"
-            : "rounded-tr-none bg-primary text-primary-foreground shadow-primary/40"
-        }`}
+        className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm shadow-lg shadow-black/10 ${
+          isAgentOrHuman ? `${agentBubbleClassName} ${agentTextClassName}` : "bg-white text-black"
+        } ${isCustomer ? "rounded-tl-none" : "rounded-tr-none"}`}
       >
         <MessageContent message={message} />
       </div>

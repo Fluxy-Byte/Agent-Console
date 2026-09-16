@@ -470,6 +470,10 @@ export interface CampaignMetrics {
   reachDelta: number;
   respondedDispatches: number;
   responseRate: number | null;
+  /// Segunda a Domingo, nessa ordem — quantos disparos alcançaram o contato
+  /// naquele dia da semana e quantos desses já têm resposta do cliente
+  /// vinculada (CampaignTarget.respondedCampaign).
+  responsesByWeekday: { weekday: string; total: number; responded: number; responseRate: number | null }[];
 }
 
 export interface ReportOverview {

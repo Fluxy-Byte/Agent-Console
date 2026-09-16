@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import Papa from "papaparse";
 import { toast } from "sonner";
-import { CheckCircle2, Download, FileSpreadsheet, Reply, XCircle } from "lucide-react";
+import { CheckCircle2, Download, Eye, FileSpreadsheet, FileText, Headset, Radio, Reply, Send, Upload, Users, XCircle } from "lucide-react";
 import fundoWhatsApp from "@/assets/FundoWhatsApp.jpg";
 import {
   AlertDialog,
@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
@@ -359,8 +360,15 @@ export function CampaignNewTab() {
 
       <Card className="shadow-xl">
         <CardHeader>
-          <CardTitle className="text-base">Rede social</CardTitle>
-          <CardDescription>Escolha a rede social pela qual esta campanha será disparada.</CardDescription>
+          <div className="flex items-start gap-3">
+            <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+              <Radio className="size-5" />
+            </div>
+            <div>
+              <CardTitle className="text-base">Rede social</CardTitle>
+              <CardDescription>Escolha a rede social pela qual esta campanha será disparada.</CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-1.5">
@@ -369,21 +377,18 @@ export function CampaignNewTab() {
             ) : channels.length === 0 ? (
               <p className="text-muted-foreground text-xs">Nenhuma rede social cadastrada.</p>
             ) : (
-              <div className="flex flex-wrap gap-2">
-                {channels.map((c) => (
-                  <button
-                    type="button"
-                    key={c.id}
-                    onClick={() => setWhatsappChannelId(c.id)}
-                    className={cn(
-                      "cursor-pointer rounded-lg border px-4 py-2 text-left font-medium transition-colors",
-                      whatsappChannelId === c.id ? "border-primary bg-accent" : "border-border hover:bg-accent/50",
-                    )}
-                  >
-                    {c.displayNumber}
-                  </button>
-                ))}
-              </div>
+              <Select value={whatsappChannelId} onValueChange={setWhatsappChannelId}>
+                <SelectTrigger className="w-full sm:w-80">
+                  <SelectValue placeholder="Selecione a rede social" />
+                </SelectTrigger>
+                <SelectContent>
+                  {channels.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.displayNumber}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
           </div>
         </CardContent>
@@ -392,8 +397,17 @@ export function CampaignNewTab() {
       {whatsappChannelId && (
         <Card className="shadow-xl">
           <CardHeader>
-            <CardTitle className="text-base">Atendimento humano</CardTitle>
-            <CardDescription>Opcionalmente, encaminhe os contatos atingidos direto para uma fila de atendimento humano.</CardDescription>
+            <div className="flex items-start gap-3">
+              <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                <Headset className="size-5" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Atendimento humano</CardTitle>
+                <CardDescription>
+                  Opcionalmente, encaminhe os contatos atingidos direto para uma fila de atendimento humano.
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <div className="flex items-center gap-3">
@@ -483,8 +497,15 @@ export function CampaignNewTab() {
       {whatsappChannelId && (
         <Card className="shadow-xl">
           <CardHeader>
-            <CardTitle className="text-base">Template</CardTitle>
-            <CardDescription>Escolha o template aprovado pela Meta que será enviado nesta campanha.</CardDescription>
+            <div className="flex items-start gap-3">
+              <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                <FileText className="size-5" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Template</CardTitle>
+                <CardDescription>Escolha o template aprovado pela Meta que será enviado nesta campanha.</CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {templatesError ? (
@@ -523,8 +544,17 @@ export function CampaignNewTab() {
       {selectedTemplate && (
         <Card className="shadow-xl">
           <CardHeader>
-            <CardTitle className="text-base">Pré-visualização</CardTitle>
-            <CardDescription>Confira como a mensagem vai chegar pro cliente e preencha as variáveis do template.</CardDescription>
+            <div className="flex items-start gap-3">
+              <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                <Eye className="size-5" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Pré-visualização</CardTitle>
+                <CardDescription>
+                  Confira como a mensagem vai chegar pro cliente e preencha as variáveis do template.
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <div className="flex flex-col gap-4 sm:flex-row">
@@ -625,20 +655,17 @@ export function CampaignNewTab() {
       {selectedTemplate && (
         <Card className="shadow-xl">
           <CardHeader>
-            <CardTitle className="text-base">Contatos</CardTitle>
-            <CardDescription>Dê um nome à campanha e informe quem vai receber o disparo — em massa (CSV) ou manual.</CardDescription>
+            <div className="flex items-start gap-3">
+              <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                <Users className="size-5" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Contatos</CardTitle>
+                <CardDescription>Informe quem vai receber o disparo — em massa (CSV) ou manual.</CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="campaign-name">Nome da campanha</Label>
-              <Input
-                id="campaign-name"
-                value={campaignName}
-                onChange={(e) => setCampaignName(e.target.value)}
-                placeholder="Ex: Promoção de aniversário"
-              />
-            </div>
-
             <div className="flex gap-1.5">
               <button
                 type="button"
@@ -671,13 +698,22 @@ export function CampaignNewTab() {
                       <Download className="size-4" /> Baixar modelo CSV
                     </Button>
                   </div>
-                  <Input
-                    id="campaign-csv"
-                    type="file"
-                    accept=".csv"
-                    onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-                  />
-                  {fileName && <span className="text-muted-foreground text-xs">{fileName}</span>}
+                  <label
+                    htmlFor="campaign-csv"
+                    className="border-primary/40 bg-primary/5 hover:bg-primary/10 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors"
+                  >
+                    <Upload className="text-primary size-6" />
+                    <p className="text-muted-foreground text-sm">
+                      {fileName ? fileName : "Clique para anexar o arquivo CSV."}
+                    </p>
+                    <input
+                      id="campaign-csv"
+                      type="file"
+                      accept=".csv"
+                      onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+                      className="hidden"
+                    />
+                  </label>
                 </div>
 
                 {rows && rows.length > 0 && (
@@ -746,6 +782,33 @@ export function CampaignNewTab() {
                 )}
               </div>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {selectedTemplate && (
+        <Card className="shadow-xl">
+          <CardHeader>
+            <div className="flex items-start gap-3">
+              <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                <Send className="size-5" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Disparo</CardTitle>
+                <CardDescription>Dê um nome à campanha e clique em disparar quando estiver tudo pronto.</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="campaign-name">Nome da campanha</Label>
+              <Input
+                id="campaign-name"
+                value={campaignName}
+                onChange={(e) => setCampaignName(e.target.value)}
+                placeholder="Ex: Promoção de aniversário"
+              />
+            </div>
 
             {error && <p className="text-destructive text-sm">{error}</p>}
 

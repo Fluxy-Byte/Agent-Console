@@ -1,13 +1,9 @@
 import { Link } from "react-router-dom";
-import fluxyLogo from "@/assets/Logo.png";
-import fluxyLogoTransparent from "@/assets/LogoSemFundo.png";
+import fluxyIcon from "@/assets/IconeAzulSemFundo.png";
 import { cn } from "@/lib/utils";
 
 export function SiteHeader({ transparent = false }: { transparent?: boolean }) {
-  const linkClass = cn(
-    "transition-colors",
-    transparent ? "text-white/90 hover:text-white" : "text-muted-foreground hover:text-foreground",
-  );
+  const linkClass = cn("text-black transition-colors hover:text-black/70");
 
   const navLinks = (
     <>
@@ -35,11 +31,7 @@ export function SiteHeader({ transparent = false }: { transparent?: boolean }) {
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 py-4">
         <a href="/#top" className="flex items-center gap-2">
-          <img
-            src={transparent ? fluxyLogoTransparent : fluxyLogo}
-            alt="Fluxy"
-            className="h-8 w-8 rounded object-cover"
-          />
+          <img src={fluxyIcon} alt="Sturnus Flow" className="h-8 w-8 object-contain" />
         </a>
         <nav className="hidden items-center gap-8 text-sm font-medium sm:flex">{navLinks}</nav>
       </div>

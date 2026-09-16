@@ -72,6 +72,8 @@ function buildTimeline(history: MessageDocument[], tickets: TicketSummary[], tar
         key={message._id}
         message={message}
         senderLabelOverride={resolveSenderLabel(message, target, tickets)}
+        agentBubbleClassName="bg-[#D6FDD0]"
+        agentTextClassName="text-black"
       />
     ),
   }));
@@ -244,7 +246,7 @@ export function TargetDetailPage() {
                   {!history || history.length === 0 ? (
                     <p className="text-muted-foreground text-sm">Nenhuma mensagem ainda.</p>
                   ) : (
-                    <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+                    <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto bg-[#F4F1EA] p-3">
                       {buildTimeline(history, target.tickets ?? [], target).map((entry) => entry.node)}
                     </div>
                   )}

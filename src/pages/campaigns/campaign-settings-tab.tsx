@@ -103,6 +103,7 @@ export function CampaignSettingsTab({ canWrite }: CampaignSettingsTabProps) {
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs">Rede social</Label>
+            <p className="text-muted-foreground text-xs">Escolha a rede social pra configurar o bloqueio automático de campanha.</p>
             {!channels ? (
               <p className="text-muted-foreground text-xs">Carregando redes sociais...</p>
             ) : channels.length === 0 ? (
@@ -125,25 +126,29 @@ export function CampaignSettingsTab({ canWrite }: CampaignSettingsTabProps) {
 
           {channel && (
             <>
-              <div className="flex items-center justify-between gap-3 border-t pt-4">
-                <div>
+              <div className="flex items-center gap-3 border-t pt-4">
+                <Switch
+                  checked={enabled}
+                  disabled={!canWrite || saving}
+                  onCheckedChange={setEnabled}
+                  className="shrink-0 data-[state=checked]:bg-success"
+                />
+                <div className="min-w-0 flex-1">
                   <Label>Ativar bloqueio automático</Label>
                   <p className="text-muted-foreground text-xs">
                     Com o switch desligado, as frases abaixo ficam salvas mas não são avaliadas nas respostas dos
                     contatos.
                   </p>
                 </div>
-                <Switch
-                  checked={enabled}
-                  disabled={!canWrite || saving}
-                  onCheckedChange={setEnabled}
-                  className="data-[state=checked]:bg-success"
-                />
               </div>
 
               <form onSubmit={handleAdd} className="flex items-end gap-2 border-t pt-4">
                 <div className="flex flex-1 flex-col gap-1.5">
                   <Label htmlFor="block-word-new">Nova frase de bloqueio</Label>
+                  <p className="text-muted-foreground text-xs">
+                    Quando o contato responder com essa frase exatamente, ele é bloqueado de futuras campanhas nesta
+                    rede social.
+                  </p>
                   <Input
                     id="block-word-new"
                     placeholder="ex: não quero mais receber mensagens"

@@ -213,7 +213,7 @@ function CampaignCountRow({ icon: Icon, label, count }: { icon: LucideIcon; labe
       </div>
       <div className="min-w-0">
         <p className="truncate text-sm font-medium">{label}</p>
-        <p className="text-muted-foreground text-xs">{count} {count === 1 ? "campanha" : "campanhas"}</p>
+        <p className="text-muted-foreground text-xs">{count} {count === 1 ? "mensagem" : "mensagens"}</p>
       </div>
     </div>
   );
@@ -367,7 +367,7 @@ export function DashboardTab({ channelId, hasMetaAccessToken }: DashboardTabProp
                   key={row.category ?? "none"}
                   icon={row.category === "MARKETING" ? Send : Tag}
                   label={categoryLabel(row.category)}
-                  count={row.campaignCount}
+                  count={row.messagesSent}
                 />
               ))}
             </div>

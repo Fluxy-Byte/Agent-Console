@@ -118,25 +118,32 @@ export function TicketDetailDialog({ ticketId, onOpenChange }: TicketDetailDialo
                   {ticket.target.email && <p className="text-muted-foreground text-xs">{ticket.target.email}</p>}
                 </div>
 
-                <div className="flex flex-col gap-1.5 border-t pt-3 text-xs">
-                  <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-col gap-2 border-t pt-3 text-xs">
+                  <div className="flex flex-col gap-0.5">
                     <span className="text-muted-foreground">Primeiro contato</span>
                     <span>
-                      {new Date(ticket.history[0]?.createdAt ?? ticket.createdAt).toLocaleString("pt-BR")}
+                      {new Date(ticket.history[0]?.createdAt ?? ticket.createdAt).toLocaleDateString("pt-BR")} às{" "}
+                      {new Date(ticket.history[0]?.createdAt ?? ticket.createdAt).toLocaleTimeString("pt-BR")}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-col gap-0.5">
                     <span className="text-muted-foreground">Total de interações</span>
                     <span>{ticket.history.length}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex min-h-0 flex-col overflow-y-auto p-4">
+              <div className="flex min-h-0 flex-col overflow-y-auto bg-[#F4F1EA] p-4">
                 <h3 className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">Conversa</h3>
                 <div className="flex flex-col gap-3">
                   {ticket.history.map((message) => (
-                    <MessageBubble key={message._id} message={message} attendantName={ticket.assignedUser?.name} />
+                    <MessageBubble
+                      key={message._id}
+                      message={message}
+                      attendantName={ticket.assignedUser?.name}
+                      agentBubbleClassName="bg-[#D6FDD0]"
+                      agentTextClassName="text-black"
+                    />
                   ))}
                   {ticket.history.length === 0 && (
                     <p className="text-muted-foreground text-sm">Nenhuma mensagem encontrada.</p>
