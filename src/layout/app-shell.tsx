@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { ChevronsLeft, ChevronsRight, LogOut } from "lucide-react";
-import sturnusWordmark from "@/assets/NomeSemFundo.png";
+import sturnusIcon from "@/assets/IconeAzulSemFundo.png";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useCan } from "@/hooks/use-can";
@@ -48,8 +48,9 @@ export function AppShell() {
           collapsed ? "w-16" : "w-64",
         )}
       >
-        <Link to="/" className="flex h-14 items-center justify-center gap-2 px-4">
-          {!collapsed && <img src={sturnusWordmark} alt="Sturnus Flow" className="h-12 w-auto" />}
+        <Link to="/" className={cn("flex h-14 items-center gap-2 px-4", collapsed ? "justify-center" : "justify-start")}>
+          <img src={sturnusIcon} alt="Sturnus Flow" className="h-8 w-8 shrink-0 object-contain" />
+          {!collapsed && <span className="font-display text-lg font-semibold">Sturnus Flow</span>}
         </Link>
 
         <nav className="flex-1 overflow-y-auto px-2 py-2">
