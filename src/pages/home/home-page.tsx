@@ -1,58 +1,46 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowRight,
-  BarChart3,
   Bot,
-  BrainCircuit,
-  Building2,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Contact,
-  FileSpreadsheet,
   Headset,
   Megaphone,
-  MessageCircle,
   MessageSquareText,
-  Network,
-  PhoneCall,
   Plug,
   ShieldCheck,
-  Sparkles,
+  Users,
   Waypoints,
-  Webhook,
 } from "lucide-react";
-import heroImage from "@/assets/ApresentacaoInicial.jpg";
-import logoCompleta from "@/assets/LogoCompletaSemFundo.png";
+import heroImage from "@/assets/ImagemParaTop.jpg";
 import conversaImage from "@/assets/Conversa.png";
 import metaLogo from "@/assets/LogoMetaOficalSemFundo.png";
-import ragAgenteImage from "@/assets/RagAgente.png";
+import solucoesImage from "@/assets/ImagemParaSoluçoes.jpg";
+import rdStationLogo from "@/assets/RDStation.png";
+import sankhyaLogo from "@/assets/Sankhya.png";
+import pipedriveLogo from "@/assets/Pipedrive.png";
+import googleLogo from "@/assets/Google.png";
+import blingLogo from "@/assets/Bling.jpg";
+import asaasLogo from "@/assets/Asaas.png";
+import activeCampaignLogo from "@/assets/ActiveCampaign.png";
+import hubspotLogo from "@/assets/HubSpot.jpg";
+import zapIcon from "@/assets/IconeZap.png";
+import embarcarImage from "@/assets/EmbarcarNaViagem.png";
+import fluxyIcon from "@/assets/IconeAzulSemFundo.png";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/utils";
 
 const PHONE_DISPLAY = "+55 34 9174-6481";
-const PHONE_TEL = "+553491746481";
 const PHONE_WHATSAPP = "https://wa.me/553491746481";
-
-interface ModuleCarouselSlide {
-  image: string;
-  title: string;
-  description: string;
-}
 
 interface ModuleCard {
   icon: typeof Bot;
   title: string;
   description: string;
-  to?: string;
-  ctaLabel?: string;
   badge?: string;
-  carousel?: ModuleCarouselSlide[];
+  features: string[];
 }
 
 const MODULES: ModuleCard[] = [
@@ -61,44 +49,52 @@ const MODULES: ModuleCard[] = [
     title: "Agentes de IA",
     description:
       "Crie agentes com personalidade própria para atender no WhatsApp: mensagens de transbordo, fora de horário e encerramento, tudo configurável.",
-    to: "/agents",
-    ctaLabel: "Ver agentes",
-    carousel: [
-      {
-        image: ragAgenteImage,
-        title: "RAG — Base de conhecimento",
-        description:
-          "Basta ativar o RAG e anexar os documentos da sua empresa: o agente passa a consultar esse material automaticamente para responder com precisão sobre o seu negócio. Sem código e sem configuração complexa — é só anexar o arquivo e o agente já aprende.",
-      },
+    features: [
+      "RAG — Base de conhecimento: anexe documentos da sua empresa e o agente aprende sozinho, sem código.",
+      "Personalidade configurável: defina tom de voz, saudação e regras de atendimento.",
+      "Transbordo inteligente para a fila humana quando a IA não resolve.",
+      "Mensagens de fora de horário e encerramento configuráveis.",
     ],
   },
   {
-    icon: Contact,
+    icon: Users,
     title: "Contatos",
     description: "Centralize e organize a base de contatos da sua empresa para segmentar campanhas e atendimentos.",
-    to: "/targets",
-    ctaLabel: "Ver contatos",
+    features: [
+      "Base centralizada de contatos com histórico e segmentação por tags.",
+      "Importação e exportação via CSV.",
+      "Organização por listas para campanhas e atendimentos.",
+    ],
   },
   {
     icon: Megaphone,
     title: "Campanhas",
     description: "Dispare campanhas em massa pelo WhatsApp e acompanhe o desempenho de cada envio.",
-    to: "/campaigns",
-    ctaLabel: "Ver campanhas",
+    features: [
+      "Disparos em massa pelo WhatsApp com agendamento.",
+      "Segmentação de público por listas de contatos.",
+      "Métricas de entrega, leitura e resposta em tempo real.",
+    ],
   },
   {
     icon: MessageSquareText,
     title: "Redes sociais",
     description: "Conecte e gerencie seus canais oficiais de WhatsApp, com dashboards de conversas e volume de mensagens.",
-    to: "/channels",
-    ctaLabel: "Ver canais",
+    features: [
+      "Conexão de canais oficiais do WhatsApp Business.",
+      "Gestão centralizada de múltiplos números e canais.",
+      "Dashboards de volume de conversas e mensagens.",
+    ],
   },
   {
     icon: Waypoints,
     title: "Ilhas de Atendimento",
     description: "Organize filas de atendimento humano, monitore em tempo real e consulte o histórico completo de conversas.",
-    to: "/service-island",
-    ctaLabel: "Ver ilhas",
+    features: [
+      "Filas de atendimento humano organizadas por equipe.",
+      "Monitoramento em tempo real dos atendimentos em andamento.",
+      "Histórico completo de conversas por atendimento.",
+    ],
   },
   {
     icon: Headset,
@@ -106,82 +102,35 @@ const MODULES: ModuleCard[] = [
     description:
       "A central de atendimento da Fluxy: tickets, despacho ativo e histórico de conversas em um só lugar para sua equipe de suporte.",
     badge: "Produto complementar",
+    features: [
+      "Central de tickets para toda a equipe de suporte.",
+      "Despacho ativo de conversas para os atendentes certos.",
+      "Histórico unificado de todos os atendimentos.",
+    ],
   },
 ];
 
-const AI_TECHNOLOGIES = [
-  {
-    icon: BrainCircuit,
-    title: "IA generativa conversacional",
-    description: "Agentes que entendem contexto e respondem de forma natural, com a personalidade que você definir.",
-  },
-  {
-    icon: Sparkles,
-    title: "RAG — Base de conhecimento",
-    description: "O agente consulta os documentos que você anexa para responder com precisão sobre o seu negócio.",
-  },
-  {
-    icon: Waypoints,
-    title: "Transbordo inteligente",
-    description: "Quando a IA não resolve, o atendimento é encaminhado automaticamente para a fila humana certa.",
-  },
-  {
-    icon: BarChart3,
-    title: "Monitoramento em tempo real",
-    description: "Dashboards e métricas para acompanhar o desempenho dos agentes e das campanhas.",
-  },
+const BRAND_LOGOS = [
+  { name: "RD Station", src: rdStationLogo },
+  { name: "Sankhya", src: sankhyaLogo },
+  { name: "Pipedrive", src: pipedriveLogo },
+  { name: "Google", src: googleLogo },
+  { name: "Bling", src: blingLogo },
+  { name: "Asaas", src: asaasLogo },
+  { name: "ActiveCampaign", src: activeCampaignLogo },
+  { name: "HubSpot", src: hubspotLogo },
 ];
 
-const INTEGRATIONS = [
-  { icon: Webhook, text: "API REST e Webhooks para conectar seus sistemas em tempo real" },
-  { icon: FileSpreadsheet, text: "Importação e exportação de contatos via CSV" },
-  { icon: Network, text: "Integração com CRMs, ERPs e plataformas de e-commerce" },
-  { icon: Plug, text: "Conexão direta com o WhatsApp Business Platform (WABA)" },
-];
-
-function ModuleCarousel({ slides }: { slides: ModuleCarouselSlide[] }) {
-  const [index, setIndex] = useState(0);
-  const slide = slides[index];
-
-  function goTo(next: number) {
-    setIndex((next + slides.length) % slides.length);
-  }
-
+function LogoMarquee() {
   return (
-    <div className="flex flex-col gap-3">
-      <div className="bg-muted relative overflow-hidden border">
-        <img src={slide.image} alt={slide.title} className="w-full object-cover" />
-        <button
-          type="button"
-          onClick={() => goTo(index - 1)}
-          aria-label="Slide anterior"
-          className="absolute top-1/2 left-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
-        >
-          <ChevronLeft className="size-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => goTo(index + 1)}
-          aria-label="Próximo slide"
-          className="absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
-        >
-          <ChevronRight className="size-4" />
-        </button>
-      </div>
-
-      <div>
-        <p className="text-sm font-semibold">{slide.title}</p>
-        <p className="text-muted-foreground text-sm">{slide.description}</p>
-      </div>
-
-      <div className="flex items-center justify-center gap-1.5">
-        {slides.map((s, i) => (
-          <button
-            key={s.image}
-            type="button"
-            onClick={() => setIndex(i)}
-            aria-label={`Ir para slide ${i + 1}`}
-            className={cn("h-1.5 rounded-full transition-all", i === index ? "bg-primary w-6" : "bg-muted-foreground/30 w-1.5")}
+    <div className="relative flex w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+      <div className="animate-marquee hover:[animation-play-state:paused] flex w-max items-center gap-16 py-4">
+        {[...BRAND_LOGOS, ...BRAND_LOGOS].map((logo, index) => (
+          <img
+            key={`${logo.name}-${index}`}
+            src={logo.src}
+            alt={logo.name}
+            className="h-16 w-auto shrink-0 object-contain grayscale transition-all hover:grayscale-0"
           />
         ))}
       </div>
@@ -191,14 +140,11 @@ function ModuleCarousel({ slides }: { slides: ModuleCarouselSlide[] }) {
 
 export function HomePage() {
   const heroRef = useRef<HTMLDivElement>(null);
-  const [pastHero, setPastHero] = useState(true);
-  const [activeModule, setActiveModule] = useState(0);
-  const selectedModule = MODULES[activeModule];
+  const [pastHero, setPastHero] = useState(false);
 
   // "pastHero" na verdade significa "fora da faixa do hero escuro" — cabeçalho
-  // fica sólido tanto antes de chegar no hero (sobre a seção clara da logo)
-  // quanto depois de passar dele (sobre o conteúdo claro abaixo); só fica
-  // transparente enquanto a imagem escura do hero está atrás dele.
+  // fica sólido depois de passar do hero (sobre o conteúdo claro abaixo); só
+  // fica transparente enquanto a imagem escura do hero está atrás dele.
   useEffect(() => {
     function handleScroll() {
       const hero = heroRef.current;
@@ -217,37 +163,31 @@ export function HomePage() {
     <div className="bg-dot-grid min-h-screen">
       <SiteHeader transparent={!pastHero} />
 
-      {/* Abertura com a logo completa */}
-      <section id="top" className="flex min-h-screen w-full scroll-mt-20 items-center justify-center p-8">
-        <img
-          src={logoCompleta}
-          alt="Sturnus Flow — Conexões que movem"
-          className="animate-logo-shrink-in max-h-[85vh] w-full max-w-none object-contain"
-        />
-      </section>
-
       {/* Hero */}
-      <section className="relative w-full">
-        <div ref={heroRef} className="relative h-[520px] w-full overflow-hidden sm:h-[560px] lg:h-[620px]">
+      <section id="top" className="relative w-full scroll-mt-20">
+        <div ref={heroRef} className="relative h-screen w-full overflow-hidden">
           <img src={heroImage} alt="Atendimento Fluxy" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/10" />
-          <div className="absolute inset-0 flex items-center">
-            <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-5">
+          <div className="absolute inset-0 flex items-end pb-16 sm:pb-20">
+            <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-8 sm:flex-row sm:items-end sm:justify-between">
               <h1 className="font-[family-name:var(--font-display)] max-w-2xl text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
                 Conversas que geram grandes resultados para uma empresa.
               </h1>
-              <p className="max-w-xl text-base text-white/85 sm:text-lg">
-                Inteligência que nunca para de evoluir no mercado.
-              </p>
-              <a href="#contato" className={cn(buttonVariants({ size: "lg" }))}>
-                <MessageCircle className="size-4" /> Falar com especialista
-              </a>
+              <div className="flex max-w-xl flex-col items-start gap-5">
+                <p className="text-base text-white/85 sm:text-lg">
+                  Automatize seu funil de vendas. A Sturnus Flow cria jornadas conversacionais completas para
+                  escalar seus resultados com precisão.
+                </p>
+                <a href="#contato" className={cn(buttonVariants({ size: "lg" }))}>
+                  <img src={zapIcon} alt="" className="size-4" /> Agendar uma conversa
+                </a>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="mx-auto flex max-w-6xl flex-col gap-24 py-28">
+      <div className="mx-auto flex max-w-6xl flex-col gap-52 py-28">
         {/* Da primeira conversa ao aquecimento de leads */}
         <section className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-16">
           <div className="flex flex-col justify-start gap-4">
@@ -256,8 +196,8 @@ export function HomePage() {
               Da primeira conversa ao aquecimento de seus leads para gerar grandes resultados.
             </h2>
             <p className="text-muted-foreground text-base sm:text-lg">
-              Veja como a Fluxy pode evoluir as conversas da sua empresa podendo aumentar o volume de vendas e
-              atendimento da sua empresa.
+              Descubra como a Sturnus Flow transforma as conversas do seu negócio, acelerando vendas e otimizando o
+              atendimento.
             </p>
             <a href="#contato" className={cn(buttonVariants({ size: "lg" }), "w-fit")}>
               Saber mais
@@ -273,7 +213,7 @@ export function HomePage() {
         </section>
 
         {/* Segurança e parceria com a Meta */}
-        <section className="grid items-stretch gap-6 py-28 lg:min-h-[420px] lg:grid-cols-2 lg:gap-16">
+        <section className="grid items-stretch gap-6 lg:min-h-[420px] lg:grid-cols-2 lg:gap-16">
           <div className="flex items-center justify-center">
             <img src={metaLogo} alt="Meta Business Partner" className="w-full" />
           </div>
@@ -295,167 +235,122 @@ export function HomePage() {
         </section>
 
         {/* Módulos / cada ponta da ferramenta */}
-        <section id="cases" className="flex flex-col gap-6 scroll-mt-20">
-          <div className="text-center">
-            <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
-              Soluções completas para todas as jornadas
-            </h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Um único ecossistema para automatizar, atender e acompanhar toda a jornada do seu cliente.
-            </p>
-          </div>
-          <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-            <div className="flex flex-col gap-2">
-              {MODULES.map((module, index) => {
-                const isActive = index === activeModule;
-                return (
-                  <button
-                    key={module.title}
-                    type="button"
-                    onClick={() => setActiveModule(index)}
-                    className={cn(
-                      "flex items-center gap-3 rounded-none border p-4 text-left transition-colors",
-                      isActive ? "border-primary bg-primary/5" : "border-transparent hover:bg-muted",
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "flex size-10 shrink-0 items-center justify-center rounded-lg",
-                        isActive ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary",
-                      )}
-                    >
-                      <module.icon className="size-5" />
-                    </div>
-                    <span className="text-sm font-medium">{module.title}</span>
-                  </button>
-                );
-              })}
+        <section id="cases" className="scroll-mt-20">
+          <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-16">
+            <div className="flex flex-col gap-6">
+              <div>
+                <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold sm:text-3xl">
+                  Soluções completas para todas as jornadas
+                </h2>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Um único ecossistema para automatizar, atender e acompanhar toda a jornada do seu cliente.
+                </p>
+              </div>
+              <Accordion type="single" collapsible>
+                {MODULES.map((module) => (
+                  <AccordionItem key={module.title} value={module.title}>
+                    <AccordionTrigger>
+                      <span className="flex items-center gap-3">
+                        <span className="text-primary flex shrink-0 items-center justify-center">
+                          <module.icon className="size-8" />
+                        </span>
+                        <span className="text-sm font-semibold">{module.title}</span>
+                        {module.badge && (
+                          <Badge variant="secondary" className="ml-2">
+                            {module.badge}
+                          </Badge>
+                        )}
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="flex flex-col gap-3">
+                        <p className="text-muted-foreground text-sm">{module.description}</p>
+                        <ul className="flex flex-col gap-2">
+                          {module.features.map((feature) => (
+                            <li key={feature} className="flex items-start gap-2 text-sm">
+                              <CheckCircle2 className="text-success mt-0.5 size-4 shrink-0" />
+                              <span className="text-muted-foreground">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             </div>
 
-            <Card className="flex flex-col rounded-none">
-              <CardHeader className="flex-row items-start gap-3 space-y-0">
-                <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
-                  <selectedModule.icon className="size-5" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <CardTitle className="text-base">{selectedModule.title}</CardTitle>
-                  {selectedModule.badge && (
-                    <Badge variant="secondary" className="w-fit">
-                      {selectedModule.badge}
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="flex flex-1 flex-col gap-3">
-                <p className="text-muted-foreground text-sm">{selectedModule.description}</p>
-                {selectedModule.carousel && <ModuleCarousel key={selectedModule.title} slides={selectedModule.carousel} />}
-                {selectedModule.to && (
-                  <Link
-                    to={selectedModule.to}
-                    className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "mt-auto w-fit")}
-                  >
-                    {selectedModule.ctaLabel} <ArrowRight className="size-4" />
-                  </Link>
-                )}
-              </CardContent>
-            </Card>
+            <img
+              src={solucoesImage}
+              alt="Soluções completas Sturnus Flow"
+              className="h-[420px] w-full object-cover sm:h-[480px] lg:sticky lg:top-24 lg:h-[560px]"
+            />
           </div>
         </section>
 
-        {/* Tecnologias de IA */}
-        <section className="flex flex-col gap-6">
-          <div className="text-center">
-            <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Tecnologias de IA</h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Toda a inteligência artificial da Fluxy trabalhando junto para o seu atendimento.
+        {/* Integrações com terceiros */}
+        <section className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-16">
+          <div className="flex items-center justify-center">
+            <LogoMarquee />
+          </div>
+          <div className="flex flex-col justify-center gap-4">
+            <span className="text-primary flex items-center gap-2 text-xs font-semibold tracking-widest uppercase">
+              <Plug className="size-4" /> Conecte sua operação
+            </span>
+            <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold sm:text-3xl">
+              Integração com terceiros
+            </h2>
+            <p className="text-muted-foreground text-base sm:text-lg">
+              A Sturnus Flow se integra perfeitamente às ferramentas que você já utiliza, conectando sua operação de
+              forma simples e imediata.
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {AI_TECHNOLOGIES.map((tech) => (
-              <Card key={tech.title}>
-                <CardContent className="flex items-start gap-3 p-5">
-                  <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
-                    <tech.icon className="size-5" />
-                  </div>
-                  <div>
-                    <p className="font-medium">{tech.title}</p>
-                    <p className="text-muted-foreground mt-1 text-sm">{tech.description}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Integração + Suporte 24h */}
-        <section className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="text-primary size-5" /> Fácil integração com terceiros
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <p className="text-muted-foreground text-sm">
-                A Fluxy conversa com as ferramentas que sua empresa já usa, sem dor de cabeça.
-              </p>
-              <ul className="flex flex-col gap-2">
-                {INTEGRATIONS.map((item) => (
-                  <li key={item.text} className="flex items-start gap-2 text-sm">
-                    <item.icon className="text-primary mt-0.5 size-4 shrink-0" />
-                    <span>{item.text}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="text-primary size-5" /> Suporte disponível 24 horas
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <p className="text-muted-foreground text-sm">
-                Nosso time de suporte está de plantão todos os dias, a qualquer hora, para garantir que o seu
-                atendimento nunca pare.
-              </p>
-              <div className="flex items-center gap-2 text-sm">
-                <CheckCircle2 className="text-success size-4 shrink-0" />
-                <span>Atendimento 24h, todos os dias da semana</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <CheckCircle2 className="text-success size-4 shrink-0" />
-                <span>Suporte por ligação e WhatsApp</span>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Contato */}
-        <section id="contato" className="scroll-mt-20">
-          <Card className="border-primary/30 bg-primary/5">
-            <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-              <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
-                Fale com um de nossos vendedores
-              </h2>
-              <p className="text-muted-foreground max-w-md text-sm">
-                Dúvidas, suporte ou novidades: fale com a gente por ligação ou WhatsApp.
-              </p>
-              <p className="font-[family-name:var(--font-display)] text-xl font-semibold">{PHONE_DISPLAY}</p>
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                <a href={`tel:${PHONE_TEL}`} className={cn(buttonVariants({ size: "lg" }))}>
-                  <PhoneCall className="size-4" /> Ligar agora
-                </a>
-                <a href={PHONE_WHATSAPP} target="_blank" rel="noreferrer" className={cn(buttonVariants({ size: "lg", variant: "outline" }))}>
-                  <MessageCircle className="size-4" /> Chamar no WhatsApp
-                </a>
-              </div>
-            </CardContent>
-          </Card>
         </section>
       </div>
+
+      {/* Contato */}
+      <section id="contato" className="bg-primary text-primary-foreground mt-52 grid w-full scroll-mt-20 items-stretch lg:grid-cols-2">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-center gap-4 px-4 py-20 text-left lg:mr-0 lg:ml-auto lg:pr-16 lg:pl-[max(1rem,calc((100vw-72rem)/2))]">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold sm:text-3xl">
+            Fale com um de nossos especialistas
+          </h2>
+          <p className="text-primary-foreground/80 max-w-md text-sm sm:text-base">
+            Pronto para escalar seus resultados? Solicite um orçamento, tire dúvidas ou conheça as novidades da
+            Sturnus Flow.
+          </p>
+          <p className="font-[family-name:var(--font-display)] text-xl font-semibold">{PHONE_DISPLAY}</p>
+          <a
+            href={PHONE_WHATSAPP}
+            target="_blank"
+            rel="noreferrer"
+            className={cn(
+              buttonVariants({ size: "lg", variant: "outline" }),
+              "border-white bg-transparent text-white hover:bg-white/10 hover:text-white",
+            )}
+          >
+            <img src={zapIcon} alt="" className="size-4" /> Chamar no WhatsApp
+          </a>
+        </div>
+        <div className="flex items-stretch justify-center">
+          <img src={embarcarImage} alt="Embarque na jornada Sturnus Flow" className="h-full w-full object-cover" />
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-border w-full border-t">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row">
+          <div className="flex items-center gap-2">
+            <img src={fluxyIcon} alt="" className="h-8 w-8 object-contain" />
+            <span className="font-[family-name:var(--font-display)] text-lg font-semibold">Sturnus Flow</span>
+          </div>
+          <div className="flex flex-col items-center gap-1 sm:items-end">
+            <a href="mailto:sturnusflow@gmail.com" className="text-muted-foreground text-sm hover:underline">
+              sturnusflow@gmail.com
+            </a>
+            <span className="text-muted-foreground text-xs">© 2026 Sturnus Flow. Todos os direitos reservados.</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

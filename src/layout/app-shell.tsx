@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { ChevronsLeft, ChevronsRight, LogOut } from "lucide-react";
 import sturnusIcon from "@/assets/IconeAzulSemFundo.png";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useCan } from "@/hooks/use-can";
 import { NAV_GROUPS } from "./nav-config";
@@ -14,6 +15,7 @@ import { ROLE_LABELS } from "@/domain/permission-action";
 
 export function AppShell() {
   const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
   const can = useCan();
   const dispatch = useAppDispatch();
   const user = useAppSelector((s) => s.auth.user);
@@ -64,54 +66,109 @@ export function AppShell() {
                   <p className="text-muted-foreground px-2 py-1 text-xs font-medium uppercase">{group.label}</p>
                 )}
                 <div className="flex flex-col gap-1">
-                  {items.map((item) => (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      className={({ isActive }) =>
-                        cn(
-                          "flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors",
+                  {items.map((item) => {
+                    const isActive = location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
+                    // NavLink.className aceita uma função, mas quando este link
+                    // vira o asChild de um Radix Slot (TooltipTrigger, abaixo), o
+                    // Slot faz `[a, b].filter(Boolean).join(" ")` para mesclar
+                    // classNames — e como isso chama .toString() em qualquer
+                    // valor não-string, uma função vira o próprio código-fonte
+                    // dela virando classes CSS "de verdade" (ex.: sobra
+                    // "text-primary-foreground" limpa no meio do texto). Por
+                    // isso calculamos isActive manualmente e passamos string.
+                    const link = (
+                      <NavLink
+                        to={item.to}
+                        className={cn(
+                          "flex items-center gap-2 rounded-md px-2 py-2 text-base transition-colors",
+                          collapsed ? "justify-center" : "justify-start",
                           isActive
                             ? "bg-primary text-primary-foreground font-medium"
                             : "text-foreground/80 hover:bg-accent hover:text-accent-foreground",
-                        )
-                      }
-                    >
-                      <item.icon className="size-4 shrink-0" />
-                      {!collapsed && item.label}
-                    </NavLink>
-                  ))}
+                        )}
+                      >
+                        <item.icon className="size-5 shrink-0" />
+                        {!collapsed && item.label}
+                      </NavLink>
+                    );
+
+                    if (!collapsed) return <div key={item.to}>{link}</div>;
+
+                    return (
+                      <Tooltip key={item.to}>
+                        <TooltipTrigger asChild>{link}</TooltipTrigger>
+                        <TooltipContent>{item.label}</TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
                 </div>
               </div>
             );
           })}
         </nav>
 
-        <button
-          type="button"
-          onClick={() => setCollapsed((c) => !c)}
-          className="text-muted-foreground hover:text-foreground flex items-center gap-2 px-4 py-3 text-sm"
-        >
-          {collapsed ? <ChevronsRight className="size-4" /> : <ChevronsLeft className="size-4" />}
-          {!collapsed && "Recolher"}
-        </button>
+        {(() => {
+          const toggleButton = (
+            <button
+              type="button"
+              onClick={() => setCollapsed((c) => !c)}
+              className={cn(
+                "text-muted-foreground hover:text-foreground flex items-center gap-2 px-4 py-3 text-sm",
+                collapsed ? "justify-center" : "justify-start",
+              )}
+            >
+              {collapsed ? <ChevronsRight className="size-4" /> : <ChevronsLeft className="size-4" />}
+              {!collapsed && "Recolher"}
+            </button>
+          );
+
+          if (!collapsed) return toggleButton;
+
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>{toggleButton}</TooltipTrigger>
+              <TooltipContent>Expandir</TooltipContent>
+            </Tooltip>
+          );
+        })()}
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button type="button" className="border-border hover:bg-accent flex items-center gap-2 border-t px-4 py-3 text-left">
-              <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium">
-                {user?.name?.[0]?.toUpperCase() ?? "?"}
-              </div>
-              {!collapsed && (
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{user?.name}</p>
-                  <p className="text-muted-foreground truncate text-xs">
-                    {activeCompany?.memberRole ? ROLE_LABELS[activeCompany.memberRole] : user?.isPlatformAdmin ? "Administrador" : ""}
-                  </p>
+          {(() => {
+            const profileButton = (
+              <button
+                type="button"
+                className={cn(
+                  "border-border hover:bg-accent flex items-center gap-2 border-t px-4 py-3 text-left",
+                  collapsed ? "justify-center" : "justify-start",
+                )}
+              >
+                <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium">
+                  {user?.name?.[0]?.toUpperCase() ?? "?"}
                 </div>
-              )}
-            </button>
-          </DropdownMenuTrigger>
+                {!collapsed && (
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{user?.name}</p>
+                    <p className="text-muted-foreground truncate text-xs">
+                      {activeCompany?.memberRole ? ROLE_LABELS[activeCompany.memberRole] : user?.isPlatformAdmin ? "Administrador" : ""}
+                    </p>
+                  </div>
+                )}
+              </button>
+            );
+
+            if (!collapsed) {
+              return <DropdownMenuTrigger asChild>{profileButton}</DropdownMenuTrigger>;
+            }
+
+            return (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>{profileButton}</DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>{user?.name}</TooltipContent>
+              </Tooltip>
+            );
+          })()}
           <DropdownMenuContent align="start">
             <DropdownMenuLabel>{activeCompany?.name ?? "Sem empresa ativa"}</DropdownMenuLabel>
             <DropdownMenuSeparator />

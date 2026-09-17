@@ -1,10 +1,9 @@
 import { useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import useSWR from "swr";
-import { ArrowLeft, Bot, Calendar, ClipboardList, FileText, Mail, Megaphone, Phone, Send, Tag, User, Users, XCircle } from "lucide-react";
+import { Bot, Calendar, ClipboardList, FileText, Mail, Megaphone, Phone, Send, Tag, User, Users, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/metric-card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -80,7 +79,6 @@ function CampaignTargetsTable({ targets }: { targets: CampaignTargetItem[] }) {
 }
 
 export function CampaignDetailPage() {
-  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { data: campaign } = useSWR<CampaignDetail>(id ? `/api/campaigns/${id}` : null);
 
@@ -92,10 +90,6 @@ export function CampaignDetailPage() {
   return (
     <div className="flex flex-col gap-6 p-6">
       <PageBreadcrumb items={[{ label: "Campanhas", to: "/campaigns" }, { label: campaign.name }]} />
-
-      <Button variant="ghost" size="sm" onClick={() => navigate("/campaigns")} className="w-fit gap-2 px-2">
-        <ArrowLeft className="size-4" /> Voltar
-      </Button>
 
       <div className="flex items-start gap-3">
         <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">

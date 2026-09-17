@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
-import { Check, Copy, KeyRound, Lock, Ticket, Unlock, UserX, Users } from "lucide-react";
+import { Check, Copy, Eye, EyeOff, KeyRound, Lock, Ticket, Unlock, UserX, Users } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -61,9 +61,12 @@ export function BusinessDetailPage() {
   const pagedMembers = (members ?? []).slice((page - 1) * pageSize, page * pageSize);
 
   const [generatingToken, setGeneratingToken] = useState(false);
+  const [viewingToken, setViewingToken] = useState(false);
   const [tokenError, setTokenError] = useState<string | null>(null);
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
+  const [tokenDialogMode, setTokenDialogMode] = useState<"generated" | "viewed" | null>(null);
   const [copied, setCopied] = useState(false);
+  const [tokenVisible, setTokenVisible] = useState(false);
 
   const [inviteRole, setInviteRole] = useState<MemberRole>("ATENDENTE");
   const [inviteEmail, setInviteEmail] = useState("");
@@ -121,13 +124,40 @@ export function BusinessDetailPage() {
     try {
       const { token } = await api.post<{ token: string }>(`/api/companies/${id}/api-token`, {});
       setGeneratedToken(token);
+      setTokenDialogMode("generated");
       setCopied(false);
+      setTokenVisible(false);
       await mutateCompany();
     } catch (err) {
       setTokenError(err instanceof ApiError ? err.message : "Não foi possível gerar o token.");
     } finally {
       setGeneratingToken(false);
     }
+  }
+
+  async function handleViewToken() {
+    setTokenError(null);
+    setViewingToken(true);
+    try {
+      const { token } = await api.get<{ token: string | null }>(`/api/companies/${id}/api-token`);
+      if (!token) {
+        setTokenError("Nenhum token configurado.");
+        return;
+      }
+      setGeneratedToken(token);
+      setTokenDialogMode("viewed");
+      setCopied(false);
+      setTokenVisible(false);
+    } catch (err) {
+      setTokenError(err instanceof ApiError ? err.message : "Não foi possível carregar o token.");
+    } finally {
+      setViewingToken(false);
+    }
+  }
+
+  function closeTokenDialog() {
+    setGeneratedToken(null);
+    setTokenDialogMode(null);
   }
 
   async function handleCopyToken() {
@@ -332,37 +362,6 @@ export function BusinessDetailPage() {
             <CardHeader>
               <div className="flex items-start gap-3">
                 <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
-                  <KeyRound className="size-5" />
-                </div>
-                <div>
-                  <CardTitle className="text-base">Acesso à API externa</CardTitle>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    Token usado por sistemas de terceiros para consultar canais/templates e disparar campanhas desta
-                    empresa via API (Fluxy Agents).
-                  </p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <div className="flex items-center justify-between gap-3">
-                <Badge variant={company?.hasApiAccessToken ? "default" : "outline"}>
-                  {company?.hasApiAccessToken ? "Token configurado" : "Nenhum token gerado"}
-                </Badge>
-                <Button variant="outline" size="sm" disabled={generatingToken} onClick={handleGenerateToken}>
-                  <KeyRound className="size-4" />
-                  {generatingToken ? "Gerando…" : "Gerar novo token"}
-                </Button>
-              </div>
-              {tokenError && <p className="text-destructive text-sm">{tokenError}</p>}
-            </CardContent>
-          </Card>
-        )}
-
-        {canWrite && (
-          <Card className="shadow-xl">
-            <CardHeader>
-              <div className="flex items-start gap-3">
-                <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
                   <Ticket className="size-5" />
                 </div>
                 <div>
@@ -389,7 +388,7 @@ export function BusinessDetailPage() {
                   />
                 </div>
                 <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as MemberRole)}>
-                  <SelectTrigger size="sm" className="w-40">
+                  <SelectTrigger className="w-40">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -400,7 +399,7 @@ export function BusinessDetailPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button type="submit" variant="outline" size="sm" disabled={generatingCode}>
+                <Button type="submit" variant="outline" disabled={generatingCode}>
                   <Ticket className="size-4" />
                   {generatingCode ? "Gerando…" : "Gerar código"}
                 </Button>
@@ -449,21 +448,67 @@ export function BusinessDetailPage() {
             </CardContent>
           </Card>
         )}
+
+        {canWrite && (
+          <Card className="shadow-xl">
+            <CardHeader>
+              <div className="flex items-start gap-3">
+                <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                  <KeyRound className="size-5" />
+                </div>
+                <div>
+                  <CardTitle className="text-base">Acesso à API externa</CardTitle>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Token usado por sistemas de terceiros para consultar canais/templates e disparar campanhas desta
+                    empresa via API (Fluxy Agents).
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant={company?.hasApiAccessToken ? "default" : "outline"}
+                  disabled={!company?.hasApiAccessToken || viewingToken}
+                  onClick={handleViewToken}
+                >
+                  <Eye className="size-4" />
+                  {viewingToken ? "Carregando…" : company?.hasApiAccessToken ? "Token configurado" : "Nenhum token gerado"}
+                </Button>
+                <Button variant="outline" disabled={generatingToken} onClick={handleGenerateToken}>
+                  <KeyRound className="size-4" />
+                  {generatingToken ? "Gerando…" : "Gerar novo token"}
+                </Button>
+              </div>
+              {tokenError && <p className="text-destructive text-sm">{tokenError}</p>}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
-      <Dialog open={Boolean(generatedToken)} onOpenChange={(open) => !open && setGeneratedToken(null)}>
+      <Dialog open={tokenDialogMode !== null} onOpenChange={(open) => !open && closeTokenDialog()}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Token gerado</DialogTitle>
+            <DialogTitle>{tokenDialogMode === "generated" ? "Token gerado" : "Token de acesso"}</DialogTitle>
             <DialogDescription>
-              Copie e guarde este token agora — por segurança, ele não será exibido novamente. Qualquer token
-              anterior desta empresa deixou de funcionar.
+              {tokenDialogMode === "generated"
+                ? "Copie e guarde este token agora. Qualquer token anterior desta empresa deixou de funcionar."
+                : "Este é o token de acesso à API externa configurado atualmente para esta empresa."}
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center gap-2">
             <code className="bg-muted flex-1 overflow-x-auto rounded-md px-3 py-2 text-xs break-all">
-              {generatedToken}
+              {tokenVisible ? generatedToken : "•".repeat(generatedToken?.length ?? 0)}
             </code>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => setTokenVisible((v) => !v)}
+              aria-label={tokenVisible ? "Ocultar token" : "Mostrar token"}
+            >
+              {tokenVisible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            </Button>
             <Button type="button" variant="outline" size="icon" onClick={handleCopyToken}>
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
             </Button>

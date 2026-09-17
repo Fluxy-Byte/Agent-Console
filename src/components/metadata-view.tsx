@@ -1,4 +1,4 @@
-import { AccordionItem } from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -17,9 +17,14 @@ function isExpandable(value: unknown): boolean {
 function MetadataEntry({ label, value }: { label: string; value: unknown }) {
   if (isExpandable(value)) {
     return (
-      <AccordionItem title={label}>
-        <MetadataValue value={value} />
-      </AccordionItem>
+      <Accordion type="single" collapsible>
+        <AccordionItem value="entry" className="group border-border bg-card rounded-lg border">
+          <AccordionTrigger className="px-3 py-2 text-xs font-medium [&_svg]:size-3.5">{label}</AccordionTrigger>
+          <AccordionContent className="border-border border-t px-3 pt-2">
+            <MetadataValue value={value} />
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     );
   }
 

@@ -17,6 +17,7 @@ import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
 import type { Agent, TargetListResult, TargetStats } from "@/types/domain";
 import { BlockAgentsDialog } from "./block-agents-dialog";
+import { MetadataFilterDialog } from "./metadata-filter-dialog";
 
 const ALL = "all";
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
@@ -59,6 +60,7 @@ export function TargetsListPage() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState(ALL);
   const [dateRange, setDateRange] = useState<DateRange>({});
+  const [metadataKeys, setMetadataKeys] = useState<string[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>("lastInteractionAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -73,6 +75,7 @@ export function TargetsListPage() {
   if (status !== ALL) filterParams.set("status", status);
   if (dateRange.from) filterParams.set("startDate", dateRange.from.toISOString());
   if (dateRange.to) filterParams.set("endDate", dateRange.to.toISOString());
+  if (metadataKeys.length > 0) filterParams.set("metadataKeys", metadataKeys.join(","));
 
   const { data: stats } = useSWR<TargetStats>(`/api/targets/stats?${filterParams.toString()}`);
 
@@ -223,6 +226,16 @@ export function TargetsListPage() {
                 value={dateRange}
                 onChange={(r) => {
                   setDateRange(r);
+                  setPage(1);
+                }}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-xs">Metadados</Label>
+              <MetadataFilterDialog
+                selectedKeys={metadataKeys}
+                onChange={(keys) => {
+                  setMetadataKeys(keys);
                   setPage(1);
                 }}
               />

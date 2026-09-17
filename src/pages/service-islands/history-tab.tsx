@@ -1,5 +1,6 @@
 import { useState } from "react";
 import useSWR from "swr";
+import { toast } from "sonner";
 import { CheckCircle2, Download, History, ListChecks, Loader2, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { MetricCard } from "@/components/metric-card";
 import { PaginationControls } from "@/components/pagination-controls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ApiError } from "@/lib/api";
 import { formatDuration } from "@/lib/format-duration";
 import { fetcher } from "@/lib/fetcher";
 import { displayTicketStatus } from "@/lib/ticket-status";
@@ -117,6 +119,8 @@ export function HistoryTab({ island }: { island: ServiceIsland }) {
       a.download = `historico-tickets-${island.name}.csv`;
       a.click();
       URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Não foi possível exportar o histórico.");
     } finally {
       setExporting(false);
     }

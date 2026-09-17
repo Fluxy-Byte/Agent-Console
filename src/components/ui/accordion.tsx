@@ -1,28 +1,45 @@
 import * as React from "react";
-import { ChevronDown } from "lucide-react";
+import { Accordion as AccordionPrimitive } from "radix-ui";
+import { ChevronDownIcon } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
-export function Accordion({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex flex-col gap-1", className)} {...props} />;
+function Accordion({ ...props }: React.ComponentProps<typeof AccordionPrimitive.Root>) {
+  return <AccordionPrimitive.Root data-slot="accordion" {...props} />;
 }
 
-interface AccordionItemProps {
-  title: React.ReactNode;
-  defaultOpen?: boolean;
-  className?: string;
-  children: React.ReactNode;
+function AccordionItem({ className, ...props }: React.ComponentProps<typeof AccordionPrimitive.Item>) {
+  return <AccordionPrimitive.Item data-slot="accordion-item" className={cn(className)} {...props} />;
 }
 
-/// details/summary nativo — cobre toggle + acessibilidade sem precisar de
-/// mais uma dependência radix só pra isso.
-export function AccordionItem({ title, defaultOpen, className, children }: AccordionItemProps) {
+function AccordionTrigger({ className, children, ...props }: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
   return (
-    <details className={cn("group border-border bg-card rounded-lg border", className)} open={defaultOpen}>
-      <summary className="text-foreground flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2 text-xs font-medium [&::-webkit-details-marker]:hidden">
-        <span className="min-w-0 flex-1 truncate">{title}</span>
-        <ChevronDown className="text-muted-foreground size-3.5 shrink-0 transition-transform group-open:rotate-180" />
-      </summary>
-      <div className="border-border border-t px-3 py-2">{children}</div>
-    </details>
+    <AccordionPrimitive.Header className="flex">
+      <AccordionPrimitive.Trigger
+        data-slot="accordion-trigger"
+        className={cn(
+          "focus-visible:border-ring focus-visible:ring-ring/50 flex flex-1 items-center justify-between gap-4 py-4 text-left text-sm font-medium transition-all outline-none hover:no-underline focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+        <ChevronDownIcon className="text-muted-foreground pointer-events-none size-5 shrink-0 transition-transform duration-200" />
+      </AccordionPrimitive.Trigger>
+    </AccordionPrimitive.Header>
   );
 }
+
+function AccordionContent({ className, children, ...props }: React.ComponentProps<typeof AccordionPrimitive.Content>) {
+  return (
+    <AccordionPrimitive.Content
+      data-slot="accordion-content"
+      className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm"
+      {...props}
+    >
+      <div className={cn("pt-0 pb-4", className)}>{children}</div>
+    </AccordionPrimitive.Content>
+  );
+}
+
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };

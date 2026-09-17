@@ -1,10 +1,10 @@
-import { BarChart3, BrainCircuit, Headset, KeyRound, Megaphone, Network, UserGroup } from "lucide-react";
+import { BarChart3, Bot, KeyRound, Megaphone, MessageSquareText, Users, Waypoints } from "lucide-react";
 import { PermissionAction } from "@/domain/permission-action";
 
 export interface NavItem {
   label: string;
   to: string;
-  icon: typeof BrainCircuit;
+  icon: typeof Bot;
   action: PermissionAction;
 }
 
@@ -17,7 +17,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Operações",
     items: [
-      { label: "Contatos", to: "/targets", icon: UserGroup, action: PermissionAction.CONTACTS_VIEW },
+      { label: "Contatos", to: "/targets", icon: Users, action: PermissionAction.CONTACTS_VIEW },
       { label: "Campanhas", to: "/campaigns", icon: Megaphone, action: PermissionAction.CAMPAIGNS_VIEW },
       { label: "Métricas", to: "/reports", icon: BarChart3, action: PermissionAction.REPORTS_VIEW },
     ],
@@ -25,9 +25,9 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Configurações para WhatsApp",
     items: [
-      { label: "Agentes de IA", to: "/agents", icon: BrainCircuit, action: PermissionAction.AGENTS_VIEW },
-      { label: "Redes Sociais", to: "/channels", icon: Network, action: PermissionAction.WABAS_VIEW },
-      { label: "Ilhas de Atendimento", to: "/service-island", icon: Headset, action: PermissionAction.SERVICE_ISLANDS_VIEW },
+      { label: "Agentes de IA", to: "/agents", icon: Bot, action: PermissionAction.AGENTS_VIEW },
+      { label: "Redes Sociais", to: "/channels", icon: MessageSquareText, action: PermissionAction.WABAS_VIEW },
+      { label: "Ilhas de Atendimento", to: "/service-island", icon: Waypoints, action: PermissionAction.SERVICE_ISLANDS_VIEW },
     ],
   },
   {

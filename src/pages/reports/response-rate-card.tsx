@@ -65,10 +65,8 @@ export function ResponseRateCard({ metrics }: ResponseRateCardProps) {
             <p className={cn("text-lg font-semibold", isHealthy ? "text-success" : "text-destructive")}>
               {formatNumber(reachDelta)}
             </p>
-            {isHealthy ? (
+            {isHealthy && (
               <p className="text-muted-foreground text-xs">Nenhuma falha de envio: todo contato processado foi alcançado.</p>
-            ) : (
-              <p className="text-muted-foreground text-xs">⚠️ Fique de olho na saúde do envio.</p>
             )}
           </div>
         </div>

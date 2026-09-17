@@ -13,14 +13,19 @@ import {
   TrendingDown,
   Zap,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { MetricCard } from "@/components/metric-card";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import type { ChannelGrowth, QueueMetric, ReportOverview, TopAttendant } from "@/types/domain";
+import type { Channel, ChannelGrowth, QueueMetric, ReportOverview, TopAttendant } from "@/types/domain";
 import { ResponseRateCard } from "./response-rate-card";
 import { ResponsesByWeekdayCard } from "./responses-by-weekday-card";
+
+const ALL_CHANNELS = "all";
 
 export function formatNumber(n: number): string {
   return n.toLocaleString("pt-BR");
@@ -79,7 +84,19 @@ function QueueMetricCard({
 }
 
 export function ReportsPage() {
-  const { data: overview } = useSWR<ReportOverview>("/api/reports/overview");
+  const [whatsappChannelId, setWhatsappChannelId] = useState(ALL_CHANNELS);
+  const [channelDialogOpen, setChannelDialogOpen] = useState(false);
+  const { data: channels } = useSWR<Channel[]>("/api/channels");
+  const overviewUrl =
+    whatsappChannelId === ALL_CHANNELS
+      ? "/api/reports/overview"
+      : `/api/reports/overview?whatsappChannelId=${whatsappChannelId}`;
+  const { data: overview } = useSWR<ReportOverview>(overviewUrl);
+
+  const selectedChannelLabel =
+    whatsappChannelId === ALL_CHANNELS
+      ? "Todos os canais"
+      : (channels?.find((c) => c.id === whatsappChannelId)?.displayNumber ?? "Todos os canais");
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -88,6 +105,47 @@ export function ReportsPage() {
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">Métricas da plataforma</h1>
         <p className="text-muted-foreground mt-1 text-sm">Visão consolidada de atendimento e evolução dos canais.</p>
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-muted-foreground text-sm">
+          Canal: <span className="text-foreground font-medium">{selectedChannelLabel}</span>
+        </p>
+        <Dialog open={channelDialogOpen} onOpenChange={setChannelDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Radio className="size-4" /> Selecionar canal
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Selecionar canal</DialogTitle>
+              <DialogDescription>
+                Filtre todas as métricas desta tela por um canal específico, ou mantenha "Todos os canais" para a
+                visão consolidada.
+              </DialogDescription>
+            </DialogHeader>
+            <Select
+              value={whatsappChannelId}
+              onValueChange={(v) => {
+                setWhatsappChannelId(v);
+                setChannelDialogOpen(false);
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_CHANNELS}>Todos os canais</SelectItem>
+                {channels?.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.displayNumber}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div>
@@ -177,7 +235,7 @@ export function ReportsPage() {
         </div>
       </div>
 
-      {overview && overview.channelCount > 1 && (
+      {overview && overview.channelCount > 1 && whatsappChannelId === ALL_CHANNELS && (
         <div>
           <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold">Métricas de redes sociais</h2>
           <p className="text-muted-foreground mt-1 mb-3 text-sm">

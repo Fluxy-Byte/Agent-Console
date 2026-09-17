@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft, MessageCircle, ShieldCheck } from "lucide-react";
-import capaImage from "@/assets/Capa.jpg";
 import heroImage from "@/assets/ApresentacaoInicial.jpg";
 import { SiteHeader } from "@/components/site-header";
 import { buttonVariants } from "@/components/ui/button";
@@ -137,12 +136,6 @@ export function PrivacyPolicyPage() {
           usuários da plataforma e visitantes do nosso site.
         </p>
         <p className="text-muted-foreground mt-1 text-sm">Última atualização: setembro de 2026.</p>
-
-        <img
-          src={capaImage}
-          alt="Time da Fluxy trabalhando com segurança e atenção aos dados dos clientes"
-          className="mt-8 h-56 w-full rounded-2xl object-cover sm:h-72"
-        />
 
         <div className="mt-12 flex flex-col gap-10">
           {SECTIONS.slice(0, 10).map((section) => (
