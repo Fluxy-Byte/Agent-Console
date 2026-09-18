@@ -123,7 +123,7 @@ const BRAND_LOGOS = [
 
 function LogoMarquee() {
   return (
-    <div className="relative flex w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+    <div className="relative flex w-full min-w-0 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
       <div className="animate-marquee hover:[animation-play-state:paused] flex w-max items-center gap-16 py-4">
         {[...BRAND_LOGOS, ...BRAND_LOGOS].map((logo, index) => (
           <img
@@ -169,11 +169,11 @@ export function HomePage() {
           <img src={heroImage} alt="Atendimento Fluxy" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/10" />
           <div className="absolute inset-0 flex items-end pb-16 sm:pb-20">
-            <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-8 sm:flex-row sm:items-end sm:justify-between">
+            <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-8 px-4 text-center sm:flex-row sm:items-end sm:justify-between sm:px-0 sm:text-left">
               <h1 className="font-[family-name:var(--font-display)] max-w-2xl text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
                 Conversas que geram grandes resultados para uma empresa.
               </h1>
-              <div className="flex max-w-xl flex-col items-start gap-5">
+              <div className="flex max-w-xl flex-col items-center gap-5 sm:items-start">
                 <p className="text-base text-white/85 sm:text-lg">
                   Automatize seu funil de vendas. A Sturnus Flow cria jornadas conversacionais completas para
                   escalar seus resultados com precisão.
@@ -190,7 +190,7 @@ export function HomePage() {
       <div className="mx-auto flex max-w-6xl flex-col gap-52 py-28">
         {/* Da primeira conversa ao aquecimento de leads */}
         <section className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-16">
-          <div className="flex flex-col justify-start gap-4">
+          <div className="flex flex-col items-center gap-4 text-center lg:items-start lg:text-left">
             <span className="text-primary text-xs font-semibold tracking-widest uppercase">Conheça mais</span>
             <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold sm:text-3xl">
               Da primeira conversa ao aquecimento de seus leads para gerar grandes resultados.
@@ -214,10 +214,10 @@ export function HomePage() {
 
         {/* Segurança e parceria com a Meta */}
         <section className="grid items-stretch gap-6 lg:min-h-[420px] lg:grid-cols-2 lg:gap-16">
-          <div className="flex items-center justify-center">
+          <div className="order-last flex items-center justify-center lg:order-first">
             <img src={metaLogo} alt="Meta Business Partner" className="w-full" />
           </div>
-          <div className="flex flex-col justify-start gap-4">
+          <div className="flex flex-col items-center gap-4 text-center lg:items-start lg:text-left">
             <span className="text-primary flex items-center gap-2 text-xs font-semibold tracking-widest uppercase">
               <ShieldCheck className="size-4" /> Segurança de ponta a ponta
             </span>
@@ -238,7 +238,7 @@ export function HomePage() {
         <section id="cases" className="scroll-mt-20">
           <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-16">
             <div className="flex flex-col gap-6">
-              <div>
+              <div className="text-center lg:text-left">
                 <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold sm:text-3xl">
                   Soluções completas para todas as jornadas
                 </h2>
@@ -246,7 +246,7 @@ export function HomePage() {
                   Um único ecossistema para automatizar, atender e acompanhar toda a jornada do seu cliente.
                 </p>
               </div>
-              <Accordion type="single" collapsible>
+              <Accordion type="single" collapsible className="px-4 lg:px-0">
                 {MODULES.map((module) => (
                   <AccordionItem key={module.title} value={module.title}>
                     <AccordionTrigger>
@@ -290,10 +290,10 @@ export function HomePage() {
 
         {/* Integrações com terceiros */}
         <section className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-16">
-          <div className="flex items-center justify-center">
+          <div className="order-last flex min-w-0 items-center justify-center lg:order-first">
             <LogoMarquee />
           </div>
-          <div className="flex flex-col justify-center gap-4">
+          <div className="flex flex-col items-center justify-center gap-4 text-center lg:items-start lg:text-left">
             <span className="text-primary flex items-center gap-2 text-xs font-semibold tracking-widest uppercase">
               <Plug className="size-4" /> Conecte sua operação
             </span>
@@ -310,7 +310,7 @@ export function HomePage() {
 
       {/* Contato */}
       <section id="contato" className="bg-primary text-primary-foreground mt-52 grid w-full scroll-mt-20 items-stretch lg:grid-cols-2">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-center gap-4 px-4 py-20 text-left lg:mr-0 lg:ml-auto lg:pr-16 lg:pl-[max(1rem,calc((100vw-72rem)/2))]">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-center gap-4 px-4 py-20 text-center lg:mr-0 lg:ml-auto lg:items-start lg:pr-16 lg:pl-[max(1rem,calc((100vw-72rem)/2))] lg:text-left">
           <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold sm:text-3xl">
             Fale com um de nossos especialistas
           </h2>
