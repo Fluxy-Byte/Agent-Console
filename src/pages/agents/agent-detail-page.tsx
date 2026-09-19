@@ -201,7 +201,7 @@ export function AgentDetailPage() {
             <User /> Identidade
           </TabsTrigger>
           <TabsTrigger value="messages">
-            <MessageCircleMore /> Mensagens
+            <MessageCircleMore /> Mensagens fixas
           </TabsTrigger>
           <TabsTrigger value="rag">
             <Database /> RAG
