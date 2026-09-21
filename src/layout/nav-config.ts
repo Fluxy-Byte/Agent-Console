@@ -1,4 +1,4 @@
-import { BarChart3, Bot, KeyRound, Megaphone, MessageSquareText, Users, Waypoints } from "lucide-react";
+import { BarChart3, Bot, KeyRound, LandPlot, Megaphone, MessageSquareText, Users, Waypoints } from "lucide-react";
 import { PermissionAction } from "@/domain/permission-action";
 
 export interface NavItem {
@@ -19,12 +19,13 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Contatos", to: "/targets", icon: Users, action: PermissionAction.CONTACTS_VIEW },
       { label: "Campanhas", to: "/campaigns", icon: Megaphone, action: PermissionAction.CAMPAIGNS_VIEW },
-      { label: "Métricas", to: "/reports", icon: BarChart3, action: PermissionAction.REPORTS_VIEW },
+      { label: "Kanban Board", to: "/crm", icon: LandPlot, action: PermissionAction.CRM_VIEW },
     ],
   },
   {
     label: "Configurações para WhatsApp",
     items: [
+      { label: "Métricas", to: "/reports", icon: BarChart3, action: PermissionAction.REPORTS_VIEW },
       { label: "Agentes de IA", to: "/agents", icon: Bot, action: PermissionAction.AGENTS_VIEW },
       { label: "Redes Sociais", to: "/channels", icon: MessageSquareText, action: PermissionAction.WABAS_VIEW },
       { label: "Ilhas de Atendimento", to: "/service-island", icon: Waypoints, action: PermissionAction.SERVICE_ISLANDS_VIEW },

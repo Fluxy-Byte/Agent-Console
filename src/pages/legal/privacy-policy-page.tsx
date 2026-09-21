@@ -1,6 +1,7 @@
-import { Link } from "react-router-dom";
-import { ArrowLeft, MessageCircle, ShieldCheck } from "lucide-react";
-import heroImage from "@/assets/ApresentacaoInicial.jpg";
+import { useEffect, useRef, useState } from "react";
+import { ShieldCheck } from "lucide-react";
+import coverImage from "@/assets/ImagemParaCapaDeSegurança.jpeg";
+import zapIcon from "@/assets/IconeZap.png";
 import { SiteHeader } from "@/components/site-header";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,19 +17,19 @@ const SECTIONS: PolicySection[] = [
   {
     title: "1. Como coletamos seus dados pessoais?",
     paragraphs: [
-      "Coletamos dados pessoais de quatro formas principais: informações que você mesmo nos fornece (ao criar uma conta, preencher formulários ou falar com nosso time); coleta automática por meio de tecnologias como cookies e endereço IP durante o uso da plataforma; informações recebidas de terceiros, como parceiros comerciais e candidatos a vagas; e dados de empresas que já mantêm relacionamento comercial com a Fluxy.",
+      "Coletamos dados pessoais de quatro formas principais: informações que você mesmo nos fornece (ao criar uma conta, preencher formulários ou falar com nosso time); coleta automática por meio de tecnologias como cookies e endereço IP durante o uso da plataforma; informações recebidas de terceiros, como parceiros comerciais e candidatos a vagas; e dados de empresas que já mantêm relacionamento comercial com a Sturnus Flow.",
     ],
   },
   {
     title: "2. Por quais razões coletamos seus dados pessoais?",
     paragraphs: [
-      "Usamos os dados coletados para viabilizar o cadastro de usuários, o funcionamento da plataforma Fluxy, a cobrança pelos serviços contratados, o atendimento e suporte aos nossos clientes, ações de marketing, processos seletivos, análise de uso do produto, segurança da informação, cumprimento de obrigações legais e regulatórias, resposta a processos judiciais ou administrativos e apuração de denúncias.",
+      "Usamos os dados coletados para viabilizar o cadastro de usuários, o funcionamento da plataforma Sturnus Flow, a cobrança pelos serviços contratados, o atendimento e suporte aos nossos clientes, ações de marketing, processos seletivos, análise de uso do produto, segurança da informação, cumprimento de obrigações legais e regulatórias, resposta a processos judiciais ou administrativos e apuração de denúncias.",
     ],
   },
   {
     title: "3. Quais dados coletamos?",
     paragraphs: [
-      "Podemos coletar dados cadastrais (nome, e-mail, telefone e empresa), dados de dispositivo e navegação (endereço IP, navegador, geolocalização aproximada), dados de interação com os agentes de IA e canais de atendimento da Fluxy (como conteúdo de conversas realizadas na plataforma) e outras informações que você opte por nos fornecer voluntariamente.",
+      "Podemos coletar dados cadastrais (nome, e-mail, telefone e empresa), dados de dispositivo e navegação (endereço IP, navegador, geolocalização aproximada), dados de interação com os agentes de IA e canais de atendimento da Sturnus Flow (como conteúdo de conversas realizadas na plataforma) e outras informações que você opte por nos fornecer voluntariamente.",
     ],
   },
   {
@@ -40,7 +41,7 @@ const SECTIONS: PolicySection[] = [
   {
     title: "5. Quais são as bases legais para o tratamento dos seus dados?",
     paragraphs: [
-      "Tratamos dados pessoais com base no cumprimento de obrigações legais, na execução de contratos firmados com você ou com a empresa que você representa, no exercício regular de direitos, na proteção da vida ou incolumidade física, no legítimo interesse da Fluxy, na prevenção a fraudes e, quando aplicável, no seu consentimento.",
+      "Tratamos dados pessoais com base no cumprimento de obrigações legais, na execução de contratos firmados com você ou com a empresa que você representa, no exercício regular de direitos, na proteção da vida ou incolumidade física, no legítimo interesse da Sturnus Flow, na prevenção a fraudes e, quando aplicável, no seu consentimento.",
     ],
   },
   {
@@ -76,31 +77,31 @@ const SECTIONS: PolicySection[] = [
   {
     title: "11. Segurança e gestão de risco",
     paragraphs: [
-      "A gestão de riscos de segurança da informação e privacidade é parte do dia a dia da Fluxy. Buscamos identificar, avaliar e mitigar riscos de forma contínua, implementando controles proporcionais à sensibilidade dos dados tratados e acompanhando a evolução do cenário de ameaças digitais. Esse trabalho é orientado pelos princípios da LGPD e tem como objetivo garantir a confidencialidade, a integridade e a disponibilidade das informações dos nossos clientes.",
+      "A gestão de riscos de segurança da informação e privacidade é parte do dia a dia da Sturnus Flow. Buscamos identificar, avaliar e mitigar riscos de forma contínua, implementando controles proporcionais à sensibilidade dos dados tratados e acompanhando a evolução do cenário de ameaças digitais. Esse trabalho é orientado pelos princípios da LGPD e tem como objetivo garantir a confidencialidade, a integridade e a disponibilidade das informações dos nossos clientes.",
     ],
   },
   {
     title: "12. Conscientização e treinamento",
     paragraphs: [
-      "Promovemos ações de conscientização sobre segurança da informação e proteção de dados junto à nossa equipe, reforçando boas práticas no manuseio de dados pessoais e no reconhecimento de tentativas de fraude e engenharia social. Colaboradores com acesso a dados sensíveis recebem orientações específicas sobre suas responsabilidades, e seguimos evoluindo esses processos à medida que a Fluxy cresce.",
+      "Promovemos ações de conscientização sobre segurança da informação e proteção de dados junto à nossa equipe, reforçando boas práticas no manuseio de dados pessoais e no reconhecimento de tentativas de fraude e engenharia social. Colaboradores com acesso a dados sensíveis recebem orientações específicas sobre suas responsabilidades, e seguimos evoluindo esses processos à medida que a Sturnus Flow cresce.",
     ],
   },
   {
     title: "13. Sites e serviços de terceiros",
     paragraphs: [
-      "A plataforma da Fluxy pode conter links para sites ou serviços de terceiros, como o WhatsApp Business Platform. Esses serviços possuem políticas de privacidade próprias, e a Fluxy não se responsabiliza pelas práticas de terceiros fora do nosso controle.",
+      "A plataforma da Sturnus Flow pode conter links para sites ou serviços de terceiros, como o WhatsApp Business Platform. Esses serviços possuem políticas de privacidade próprias, e a Sturnus Flow não se responsabiliza pelas práticas de terceiros fora do nosso controle.",
     ],
   },
   {
     title: "14. Como entrar em contato",
     paragraphs: [
-      "Se você tiver dúvidas sobre esta Política de Privacidade ou quiser exercer algum dos seus direitos, fale com a gente pelo WhatsApp ou telefone informados no rodapé desta página, ou envie um e-mail para fluxytechnologies@gmail.com.",
+      "Se você tiver dúvidas sobre esta Política de Privacidade ou quiser exercer algum dos seus direitos, fale com a gente pelo WhatsApp ou telefone informados no rodapé desta página, ou envie um e-mail para sturnusflow@gmail.com.",
     ],
   },
   {
     title: "15. Dados do agente responsável",
     paragraphs: [
-      "Controladora: Fluxy [Razão social a confirmar] — CNPJ [a confirmar] — [endereço a confirmar]. Estes dados de identificação societária serão atualizados aqui antes da publicação oficial desta política.",
+      "Controladora: Sturnus Flow [Razão social a confirmar] — CNPJ [a confirmar] — [endereço a confirmar]. Estes dados de identificação societária serão atualizados aqui antes da publicação oficial desta política.",
     ],
   },
   {
@@ -112,50 +113,54 @@ const SECTIONS: PolicySection[] = [
 ];
 
 export function PrivacyPolicyPage() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [pastHero, setPastHero] = useState(false);
+
+  useEffect(() => {
+    function handleScroll() {
+      const hero = heroRef.current;
+      if (!hero) return;
+      const heroTop = hero.offsetTop;
+      const heroBottom = heroTop + hero.offsetHeight;
+      const insideHero = window.scrollY >= heroTop - 1 && window.scrollY < heroBottom;
+      setPastHero(!insideHero);
+    }
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="bg-dot-grid min-h-screen">
-      <SiteHeader />
+      <SiteHeader transparent={!pastHero} />
 
-      <div className="mx-auto max-w-4xl px-6 pt-28 pb-20">
-        <Link
-          to="/"
-          className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-1.5 text-sm transition-colors"
-        >
-          <ArrowLeft className="size-4" /> Voltar para o início
-        </Link>
+      <section className="relative w-full scroll-mt-20">
+        <div ref={heroRef} className="relative h-screen w-full overflow-hidden">
+          <img src={coverImage} alt="Capa de segurança e privacidade Sturnus Flow" className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
+          <div className="absolute inset-0 flex items-end pb-16 sm:pb-20">
+            <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 px-6">
+              <span className="flex items-center gap-2 text-xs font-semibold tracking-widest text-white/80 uppercase">
+                <ShieldCheck className="size-4" /> Privacidade &amp; Segurança
+              </span>
+              <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold text-white sm:text-4xl">
+                Política de Privacidade
+              </h1>
+              <p className="max-w-2xl text-base text-white/85 sm:text-lg">
+                A Sturnus Flow é uma plataforma que cria agentes de IA para atendimento, vendas e relacionamento no
+                WhatsApp. Esta política explica como coletamos, usamos, compartilhamos e protegemos os dados
+                pessoais de clientes, usuários da plataforma e visitantes do nosso site.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <span className="text-primary flex items-center gap-2 text-xs font-semibold tracking-widest uppercase">
-          <ShieldCheck className="size-4" /> Privacidade &amp; Segurança
-        </span>
-        <h1 className="font-[family-name:var(--font-display)] mt-3 text-3xl font-bold sm:text-4xl">
-          Política de Privacidade
-        </h1>
-        <p className="text-muted-foreground mt-3 max-w-2xl text-base sm:text-lg">
-          A Fluxy é uma plataforma que cria agentes de IA para atendimento, vendas e relacionamento no WhatsApp.
-          Esta política explica como coletamos, usamos, compartilhamos e protegemos os dados pessoais de clientes,
-          usuários da plataforma e visitantes do nosso site.
-        </p>
-        <p className="text-muted-foreground mt-1 text-sm">Última atualização: setembro de 2026.</p>
+      <div className="mx-auto max-w-4xl px-6 pt-16 pb-20">
+        <p className="text-muted-foreground text-sm">Última atualização: setembro de 2026.</p>
 
         <div className="mt-12 flex flex-col gap-10">
-          {SECTIONS.slice(0, 10).map((section) => (
-            <section key={section.title} className="flex flex-col gap-2">
-              <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold">{section.title}</h2>
-              {section.paragraphs.map((paragraph, i) => (
-                <p key={i} className="text-muted-foreground text-sm leading-relaxed sm:text-base">
-                  {paragraph}
-                </p>
-              ))}
-            </section>
-          ))}
-
-          <img
-            src={heroImage}
-            alt="Especialista da Fluxy monitorando o atendimento com segurança"
-            className="h-56 w-full rounded-2xl object-cover sm:h-72"
-          />
-
-          {SECTIONS.slice(10).map((section) => (
+          {SECTIONS.map((section) => (
             <section key={section.title} className="flex flex-col gap-2">
               <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold">{section.title}</h2>
               {section.paragraphs.map((paragraph, i) => (
@@ -169,8 +174,8 @@ export function PrivacyPolicyPage() {
 
         <div className="mt-14 flex flex-wrap items-center gap-3 border-t pt-8">
           <p className="text-muted-foreground text-sm">Ainda com dúvidas sobre privacidade e segurança?</p>
-          <a href={PHONE_WHATSAPP} target="_blank" rel="noreferrer" className={cn(buttonVariants({ size: "sm" }))}>
-            <MessageCircle className="size-4" /> Falar no WhatsApp
+          <a href={PHONE_WHATSAPP} target="_blank" rel="noreferrer" className={cn(buttonVariants({ size: "lg" }), "text-base")}>
+            <img src={zapIcon} alt="" className="size-4" /> Falar com especialista
           </a>
         </div>
       </div>

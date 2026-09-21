@@ -178,7 +178,7 @@ export function HomePage() {
                   Automatize seu funil de vendas. A Sturnus Flow cria jornadas conversacionais completas para
                   escalar seus resultados com precisão.
                 </p>
-                <a href="#contato" className={cn(buttonVariants({ size: "lg" }))}>
+                <a href="#contato" className={cn(buttonVariants({ size: "lg" }), "text-base")}>
                   <img src={zapIcon} alt="" className="size-4" /> Agendar uma conversa
                 </a>
               </div>
@@ -199,7 +199,7 @@ export function HomePage() {
               Descubra como a Sturnus Flow transforma as conversas do seu negócio, acelerando vendas e otimizando o
               atendimento.
             </p>
-            <a href="#contato" className={cn(buttonVariants({ size: "lg" }), "w-fit")}>
+            <a href="#contato" className={cn(buttonVariants({ size: "lg" }), "w-fit text-base")}>
               Saber mais
             </a>
           </div>
@@ -228,7 +228,7 @@ export function HomePage() {
               Temos parceria com a Meta para utilização do canal oficial do WhatsApp, com mais de 20 mil mensagens
               processadas por dia.
             </p>
-            <Link to="/politica-de-privacidade" className={cn(buttonVariants({ size: "lg" }), "w-fit")}>
+            <Link to="/politica-de-privacidade" className={cn(buttonVariants({ size: "lg" }), "w-fit text-base")}>
               Saber mais sobre a política de segurança
             </Link>
           </div>
@@ -309,8 +309,11 @@ export function HomePage() {
       </div>
 
       {/* Contato */}
-      <section id="contato" className="bg-primary text-primary-foreground mt-52 grid w-full scroll-mt-20 items-stretch lg:grid-cols-2">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-center gap-4 px-4 py-20 text-center lg:mr-0 lg:ml-auto lg:items-start lg:pr-16 lg:pl-[max(1rem,calc((100vw-72rem)/2))] lg:text-left">
+      <section
+        id="contato"
+        className="bg-primary text-primary-foreground mt-52 grid w-full scroll-mt-20 items-stretch gap-8 lg:grid-cols-2 lg:gap-16 lg:pl-[max(1rem,calc((100vw-72rem)/2))]"
+      >
+        <div className="mx-auto flex w-full max-w-xl flex-col items-center justify-center gap-4 px-4 py-20 text-center lg:mx-0 lg:items-start lg:px-0 lg:text-left">
           <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold sm:text-3xl">
             Fale com um de nossos especialistas
           </h2>
@@ -325,7 +328,7 @@ export function HomePage() {
             rel="noreferrer"
             className={cn(
               buttonVariants({ size: "lg", variant: "outline" }),
-              "border-white bg-transparent text-white hover:bg-white/10 hover:text-white",
+              "border-white bg-transparent text-base text-white hover:bg-white/10 hover:text-white",
             )}
           >
             <img src={zapIcon} alt="" className="size-4" /> Chamar no WhatsApp

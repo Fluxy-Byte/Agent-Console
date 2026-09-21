@@ -166,6 +166,7 @@ export interface ServiceIsland {
   name: string;
   requireCloseTag: boolean;
   allowActiveDispatch: boolean;
+  allowAudioMessages: boolean;
   createdAt: string;
   updatedAt: string;
   whatsappChannel?: Channel;
@@ -231,6 +232,70 @@ export interface Target {
   blockedAgentIds: string[];
   whatsappChannel?: Channel & { agent: Agent };
   tickets?: TicketSummary[];
+  /// Presente só no detalhe do contato; null = ainda não tem card no CRM.
+  cardCrm?: { id: string } | null;
+}
+
+export interface CrmCardTarget {
+  id: string;
+  name: string | null;
+  waId: string | null;
+  email: string | null;
+  status: TargetStatus;
+  lastInteractionAt: string | null;
+}
+
+export type CardPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+
+export const CARD_PRIORITY_LABELS: Record<CardPriority, string> = {
+  LOW: "Baixa",
+  MEDIUM: "Média",
+  HIGH: "Alta",
+  URGENT: "Urgente",
+};
+
+export interface CrmCard {
+  id: string;
+  stagesCrmId: string | null;
+  statusPriority: CardPriority;
+  updatedAt: string;
+  /// Chaves S3 dos anexos — o card do Kanban só usa a quantidade.
+  attachments: string[];
+  _count: { comments: number };
+  target: CrmCardTarget;
+}
+
+export interface CrmCardComment {
+  id: string;
+  comment: string;
+  createdAt: string;
+  user: { id: string; name: string };
+}
+
+export interface CrmCardAttachment {
+  s3Key: string;
+  fileName: string;
+  /// URL presignada de leitura (expira em 1h) — gerada a cada GET do card.
+  url: string;
+}
+
+/// Resposta de GET /api/crm/cards/:id — tudo do Drawer "Detalhes do lead".
+export interface CrmCardDetail {
+  id: string;
+  stagesCrmId: string | null;
+  statusPriority: CardPriority;
+  target: Target;
+  stages: { id: string; nameStage: string; position: number }[];
+  comments: CrmCardComment[];
+  attachments: CrmCardAttachment[];
+}
+
+export interface CrmStage {
+  id: string;
+  nameStage: string;
+  position: number;
+  isDefault: boolean;
+  cards: CrmCard[];
 }
 
 export type TicketCloseReason = "RESOLVED" | "TRANSFERRED_QUEUE" | "TRANSFERRED_AGENT" | "SESSION_EXPIRED" | "ABANDONED";
@@ -344,7 +409,7 @@ export interface TargetListResult {
   pageSize: number;
 }
 
-export type MessageType = "TEXT" | "AUDIO" | "IMAGE" | "DOCUMENT" | "STICKER";
+export type MessageType = "TEXT" | "AUDIO" | "IMAGE" | "DOCUMENT" | "STICKER" | "VIDEO";
 
 export interface MessageDocument {
   _id: string;

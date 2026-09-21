@@ -22,6 +22,7 @@ import { TargetDetailPage } from "@/pages/targets/target-detail-page";
 import { TargetsListPage } from "@/pages/targets/targets-list-page";
 import { ChannelDetailPage } from "@/pages/channels/channel-detail-page";
 import { ChannelsListPage } from "@/pages/channels/channels-list-page";
+import { CrmPage } from "@/pages/crm/crm-page";
 import { RedirectIfBootstrapped, RequireActiveCompany, RequireAuth } from "@/routes/require-auth";
 import { useBootstrapSession } from "@/hooks/use-bootstrap-session";
 
@@ -75,6 +76,7 @@ export function App() {
               <Route path="/targets/:id" element={<TargetDetailPage />} />
               <Route path="/campaigns" element={<CampaignsPage />} />
               <Route path="/campaigns/:id" element={<CampaignDetailPage />} />
+              <Route path="/crm" element={<CrmPage />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/agents" element={<AgentsListPage />} />
               <Route path="/agents/new" element={<AgentDetailPage />} />

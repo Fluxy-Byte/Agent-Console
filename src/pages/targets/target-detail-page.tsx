@@ -1,8 +1,10 @@
 import { useState, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
-import { Bot, Calendar, IdCard, LogIn, LogOut, Mail, Phone } from "lucide-react";
+import { toast } from "sonner";
+import { Bot, BriefcaseBusiness, Calendar, IdCard, LogIn, LogOut, Mail, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +12,10 @@ import { MessageBubble } from "@/components/message-bubble";
 import { MetadataView } from "@/components/metadata-view";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
 import { PaginationControls } from "@/components/pagination-controls";
+import { PermissionAction } from "@/domain/permission-action";
+import { useCan } from "@/hooks/use-can";
+import { api, ApiError } from "@/lib/api";
+import { formatDateAtTime } from "@/lib/format-date";
 import { cn } from "@/lib/utils";
 import { TicketDetailDialog } from "../service-islands/ticket-detail-dialog";
 import type { MessageDocument, MessageType, Target, TicketSummary } from "@/types/domain";
@@ -22,6 +28,7 @@ const TYPE_FILTERS: { value: MessageType | ""; label: string }[] = [
   { value: "TEXT", label: "Texto" },
   { value: "AUDIO", label: "Áudio" },
   { value: "STICKER", label: "Figurinha" },
+  { value: "VIDEO", label: "Vídeo" },
   { value: "DOCUMENT", label: "Documento" },
   { value: "IMAGE", label: "Foto" },
 ];
@@ -110,7 +117,10 @@ function TicketDivider({ ticketNumber, label }: { ticketNumber: number; label: "
 
 export function TargetDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { data: target } = useSWR<Target>(id ? `/api/targets/${id}` : null);
+  const { data: target, mutate } = useSWR<Target>(id ? `/api/targets/${id}` : null);
+  const can = useCan();
+  const canWrite = can(PermissionAction.CONTACTS_WRITE);
+  const [creatingCard, setCreatingCard] = useState(false);
   const [messageType, setMessageType] = useState<MessageType | "">("");
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [ticketsPage, setTicketsPage] = useState(1);
@@ -124,6 +134,21 @@ export function TargetDetailPage() {
 
   if (!target) return <div className="p-6 text-sm text-muted-foreground">Carregando…</div>;
 
+  const hasCrmCard = !!target.cardCrm;
+
+  async function handleCreateCrmCard() {
+    setCreatingCard(true);
+    try {
+      await api.post(`/api/targets/${id}/crm-card`);
+      toast.success("Card criado no CRM.");
+      await mutate();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Não foi possível gerar o card no CRM.");
+    } finally {
+      setCreatingCard(false);
+    }
+  }
+
   const totalTickets = target.tickets?.length ?? 0;
   const paginatedTickets = (target.tickets ?? []).slice(
     (ticketsPage - 1) * ticketsPageSize,
@@ -136,14 +161,26 @@ export function TargetDetailPage() {
         items={[{ label: "Contatos", to: "/targets" }, { label: target.name || target.waId || "Contato" }]}
       />
 
-      <div>
-        <div className="flex items-center gap-2">
-          <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
-            {target.name || target.waId || "Contato sem nome"}
-          </h1>
-          <Badge variant="outline">{STATUS_LABELS[target.status]}</Badge>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold">
+              {target.name || target.waId || "Contato sem nome"}
+            </h1>
+            <Badge variant="outline">{STATUS_LABELS[target.status]}</Badge>
+          </div>
+          {target.email && <p className="text-muted-foreground mt-1 text-sm">{target.email}</p>}
         </div>
-        {target.email && <p className="text-muted-foreground mt-1 text-sm">{target.email}</p>}
+
+        <Button
+          variant="outline"
+          disabled={hasCrmCard || !canWrite || creatingCard}
+          onClick={handleCreateCrmCard}
+          title={hasCrmCard ? "Este contato já possui um card no CRM" : undefined}
+        >
+          <BriefcaseBusiness className="size-4" />
+          {creatingCard ? "Gerando…" : "Gerar card no CRM"}
+        </Button>
       </div>
 
       <Tabs defaultValue="history">
@@ -179,7 +216,7 @@ export function TargetDetailPage() {
                     <span className="text-muted-foreground flex items-center gap-1.5">
                       <Calendar className="size-4" /> Data de criação
                     </span>
-                    <span className="font-medium">{new Date(target.firstInteractionAt).toLocaleString("pt-BR")}</span>
+                    <span className="font-medium">{formatDateAtTime(target.firstInteractionAt)}</span>
                   </div>
                   <div className="flex items-center justify-between gap-3 text-sm">
                     <span className="text-muted-foreground flex items-center gap-1.5">

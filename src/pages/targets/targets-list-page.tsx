@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SortableTh } from "@/components/sortable-th";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCan } from "@/hooks/use-can";
+import { cn } from "@/lib/utils";
 import { PermissionAction } from "@/domain/permission-action";
 import type { Agent, TargetListResult, TargetStats } from "@/types/domain";
 import { BlockAgentsDialog } from "./block-agents-dialog";
@@ -34,6 +35,12 @@ const STATUS_BADGE_VARIANTS: Record<string, "success" | "warning" | "secondary">
   AI: "success",
   HUMAN: "warning",
   FINISHED: "secondary",
+};
+/// Borda na mesma cor do badge, só que mais forte que o fundo (15%) da variante.
+const STATUS_BADGE_BORDERS: Record<string, string> = {
+  AI: "border-success/60",
+  HUMAN: "border-warning/70",
+  FINISHED: "border-muted-foreground/40",
 };
 const STATUS_ICONS: Record<string, typeof Bot | undefined> = {
   AI: Bot,
@@ -315,7 +322,7 @@ export function TargetsListPage() {
                         <TableCell>{target.waId ?? "—"}</TableCell>
                         <TableCell>{target.whatsappChannel?.agent?.name ?? "—"}</TableCell>
                         <TableCell>
-                          <Badge variant={STATUS_BADGE_VARIANTS[target.status]} className="gap-1">
+                          <Badge variant={STATUS_BADGE_VARIANTS[target.status]} className={cn("gap-1", STATUS_BADGE_BORDERS[target.status])}>
                             {StatusIcon && <StatusIcon className="size-3" />}
                             {STATUS_LABELS[target.status]}
                           </Badge>

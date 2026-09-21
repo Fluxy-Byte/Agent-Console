@@ -35,7 +35,7 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
   const [name, setName] = useState(island.name);
   const [savingName, setSavingName] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
-  const [savingSwitch, setSavingSwitch] = useState<"requireCloseTag" | "allowActiveDispatch" | null>(null);
+  const [savingSwitch, setSavingSwitch] = useState<"requireCloseTag" | "allowActiveDispatch" | "allowAudioMessages" | null>(null);
   const [deletingTagId, setDeletingTagId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -72,7 +72,7 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
     }
   }
 
-  async function handleToggle(field: "requireCloseTag" | "allowActiveDispatch", value: boolean) {
+  async function handleToggle(field: "requireCloseTag" | "allowActiveDispatch" | "allowAudioMessages", value: boolean) {
     setSavingSwitch(field);
     try {
       await api.put(`/api/service-islands/${island.id}`, { name: island.name, [field]: value });
@@ -187,6 +187,20 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
               checked={island.allowActiveDispatch}
               disabled={!canWrite || savingSwitch !== null}
               onCheckedChange={(v) => handleToggle("allowActiveDispatch", v)}
+              className="data-[state=checked]:bg-success"
+            />
+          </div>
+          <div className="flex items-center justify-between border-t pt-4">
+            <div>
+              <Label>Permitir envio de áudio</Label>
+              <p className="text-muted-foreground text-xs">
+                Atendentes dos tickets desta ilha podem gravar ou anexar áudio. Desligado, o envio de áudio fica bloqueado.
+              </p>
+            </div>
+            <Switch
+              checked={island.allowAudioMessages}
+              disabled={!canWrite || savingSwitch !== null}
+              onCheckedChange={(v) => handleToggle("allowAudioMessages", v)}
               className="data-[state=checked]:bg-success"
             />
           </div>
