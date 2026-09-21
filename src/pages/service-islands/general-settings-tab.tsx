@@ -35,7 +35,7 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
   const [name, setName] = useState(island.name);
   const [savingName, setSavingName] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
-  const [savingSwitch, setSavingSwitch] = useState<"requireCloseTag" | "allowActiveDispatch" | "allowAudioMessages" | null>(null);
+  const [savingSwitch, setSavingSwitch] = useState<"requireCloseTag" | "allowActiveDispatch" | "allowAudioMessages" | "useAttendantSignature" | null>(null);
   const [deletingTagId, setDeletingTagId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -72,7 +72,10 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
     }
   }
 
-  async function handleToggle(field: "requireCloseTag" | "allowActiveDispatch" | "allowAudioMessages", value: boolean) {
+  async function handleToggle(
+    field: "requireCloseTag" | "allowActiveDispatch" | "allowAudioMessages" | "useAttendantSignature",
+    value: boolean,
+  ) {
     setSavingSwitch(field);
     try {
       await api.put(`/api/service-islands/${island.id}`, { name: island.name, [field]: value });
@@ -201,6 +204,20 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
               checked={island.allowAudioMessages}
               disabled={!canWrite || savingSwitch !== null}
               onCheckedChange={(v) => handleToggle("allowAudioMessages", v)}
+              className="data-[state=checked]:bg-success"
+            />
+          </div>
+          <div className="flex items-center justify-between border-t pt-4">
+            <div>
+              <Label>Usar assinatura com nome dos atendentes</Label>
+              <p className="text-muted-foreground text-xs">
+                Toda mensagem de texto enviada pelo atendente sai com o nome dele em negrito acima do texto (*Nome:*).
+              </p>
+            </div>
+            <Switch
+              checked={island.useAttendantSignature}
+              disabled={!canWrite || savingSwitch !== null}
+              onCheckedChange={(v) => handleToggle("useAttendantSignature", v)}
               className="data-[state=checked]:bg-success"
             />
           </div>

@@ -167,6 +167,7 @@ export interface ServiceIsland {
   requireCloseTag: boolean;
   allowActiveDispatch: boolean;
   allowAudioMessages: boolean;
+  useAttendantSignature: boolean;
   createdAt: string;
   updatedAt: string;
   whatsappChannel?: Channel;
