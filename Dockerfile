@@ -7,7 +7,7 @@ COPY . .
 # Vite grava VITE_* no bundle em TEMPO DE BUILD, não de execução. Default já
 # aponta pra URL de produção real; passe --build-arg VITE_API_BASE_URL=... no
 # EasyPanel só se precisar apontar pra outro ambiente.
-ARG VITE_API_BASE_URL=https://agentes-api.fluxytechnologies.com.br
+ARG VITE_API_BASE_URL=https://agentes-api.sturnusflow.com.br
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 RUN npm run build
