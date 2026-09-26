@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Bot, MessageSquare, ShieldCheck, Zap } from "lucide-react";
 import sturnusWordmark from "@/assets/NomeSemFundo.png";
+import { cn } from "@/lib/utils";
 
 const FEATURES = [
   { icon: Bot, text: "Agentes de IA que atendem seus clientes 24 horas por dia" },
@@ -18,15 +19,30 @@ interface AuthLayoutProps {
   /** As páginas cujo card já mostra a logo (signin/signup) não precisam do
    * cabeçalho de logo mobile duplicado aqui. */
   hideMobileLogo?: boolean;
+  /** Foto no lugar do degradê azul do painel de marca (login/cadastro). */
+  backgroundImage?: string;
 }
 
-export function AuthLayout({ children, hideMobileLogo }: AuthLayoutProps) {
+export function AuthLayout({ children, hideMobileLogo, backgroundImage }: AuthLayoutProps) {
   return (
     <div className="flex min-h-screen">
-      <div className="from-primary via-primary to-primary/70 relative hidden overflow-hidden bg-gradient-to-br lg:flex lg:w-1/2 lg:flex-col lg:justify-between lg:p-12">
-        <div className="pointer-events-none absolute -top-24 -left-24 size-96 rounded-full bg-white/10 blur-3xl" />
-        <div className="pointer-events-none absolute -right-32 bottom-0 size-[28rem] rounded-full bg-white/10 blur-3xl" />
-        <div className="bg-dot-grid pointer-events-none absolute inset-0 opacity-[0.07]" />
+      <div
+        className={cn(
+          "relative hidden overflow-hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-between lg:p-12",
+          backgroundImage ? "bg-cover bg-center" : "from-primary via-primary to-primary/70 bg-gradient-to-br",
+        )}
+        style={backgroundImage ? { backgroundImage: `url(${backgroundImage})` } : undefined}
+      >
+        {backgroundImage ? (
+          // Escurece a foto pra manter o texto branco legível.
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
+        ) : (
+          <>
+            <div className="pointer-events-none absolute -top-24 -left-24 size-96 rounded-full bg-white/10 blur-3xl" />
+            <div className="pointer-events-none absolute -right-32 bottom-0 size-[28rem] rounded-full bg-white/10 blur-3xl" />
+            <div className="bg-dot-grid pointer-events-none absolute inset-0 opacity-[0.07]" />
+          </>
+        )}
 
         <div className="relative flex flex-col gap-8">
           <h1 className="font-[family-name:var(--font-display)] max-w-md text-4xl leading-tight font-semibold text-white">

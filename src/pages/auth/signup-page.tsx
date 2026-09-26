@@ -2,6 +2,7 @@ import { type FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CheckCircle2, Circle } from "lucide-react";
 import sturnusWordmark from "@/assets/NomeSemFundo.png";
+import accessCover from "@/assets/CapaTelaDeAcesso.jpeg";
 import { AuthLayout } from "@/components/auth-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,11 +61,13 @@ export function SignUpPage() {
   }
 
   return (
-    <AuthLayout hideMobileLogo>
+    <AuthLayout hideMobileLogo backgroundImage={accessCover}>
       <Card className="w-3/4 max-w-2xl shadow-xl">
         <CardHeader>
           <div className="mb-1 flex items-center justify-center">
-            <img src={sturnusWordmark} alt="Sturnus Flow" className="h-16 w-auto" />
+            <Link to="/" aria-label="Ir para a página inicial">
+              <img src={sturnusWordmark} alt="Sturnus Flow" className="h-16 w-auto" />
+            </Link>
           </div>
           <CardTitle className="text-xl">Criar conta</CardTitle>
           <CardDescription>

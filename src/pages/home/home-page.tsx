@@ -32,8 +32,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/utils";
 
-const PHONE_DISPLAY = "+55 34 9160-7750";
-const PHONE_WHATSAPP = "https://wa.me/553491607750";
+const PHONE_DISPLAY = "+55 34 9174-6481";
+const PHONE_WHATSAPP = "https://wa.me/553491746481";
 
 interface ModuleCard {
   icon: typeof Bot;
