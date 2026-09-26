@@ -2,7 +2,32 @@ import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import useSWR, { useSWRConfig } from "swr";
 import { toast } from "sonner";
-import { Calendar, ExternalLink, FileText, IdCard, Loader2, Mail, Paperclip, Phone, Send } from "lucide-react";
+import {
+  Calendar,
+  Check,
+  ExternalLink,
+  FileText,
+  IdCard,
+  Loader2,
+  Mail,
+  Paperclip,
+  Pencil,
+  Phone,
+  Send,
+  Trash2,
+  X,
+} from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -14,10 +39,17 @@ import { PermissionAction } from "@/domain/permission-action";
 import { useCan } from "@/hooks/use-can";
 import { api, ApiError } from "@/lib/api";
 import { formatDateAtTime } from "@/lib/format-date";
-import { CARD_PRIORITY_LABELS, type CardPriority, type CrmCardDetail } from "@/types/domain";
+import { useAppSelector } from "@/store/hooks";
+import { CARD_PRIORITY_LABELS, type CardPriority, type CrmCardComment, type CrmCardDetail } from "@/types/domain";
 import { CARD_PRIORITIES } from "./card-priority";
 
 const STATUS_LABELS: Record<string, string> = { AI: "IA", HUMAN: "Humano", FINISHED: "Finalizado" };
+
+/// Na criação createdAt (banco) e updatedAt (Prisma Client) saem com alguns
+/// ms de diferença — só conta como edição acima de 1s.
+function wasEdited(comment: CrmCardComment): boolean {
+  return new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 1000;
+}
 
 interface CrmCardDetailDrawerProps {
   cardId: string | null;
@@ -69,6 +101,11 @@ export function CrmCardDetailDrawer({ cardId, onOpenChange }: CrmCardDetailDrawe
   const [comment, setComment] = useState("");
   const [sendingComment, setSendingComment] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const currentUserId = useAppSelector((s) => s.auth.user?.id);
+  const [removingKey, setRemovingKey] = useState<string | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
+  const [savingCommentId, setSavingCommentId] = useState<string | null>(null);
 
   const target = card?.target;
 
@@ -122,6 +159,53 @@ export function CrmCardDetailDrawer({ cardId, onOpenChange }: CrmCardDetailDrawe
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
       await Promise.all([mutate(), mutateGlobal("/api/crm")]);
+    }
+  }
+
+  /// Só desvincula do card — o arquivo continua no S3.
+  async function handleRemoveAttachment(s3Key: string) {
+    if (!card) return;
+    setRemovingKey(s3Key);
+    try {
+      await api.delete(`/api/crm/cards/${card.id}/attachments?s3Key=${encodeURIComponent(s3Key)}`);
+      toast.success("Arquivo removido do card.");
+      await Promise.all([mutate(), mutateGlobal("/api/crm")]);
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Não foi possível remover o arquivo.");
+    } finally {
+      setRemovingKey(null);
+    }
+  }
+
+  function startEditingComment(commentId: string, text: string) {
+    setEditingCommentId(commentId);
+    setEditingText(text);
+  }
+
+  async function handleUpdateComment(commentId: string) {
+    if (!card || editingText.trim().length === 0) return;
+    setSavingCommentId(commentId);
+    try {
+      await api.patch(`/api/crm/cards/${card.id}/comments/${commentId}`, { comment: editingText });
+      setEditingCommentId(null);
+      await mutate();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Não foi possível editar o comentário.");
+    } finally {
+      setSavingCommentId(null);
+    }
+  }
+
+  async function handleDeleteComment(commentId: string) {
+    if (!card) return;
+    setSavingCommentId(commentId);
+    try {
+      await api.delete(`/api/crm/cards/${card.id}/comments/${commentId}`);
+      await Promise.all([mutate(), mutateGlobal("/api/crm")]);
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Não foi possível apagar o comentário.");
+    } finally {
+      setSavingCommentId(null);
     }
   }
 
@@ -252,16 +336,47 @@ export function CrmCardDetailDrawer({ cardId, onOpenChange }: CrmCardDetailDrawe
                 ) : (
                   <ul className="flex flex-col gap-1.5">
                     {card.attachments.map((attachment) => (
-                      <li key={attachment.s3Key}>
+                      <li key={attachment.s3Key} className="flex items-center gap-1.5">
                         <a
                           href={attachment.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="hover:bg-accent flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
+                          className="hover:bg-accent flex min-w-0 flex-1 items-center gap-2 rounded-md border px-3 py-2 text-sm"
                         >
                           <FileText className="text-muted-foreground size-4 shrink-0" />
                           <span className="truncate">{attachment.fileName}</span>
                         </a>
+                        {canWrite && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-9 shrink-0"
+                                disabled={removingKey === attachment.s3Key}
+                                aria-label={`Remover ${attachment.fileName} do card`}
+                              >
+                                <Trash2 className="text-destructive size-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Remover "{attachment.fileName}" do card?</AlertDialogTitle>
+                                <AlertDialogDescription>O arquivo deixa de aparecer neste card.</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  variant="destructive"
+                                  onClick={() => void handleRemoveAttachment(attachment.s3Key)}
+                                >
+                                  Remover
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -297,17 +412,103 @@ export function CrmCardDetailDrawer({ cardId, onOpenChange }: CrmCardDetailDrawe
                   <p className="text-muted-foreground text-sm">Nenhum comentário ainda.</p>
                 ) : (
                   <ul className="flex flex-col gap-3">
-                    {card.comments.map((item) => (
-                      <li key={item.id} className="bg-muted/40 flex flex-col gap-1 rounded-md border p-3">
-                        <div className="flex items-center justify-between gap-2 text-xs">
-                          <span className="font-medium">{item.user.name}</span>
-                          <span className="text-muted-foreground">
-                            {new Date(item.createdAt).toLocaleString("pt-BR")}
-                          </span>
-                        </div>
-                        <p className="text-sm whitespace-pre-wrap">{item.comment}</p>
-                      </li>
-                    ))}
+                    {card.comments.map((item) => {
+                      const isOwner = item.user.id === currentUserId;
+                      const isEditing = editingCommentId === item.id;
+                      const busy = savingCommentId === item.id;
+
+                      return (
+                        <li key={item.id} className="bg-muted/40 flex flex-col gap-1 rounded-md border p-3">
+                          <div className="flex items-center justify-between gap-2 text-xs">
+                            <span className="font-medium">{item.user.name}</span>
+                            <div className="flex items-center gap-0.5">
+                              <span className="text-muted-foreground mr-1">
+                                {new Date(item.createdAt).toLocaleString("pt-BR")}
+                                {wasEdited(item) && (
+                                  <span
+                                    className="ml-1 italic"
+                                    title={`Editado em ${new Date(item.updatedAt).toLocaleString("pt-BR")}`}
+                                  >
+                                    (editado)
+                                  </span>
+                                )}
+                              </span>
+                              {isOwner && !isEditing && (
+                                <>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-7 !h-7"
+                                    disabled={busy}
+                                    onClick={() => startEditingComment(item.id, item.comment)}
+                                    aria-label="Editar comentário"
+                                  >
+                                    <Pencil className="size-3.5" />
+                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-7 !h-7"
+                                        disabled={busy}
+                                        aria-label="Apagar comentário"
+                                      >
+                                        <Trash2 className="text-destructive size-3.5" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Apagar comentário?</AlertDialogTitle>
+                                        <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          variant="destructive"
+                                          onClick={() => void handleDeleteComment(item.id)}
+                                        >
+                                          Apagar
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          {isEditing ? (
+                            <div className="flex flex-col gap-2">
+                              <Textarea
+                                autoFocus
+                                value={editingText}
+                                onChange={(event) => setEditingText(event.target.value)}
+                                maxLength={2000}
+                                className="bg-background min-h-20"
+                              />
+                              <div className="flex justify-end gap-2">
+                                <Button type="button" variant="outline" size="sm" onClick={() => setEditingCommentId(null)}>
+                                  <X className="size-4" /> Cancelar
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  disabled={busy || editingText.trim().length === 0}
+                                  onClick={() => void handleUpdateComment(item.id)}
+                                >
+                                  {busy ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
+                                  Salvar
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm whitespace-pre-wrap">{item.comment}</p>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </section>
