@@ -39,6 +39,7 @@ export function ServiceIslandQueueDetailPage() {
   const [businessHoursEnd, setBusinessHoursEnd] = useState("18:00");
   const [businessDays, setBusinessDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [memberUserIds, setMemberUserIds] = useState<string[]>([]);
+  const [carteiraEnabled, setCarteiraEnabled] = useState(false);
   const [attendantSearch, setAttendantSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +53,7 @@ export function ServiceIslandQueueDetailPage() {
       setBusinessHoursEnd(queue.businessHoursEnd ?? "18:00");
       setBusinessDays(queue.businessDays);
       setMemberUserIds(queue.members?.map((m) => m.userId) ?? []);
+      setCarteiraEnabled(queue.carteiraEnabled);
     }
   }, [queue]);
 
@@ -76,6 +78,7 @@ export function ServiceIslandQueueDetailPage() {
         businessHoursEnd: businessHoursEnabled ? businessHoursEnd : undefined,
         businessDays,
         memberUserIds,
+        carteiraEnabled,
       });
       await mutate();
       toast.success("Fila atualizada.");
@@ -143,6 +146,15 @@ export function ServiceIslandQueueDetailPage() {
                 </div>
                 <Switch checked={isActive} disabled={!canWrite} onCheckedChange={setIsActive} />
               </div>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <Label>Liberar fila para carteira</Label>
+                <p className="text-muted-foreground text-xs">
+                  Permite escolher esta fila como destino de uma carteira de atendimento.
+                </p>
+              </div>
+              <Switch checked={carteiraEnabled} disabled={!canWrite} onCheckedChange={setCarteiraEnabled} />
             </div>
           </div>
 

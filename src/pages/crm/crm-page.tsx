@@ -11,7 +11,7 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { Check, MessageSquare, Paperclip, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Check, Funnel, MessageSquare, Paperclip, Pencil, Plus, SquareKanban, Trash2, X } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageBreadcrumb } from "@/components/ui/breadcrumb";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCan } from "@/hooks/use-can";
 import { PermissionAction } from "@/domain/permission-action";
 import { api, ApiError } from "@/lib/api";
@@ -34,6 +35,7 @@ import { cn } from "@/lib/utils";
 import { CARD_PRIORITY_LABELS, type CrmCard, type CrmStage } from "@/types/domain";
 import { CARD_PRIORITY_DOT_CLASSES } from "./card-priority";
 import { CrmCardDetailDrawer } from "./crm-card-detail-drawer";
+import { CrmFunnelTab } from "./crm-funnel-tab";
 import { CrmStageFormDialog } from "./crm-stage-form-dialog";
 
 function CrmCardItem({ card, canDrag, onOpen }: { card: CrmCard; canDrag: boolean; onOpen: () => void }) {
@@ -213,6 +215,7 @@ export function CrmPage() {
   const canWrite = can(PermissionAction.CRM_WRITE);
   const { data, mutate } = useSWR<{ stages: CrmStage[] }>("/api/crm");
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [tab, setTab] = useState("kanban");
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   const stages = data?.stages ?? [];
@@ -278,7 +281,7 @@ export function CrmPage() {
             Acompanhe seus leads em formato Kanban e arraste os cards entre os estágios.
           </p>
         </div>
-        {canWrite && (
+        {canWrite && tab === "kanban" && (
           <CrmStageFormDialog
             nextPosition={nextPosition}
             onSaved={() => mutate()}
@@ -291,21 +294,38 @@ export function CrmPage() {
         )}
       </div>
 
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {stages.map((stage) => (
-            <StageColumn
-              key={stage.id}
-              stage={stage}
-              canDrag={canWrite}
-              canWrite={canWrite}
-              onOpenCard={setSelectedCardId}
-              onRename={handleRenameStage}
-              onDelete={handleDeleteStage}
-            />
-          ))}
-        </div>
-      </DndContext>
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList>
+          <TabsTrigger value="kanban">
+            <SquareKanban /> Kanban
+          </TabsTrigger>
+          <TabsTrigger value="funnel">
+            <Funnel /> Funil de conversões
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="kanban">
+          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+            <div className="flex gap-4 overflow-x-auto pb-4">
+              {stages.map((stage) => (
+                <StageColumn
+                  key={stage.id}
+                  stage={stage}
+                  canDrag={canWrite}
+                  canWrite={canWrite}
+                  onOpenCard={setSelectedCardId}
+                  onRename={handleRenameStage}
+                  onDelete={handleDeleteStage}
+                />
+              ))}
+            </div>
+          </DndContext>
+        </TabsContent>
+
+        <TabsContent value="funnel">
+          <CrmFunnelTab />
+        </TabsContent>
+      </Tabs>
 
       <CrmCardDetailDrawer cardId={selectedCardId} onOpenChange={(open) => !open && setSelectedCardId(null)} />
     </div>

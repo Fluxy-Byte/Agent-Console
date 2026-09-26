@@ -168,6 +168,7 @@ export interface ServiceIsland {
   allowActiveDispatch: boolean;
   allowAudioMessages: boolean;
   useAttendantSignature: boolean;
+  allowAttendantCarteira: boolean;
   createdAt: string;
   updatedAt: string;
   whatsappChannel?: Channel;
@@ -193,12 +194,33 @@ export interface Queue {
   /// true só na fila "Default" criada automaticamente com a ilha — nunca
   /// pode ser excluída (ver Agent-Api/queue-service.ts).
   isDefault: boolean;
+  /// Fila liberada pra ser destino de Carteira de atendimento.
+  carteiraEnabled: boolean;
   createdAt: string;
   updatedAt: string;
   // Só vem preenchido em endpoints que fazem include explícito dos membros
   // (ex: GET /api/service-islands/:id) — tratar sempre como potencialmente
   // ausente.
   members?: QueueMember[];
+}
+
+/// Carteira de atendimento — GET /api/service-islands/:id/carteiras.
+export interface Carteira {
+  id: string;
+  name: string;
+  queueId: string;
+  queue: { id: string; name: string; carteiraEnabled: boolean };
+  targetCount: number;
+  createdAt: string;
+}
+
+/// GET /api/targets/:id/carteiras — todas as carteiras da empresa, com
+/// `checked` = o contato já está nela.
+export interface TargetCarteira {
+  id: string;
+  name: string;
+  checked: boolean;
+  queue: { id: string; name: string; serviceIsland: { id: string; name: string } };
 }
 
 export type TargetStatus = "AI" | "HUMAN" | "FINISHED";
@@ -297,6 +319,31 @@ export interface CrmStage {
   position: number;
   isDefault: boolean;
   cards: CrmCard[];
+}
+
+/// Etapa do funil de conversões — olha pra chave `name` do Target.metadata.
+/// useValue=false: basta a chave estar preenchida; true: precisa ser igual a
+/// `value` (sem diferenciar maiúsculas/minúsculas).
+export interface CrmFunnelField {
+  id: string;
+  name: string;
+  value: string | null;
+  useValue: boolean;
+}
+
+/// Resposta de GET /api/crm/funnel.
+export interface CrmFunnel {
+  id: string;
+  totalTargets: number;
+  fields: (CrmFunnelField & { count: number })[];
+}
+
+/// Resposta de GET /api/crm/funnel/fields/:id/targets (lista cortada em 200,
+/// `total` é a contagem real).
+export interface CrmFunnelFieldTargets {
+  field: CrmFunnelField;
+  total: number;
+  items: { id: string; name: string | null; waId: string | null; email: string | null; metadataValue: string | null }[];
 }
 
 export type TicketCloseReason = "RESOLVED" | "TRANSFERRED_QUEUE" | "TRANSFERRED_AGENT" | "SESSION_EXPIRED" | "ABANDONED";

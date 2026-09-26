@@ -1,7 +1,7 @@
 import { type FormEvent, useEffect, useState } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
-import { Headset, Pencil, Plus, Save, Settings, Tag, Trash2, Zap } from "lucide-react";
+import { Headset, Pencil, Plus, Save, Settings, Tag, Trash2, WalletCards, Zap } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,7 +20,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { PaginationControls } from "@/components/pagination-controls";
 import { api, ApiError } from "@/lib/api";
-import type { PreConfiguredMessageListResult, ServiceIsland, TicketCloseTagListResult } from "@/types/domain";
+import type {
+  Carteira,
+  PreConfiguredMessageListResult,
+  QueueListResult,
+  ServiceIsland,
+  TicketCloseTagListResult,
+} from "@/types/domain";
+import { CarteiraFormDialog } from "./carteira-form-dialog";
 import { PreConfiguredMessageFormDialog } from "./pre-configured-message-form-dialog";
 import { TagFormDialog } from "./tag-form-dialog";
 
@@ -35,7 +42,7 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
   const [name, setName] = useState(island.name);
   const [savingName, setSavingName] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
-  const [savingSwitch, setSavingSwitch] = useState<"requireCloseTag" | "allowActiveDispatch" | "allowAudioMessages" | "useAttendantSignature" | null>(null);
+  const [savingSwitch, setSavingSwitch] = useState<"requireCloseTag" | "allowActiveDispatch" | "allowAudioMessages" | "useAttendantSignature" | "allowAttendantCarteira" | null>(null);
   const [deletingTagId, setDeletingTagId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -55,6 +62,12 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
     `/api/service-islands/${island.id}/pre-configured-messages?page=${messagePage}&pageSize=${messagePageSize}`,
   );
 
+  const { data: carteiras, mutate: mutateCarteiras } = useSWR<Carteira[]>(`/api/service-islands/${island.id}/carteiras`);
+  // Busca as filas direto (em vez de island.queues) pra refletir na hora o
+  // "Liberar fila para carteira" alterado na aba Filas.
+  const { data: queueList } = useSWR<QueueListResult>(`/api/service-islands/${island.id}/queues?pageSize=1000`);
+  const [deletingCarteiraId, setDeletingCarteiraId] = useState<string | null>(null);
+
   const queues = island.queues ?? [];
 
   async function handleRename(event: FormEvent) {
@@ -73,7 +86,7 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
   }
 
   async function handleToggle(
-    field: "requireCloseTag" | "allowActiveDispatch" | "allowAudioMessages" | "useAttendantSignature",
+    field: "requireCloseTag" | "allowActiveDispatch" | "allowAudioMessages" | "useAttendantSignature" | "allowAttendantCarteira",
     value: boolean,
   ) {
     setSavingSwitch(field);
@@ -97,6 +110,19 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
       toast.error(err instanceof ApiError ? err.message : "Não foi possível excluir a tag.");
     } finally {
       setDeletingTagId(null);
+    }
+  }
+
+  async function handleDeleteCarteira(carteiraId: string) {
+    setDeletingCarteiraId(carteiraId);
+    try {
+      await api.delete(`/api/service-islands/${island.id}/carteiras/${carteiraId}`);
+      await mutateCarteiras();
+      toast.success("Carteira excluída.");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Não foi possível excluir a carteira.");
+    } finally {
+      setDeletingCarteiraId(null);
     }
   }
 
@@ -218,6 +244,21 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
               checked={island.useAttendantSignature}
               disabled={!canWrite || savingSwitch !== null}
               onCheckedChange={(v) => handleToggle("useAttendantSignature", v)}
+              className="data-[state=checked]:bg-success"
+            />
+          </div>
+          <div className="flex items-center justify-between border-t pt-4">
+            <div>
+              <Label>Permitir atendente adicionar clientes a carteira</Label>
+              <p className="text-muted-foreground text-xs">
+                Atendentes desta ilha podem incluir ou tirar o contato do ticket das carteiras pelo Fluxy Desk.
+                Desligado, só quem tem acesso ao portal faz isso.
+              </p>
+            </div>
+            <Switch
+              checked={island.allowAttendantCarteira}
+              disabled={!canWrite || savingSwitch !== null}
+              onCheckedChange={(v) => handleToggle("allowAttendantCarteira", v)}
               className="data-[state=checked]:bg-success"
             />
           </div>
@@ -401,6 +442,87 @@ export function GeneralSettingsTab({ island, canWrite, canManageTags, onSaved }:
             }}
           />
         )}
+      </Card>
+      <Card className="overflow-hidden p-0 shadow-xl">
+        <CardHeader className="flex-row items-start justify-between space-y-0">
+          <div className="flex items-start gap-3">
+            <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+              <WalletCards className="size-5" />
+            </div>
+            <div>
+              <CardTitle>Carteiras de atendimento</CardTitle>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Contatos de uma carteira sempre caem na fila dela ao abrir um novo atendimento.
+              </p>
+            </div>
+          </div>
+          {canManageTags && (
+            <CarteiraFormDialog
+              serviceIslandId={island.id}
+              queues={queueList?.items ?? []}
+              onSaved={() => mutateCarteiras()}
+              trigger={
+                <Button>
+                  <Plus className="size-4" /> Nova carteira
+                </Button>
+              }
+            />
+          )}
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2 p-4">
+          {carteiras?.map((carteira) => (
+            <div key={carteira.id} className="flex items-center justify-between gap-2 rounded-md border px-3 py-2">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{carteira.name}</p>
+                <p className="text-muted-foreground truncate text-xs">
+                  Fila {carteira.queue.name} · {carteira.targetCount}{" "}
+                  {carteira.targetCount === 1 ? "contato" : "contatos"}
+                  {!carteira.queue.carteiraEnabled && " · fila não está mais liberada, carteira inativa"}
+                </p>
+              </div>
+              {canManageTags && (
+                <div className="flex shrink-0 items-center gap-2">
+                  <CarteiraFormDialog
+                    serviceIslandId={island.id}
+                    queues={queueList?.items ?? []}
+                    carteira={carteira}
+                    onSaved={() => mutateCarteiras()}
+                    trigger={
+                      <Button variant="outline">
+                        <Pencil className="size-4" /> Editar
+                      </Button>
+                    }
+                  />
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" disabled={deletingCarteiraId === carteira.id}>
+                        <Trash2 className="size-4" /> Excluir
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir carteira "{carteira.name}"?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Os contatos dela voltam a seguir o roteamento normal das filas. Esta ação não pode ser
+                          desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction variant="destructive" onClick={() => handleDeleteCarteira(carteira.id)}>
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              )}
+            </div>
+          ))}
+          {carteiras && carteiras.length === 0 && (
+            <p className="text-muted-foreground text-sm">Nenhuma carteira cadastrada nesta ilha ainda.</p>
+          )}
+        </CardContent>
       </Card>
     </div>
   );

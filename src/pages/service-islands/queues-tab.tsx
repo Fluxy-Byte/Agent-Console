@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { MetricCard } from "@/components/metric-card";
 import { PaginationControls } from "@/components/pagination-controls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api, ApiError } from "@/lib/api";
 import { useAppSelector } from "@/store/hooks";
@@ -64,6 +65,21 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
+  const [togglingCarteiraId, setTogglingCarteiraId] = useState<string | null>(null);
+
+  /// Libera/bloqueia a fila como destino de carteira direto da tabela — o PUT
+  /// só com carteiraEnabled não mexe nos outros campos (nem nos atendentes).
+  async function handleToggleCarteira(queueId: string, carteiraEnabled: boolean) {
+    setTogglingCarteiraId(queueId);
+    try {
+      await api.put(`/api/service-islands/${islandId}/queues/${queueId}`, { carteiraEnabled });
+      await mutate();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Não foi possível atualizar a fila.");
+    } finally {
+      setTogglingCarteiraId(null);
+    }
+  }
 
   // Muda de página/filtro = a seleção não corresponde mais ao que está na
   // tela — mais seguro limpar do que deixar ids "fantasma" marcados.
@@ -255,6 +271,7 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
                 <TableHead>Status</TableHead>
                 <TableHead>Atendentes</TableHead>
                 <TableHead>Horário</TableHead>
+                <TableHead>Carteira</TableHead>
                 <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -294,6 +311,16 @@ export function QueuesTab({ islandId, canManageQueues }: QueuesTabProps) {
                     ) : (
                       "Sem horário restrito"
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-center">
+                      <Switch
+                        checked={queue.carteiraEnabled}
+                        disabled={!canManageQueues || togglingCarteiraId === queue.id}
+                        onCheckedChange={(v) => handleToggleCarteira(queue.id, v)}
+                        aria-label={`Liberar fila ${queue.name} para carteira`}
+                      />
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center">

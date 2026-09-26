@@ -34,6 +34,7 @@ export function QueueFormDialog({ serviceIslandId, queue, members, onSaved, trig
   const [businessHoursEnd, setBusinessHoursEnd] = useState(queue?.businessHoursEnd ?? "18:00");
   const [businessDays, setBusinessDays] = useState<number[]>(queue?.businessDays ?? [1, 2, 3, 4, 5]);
   const [memberUserIds, setMemberUserIds] = useState<string[]>(queue?.members?.map((m) => m.userId) ?? []);
+  const [carteiraEnabled, setCarteiraEnabled] = useState(queue?.carteiraEnabled ?? false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,6 +46,7 @@ export function QueueFormDialog({ serviceIslandId, queue, members, onSaved, trig
       setBusinessHoursEnd(queue.businessHoursEnd ?? "18:00");
       setBusinessDays(queue.businessDays);
       setMemberUserIds(queue.members?.map((m) => m.userId) ?? []);
+      setCarteiraEnabled(queue.carteiraEnabled);
     }
   }, [open, queue]);
 
@@ -68,6 +70,7 @@ export function QueueFormDialog({ serviceIslandId, queue, members, onSaved, trig
         businessHoursEnd: businessHoursEnabled ? businessHoursEnd : undefined,
         businessDays,
         memberUserIds,
+        carteiraEnabled,
       };
 
       if (queue) {
@@ -148,6 +151,16 @@ export function QueueFormDialog({ serviceIslandId, queue, members, onSaved, trig
               </div>
             </>
           )}
+
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <Label>Liberar fila para carteira</Label>
+              <p className="text-muted-foreground text-xs">
+                Permite escolher esta fila como destino de uma carteira de atendimento.
+              </p>
+            </div>
+            <Switch checked={carteiraEnabled} onCheckedChange={setCarteiraEnabled} />
+          </div>
 
           <div className="flex flex-col gap-1.5">
             <Label>Atendentes</Label>

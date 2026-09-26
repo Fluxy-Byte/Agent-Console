@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
 import { toast } from "sonner";
-import { Bot, BriefcaseBusiness, Calendar, IdCard, LogIn, LogOut, Mail, Phone } from "lucide-react";
+import { Bot, BriefcaseBusiness, Calendar, IdCard, LogIn, LogOut, Mail, Phone, WalletCards } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ import { api, ApiError } from "@/lib/api";
 import { formatDateAtTime } from "@/lib/format-date";
 import { cn } from "@/lib/utils";
 import { TicketDetailDialog } from "../service-islands/ticket-detail-dialog";
+import { TargetCarteirasDialog } from "./target-carteiras-dialog";
 import type { MessageDocument, MessageType, Target, TicketSummary } from "@/types/domain";
 
 const STATUS_LABELS: Record<string, string> = { AI: "IA", HUMAN: "Humano", FINISHED: "Finalizado" };
@@ -172,15 +173,26 @@ export function TargetDetailPage() {
           {target.email && <p className="text-muted-foreground mt-1 text-sm">{target.email}</p>}
         </div>
 
-        <Button
-          variant="outline"
-          disabled={hasCrmCard || !canWrite || creatingCard}
-          onClick={handleCreateCrmCard}
-          title={hasCrmCard ? "Este contato já possui um card no CRM" : undefined}
-        >
-          <BriefcaseBusiness className="size-4" />
-          {creatingCard ? "Gerando…" : "Gerar card no CRM"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <TargetCarteirasDialog
+            targetId={target.id}
+            canWrite={canWrite}
+            trigger={
+              <Button variant="outline">
+                <WalletCards className="size-4" /> Carteiras
+              </Button>
+            }
+          />
+          <Button
+            variant="outline"
+            disabled={hasCrmCard || !canWrite || creatingCard}
+            onClick={handleCreateCrmCard}
+            title={hasCrmCard ? "Este contato já possui um card no CRM" : undefined}
+          >
+            <BriefcaseBusiness className="size-4" />
+            {creatingCard ? "Gerando…" : "Gerar card no CRM"}
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="history">

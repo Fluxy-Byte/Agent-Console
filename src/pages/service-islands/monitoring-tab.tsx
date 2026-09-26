@@ -78,7 +78,11 @@ function InfoTile({ icon: Icon, label, value }: { icon: typeof Ticket; label: st
 
 function InProgressTicketsTable({ tickets, emptyLabel }: { tickets: IslandTicket[]; emptyLabel: string }) {
   if (tickets.length === 0) {
-    return <p className="text-muted-foreground text-sm">{emptyLabel}</p>;
+    return (
+      <div className="border-border rounded-lg border p-6">
+        <p className="text-muted-foreground text-center text-sm">{emptyLabel}</p>
+      </div>
+    );
   }
 
   return (
@@ -134,7 +138,11 @@ function InProgressTicketsTable({ tickets, emptyLabel }: { tickets: IslandTicket
 
 function WaitingTicketsTable({ tickets, emptyLabel }: { tickets: IslandTicket[]; emptyLabel: string }) {
   if (tickets.length === 0) {
-    return <p className="text-muted-foreground text-sm">{emptyLabel}</p>;
+    return (
+      <div className="border-border rounded-lg border p-6">
+        <p className="text-muted-foreground text-center text-sm">{emptyLabel}</p>
+      </div>
+    );
   }
 
   return (
@@ -249,25 +257,25 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
         <TabsList className="border-border h-auto w-full justify-start gap-1 rounded-none border-b bg-transparent p-2">
           <TabsTrigger
             value="in-progress"
-            className="flex-none px-3 py-1.5 data-[state=active]:bg-success data-[state=active]:text-success-foreground"
+            className="flex-none px-3 py-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none"
           >
             <Headphones /> Em andamento
           </TabsTrigger>
           <TabsTrigger
             value="waiting"
-            className="flex-none px-3 py-1.5 data-[state=active]:bg-success data-[state=active]:text-success-foreground"
+            className="flex-none px-3 py-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none"
           >
             <Hourglass /> Aguardando atendimento
           </TabsTrigger>
           <TabsTrigger
             value="attendants"
-            className="flex-none px-3 py-1.5 data-[state=active]:bg-success data-[state=active]:text-success-foreground"
+            className="flex-none px-3 py-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none"
           >
             <Activity /> Atendentes
           </TabsTrigger>
           <TabsTrigger
             value="queues"
-            className="flex-none px-3 py-1.5 data-[state=active]:bg-success data-[state=active]:text-success-foreground"
+            className="flex-none px-3 py-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none"
           >
             <Send /> Filas
           </TabsTrigger>
@@ -276,9 +284,6 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
         <TabsContent value="in-progress">
         <CardHeader className="flex-row items-start justify-between space-y-0">
           <div className="flex items-start gap-3">
-            <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
-              <Headphones className="size-5" />
-            </div>
             <div>
               <CardTitle className="text-base">Tickets em atendimento</CardTitle>
               <p className="text-muted-foreground mt-1 text-xs">Tickets sendo conduzidos agora por um atendente humano.</p>
@@ -317,11 +322,9 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
 
         <TabsContent value="waiting">
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="bg-warning/15 text-warning flex size-10 shrink-0 items-center justify-center rounded-lg">
-              <Hourglass className="size-5" />
-            </div>
+          <div>
             <CardTitle className="text-base">Tickets aguardando</CardTitle>
+            <p className="text-muted-foreground mt-1 text-xs">Tickets na fila esperando um atendente humano assumir.</p>
           </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -358,9 +361,6 @@ export function MonitoringTab({ islandId }: { islandId: string }) {
         <TabsContent value="attendants">
         <CardHeader>
           <div className="flex items-start gap-3">
-            <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
-              <Activity className="size-5" />
-            </div>
             <div>
               <CardTitle>Status dos atendentes</CardTitle>
               <p className="text-muted-foreground mt-1 text-sm">Acompanhe a disponibilidade e o status da sua equipe.</p>

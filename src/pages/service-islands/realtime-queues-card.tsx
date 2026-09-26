@@ -1,6 +1,6 @@
 import { useState } from "react";
 import useSWR from "swr";
-import { Radio, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PaginationControls } from "@/components/pagination-controls";
 import { SortableTh } from "@/components/sortable-th";
@@ -46,9 +46,6 @@ export function RealtimeQueuesCard({ islandId }: { islandId: string }) {
     <>
       <CardHeader className="flex-row items-start justify-between space-y-0">
         <div className="flex items-start gap-3">
-          <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
-            <Radio className="size-5" />
-          </div>
           <div>
             <CardTitle className="text-base">Atendimentos em tempo real</CardTitle>
             <p className="text-muted-foreground mt-1 text-xs">
