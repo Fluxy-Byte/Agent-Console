@@ -347,6 +347,50 @@ export interface CrmFunnelFieldTargets {
   items: { id: string; name: string | null; waId: string | null; email: string | null; metadataValue: string | null }[];
 }
 
+/// Situação final de um evento do calendário — null = ainda agendado.
+export type EventStatus = "FINISHED" | "RESCHEDULED" | "CANCELED";
+
+export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
+  FINISHED: "Finalizado",
+  RESCHEDULED: "Remarcado",
+  CANCELED: "Cancelado",
+};
+
+export interface CalendarEventTarget {
+  id: string;
+  name: string | null;
+  waId: string | null;
+  email: string | null;
+}
+
+/// Item de GET /api/crm/calendar/events (grade do calendário).
+export interface CalendarEventSummary {
+  id: string;
+  name: string;
+  dateEvent: string;
+  status: EventStatus | null;
+  isClosed: boolean;
+  target: CalendarEventTarget;
+}
+
+export interface CalendarEventAnnotation {
+  id: string;
+  message: string;
+  createdAt: string;
+  updatedAt: string;
+  user: { id: string; name: string };
+}
+
+/// GET /api/crm/calendar/events/:id — tudo do modal do evento.
+export interface CalendarEventDetail extends CalendarEventSummary {
+  description: string | null;
+  targetId: string;
+  createdAt: string;
+  updatedAt: string;
+  annotations: CalendarEventAnnotation[];
+  documents: { s3Key: string; fileName: string; url: string }[];
+}
+
 export type TicketCloseReason = "RESOLVED" | "TRANSFERRED_QUEUE" | "TRANSFERRED_AGENT" | "SESSION_EXPIRED" | "ABANDONED";
 
 export interface IslandTicket {
